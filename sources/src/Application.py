@@ -41,7 +41,7 @@ class SetLevel(FSM):
 		self.current_map = "Village.bam"
 		self.donnees = {"Village.bam":("../sounds/legende.ogg", ["Taya"], {})}
 		self.texts = ["It's a secret to everybody."]
-		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Hello young boy !", "I am the bitch of this village.", "It will be 300$ the night !"]}
+		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
 		self.text_index = 0
 		self.letter_index = 0
 		self.messages = []
