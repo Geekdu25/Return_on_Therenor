@@ -1,5 +1,5 @@
 # The legend of Therenor 2
-Un jeu en 3 dimentsions crée par Etienne Pacault Rémi Martinot Alexandrine Charette Tyméo Bonvicini-Renaud et Noé Mora pour les trophées NSI 2024.
+Un jeu en 3 dimensions crée par Etienne Pacault Rémi Martinot Alexandrine Charette Tyméo Bonvicini-Renaud et Noé Mora pour les trophées NSI 2024.
 # 1- Résumé
 Après avoir triomphé de Zmeyevick, notre héros s'en est allé pour de lointaines contrées.
 Ses actes n'étaient plus que légende, et une nouvelle menace, plus terrible encore menaça le monde.
