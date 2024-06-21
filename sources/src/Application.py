@@ -39,7 +39,7 @@ class SetLevel(FSM):
 		self.chapitre = 0
 		self.coord = [0, 0, 0]
 		self.current_map = "Village.bam"
-		self.donnees = {"Village.bam":("../sounds/legende.ogg", ["Taya"], {})}
+		self.donnees = {"Village.bam":("../sounds/legende.ogg", ["error"], {})}
 		self.texts = ["It's a secret to everybody."]
 		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
 		self.text_index = 0
@@ -127,6 +127,13 @@ class SetLevel(FSM):
 			del self.map
 		self.map = loader.loadModel(map)			
 		self.map.reparentTo(render)	
+		#-------------La skybox-----------------
+		self.skybox = loader.loadModel("skybox.bam")
+		self.skybox.setScale(10000)
+		self.skybox.setBin('background', 1)
+		self.skybox.setDepthWrite(0)
+		self.skybox.setLightOff()
+		self.skybox.reparentTo(render)
 		#-----Section de gestion de la musique------
 		if self.music is not None:
 			self.music.stop()
@@ -141,6 +148,7 @@ class SetLevel(FSM):
 		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
 		if self.player is None:
 			self.player = Player()
+			self.coord = (200, -200, 6)
 			self.player.setPos(self.coord[0], self.coord[1], self.coord[2])
 			self.player.reparentTo(render)
 			self.player.set_active(True)
@@ -302,9 +310,9 @@ class SetLevel(FSM):
 		self.accept("arrow_left-up", self.endleft)
 		self.accept("arrow_right", self.beginright)
 		self.accept("arrow_right-up", self.endright)
-		self.accept("b", self.augmente_vitesse)
-		self.accept("b-up", self.diminue_vitesse)
 		self.accept("a", self.player.followcam.change_vue)	
+		self.accept("b", self.augmente)
+		self.accept("b-up", self.diminue)
 		self.accept("into", self.into)
 		self.accept("out", self.out)
 		
@@ -316,6 +324,11 @@ class SetLevel(FSM):
 			self.transition.fadeOut(0.5)
 			self.player.setPos(self.donnees[self.current_map][2][b].newpos)
 			self.load_map(b)
+	
+	def augmente(self):
+		self.player.vitesse *= 2
+	def diminue(self):
+		self.player.vitesse /=2			
 			
 	def out(self, a):
 		self.current_pnj = None		
@@ -346,13 +359,7 @@ class SetLevel(FSM):
 		self.player.left = False
 	
 	def endright(self):
-		self.player.right = False				
-			
-	def augmente_vitesse(self):
-		self.player.vitesse *= 2
-		
-	def diminue_vitesse(self):
-		self.player.vitesse /= 2
+		self.player.right = False
 					
 	def update(self, task):
 		if self.player.walk:
