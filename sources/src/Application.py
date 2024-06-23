@@ -14,14 +14,20 @@ import os, sys
 
 
 class Portail(CollisionBox):
-	def __init__(self, center=(10, -130, 6), sx=3, sy=3, sz=3, newpos=(-36, 12, 6)):
+	def __init__(self, center=(1320, -1000, 6), sx=40, sy=4, sz=150, newpos=(830, -470, 6)):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
 		self.setTangible(False)
 		
+class Porte(CollisionBox):
+	def __init__(self, center=(1320, -1000, 6), sx=50, sy=10, sz=150, newpos=(830, -460, 6)):
+		CollisionBox.__init__(self, center, sx, sy, sz)
+		self.newpos = newpos
+		
 class SetLevel(FSM):
 	def __init__(self):
 		FSM.__init__(self, "LevelManager")
+		base.cTrav = CollisionTraverser()
 		self.ok = False    
 		self.reading = False    
 		self.termine = True
@@ -32,14 +38,20 @@ class SetLevel(FSM):
 		self.music = None
 		self.current_pnj = None #Variable nous indiquant quel pnj on touche
 		self.currents_pnj = [] #Liste dans laquelle sont stockés ous les pnjs de la map
+		self.current_porte = None
 		#------------------Notre gestionnaire de collisions-------------------------
 		self.antimur = CollisionHandlerPusher()
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.chapitre = 0
-		self.coord = [0, 0, 0]
+		self.coord = [1100, -1100, 6]
+		self.player = Player()
+		self.player.reparentTo(render)
+		self.player.setPos(200, -200, 6)
 		self.current_map = "Village.bam"
-		self.donnees = {"Village.bam":("../sounds/legende.ogg", ["error"], {})}
+		self.donnees = {"Village.bam":("../sounds/village.ogg", ["error"], {"maison_taya.bam":Porte(), "maison_terenor.bam":Porte(center=(2015, -2515, 6), newpos=(820, -240, 6))}),
+						"maison_taya.bam":("../sounds/house.ogg", ["Taya"], {"Village.bam":Porte(center=(840, -500, 6), newpos=(1300, -1035, 6))}),
+						"maison_terenor.bam":("../sounds/house.ogg", [], {"Village.bam":Porte(center=(835, -15, 6), newpos=(2015, -2480, 6))})}
 		self.texts = ["It's a secret to everybody."]
 		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
 		self.text_index = 0
@@ -54,6 +66,23 @@ class SetLevel(FSM):
 		
 	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------	
 	def check_interact(self):
+		self.check_interact_dial()
+		if self.current_pnj is not None:
+			if self.current_pnj in self.dialogues_pnj:
+				self.set_text(self.dialogues_pnj[self.current_pnj])	
+				self.text_index = 0
+				self.letter_index = 0
+		if self.current_porte is not None:	
+			self.transition.fadeOut(0.5)
+			taskMgr.remove("update")
+			self.player.walk = False
+			self.player.reverse = False
+			self.player.left = False
+			self.player.right = False
+			self.player.setPos(self.donnees[self.current_map][2][self.current_porte].newpos)
+			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])			 
+	
+	def check_interact_dial(self):
 		if not self.reading and not self.termine:
 			self.reading = True
 		elif self.reading:
@@ -73,14 +102,7 @@ class SetLevel(FSM):
 				else:
 					self.letter_index = 0
 			else:
-				self.letter_index = len(self.texts[self.text_index])
-		else:
-			if self.current_pnj is not None:
-				if self.current_pnj in self.dialogues_pnj:
-					self.set_text(self.dialogues_pnj[self.current_pnj])	
-					self.text_index = 0
-					self.letter_index = 0	 
-				
+				self.letter_index = len(self.texts[self.text_index])			
 				
 	def set_text(self, text, messages=[]):
 		if not self.reading:
@@ -108,7 +130,7 @@ class SetLevel(FSM):
 	#-------------Fonction de chargement de map--------------------------------
 	
 	
-	def load_map(self, map="environment"):
+	def load_map(self, map="environment", task=None):
 		"""
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
@@ -120,6 +142,7 @@ class SetLevel(FSM):
 			pnj.removeNode()
 			del pnj
 		self.current_pnj = None
+		self.current_porte = None
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
 		if self.map:
@@ -146,12 +169,8 @@ class SetLevel(FSM):
 		alnp = render.attachNewNode(alight)
 		render.set_light(alnp)"""
 		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
-		if self.player is None:
-			self.player = Player()
-			self.coord = (200, -200, 6)
-			self.player.setPos(self.coord[0], self.coord[1], self.coord[2])
-			self.player.reparentTo(render)
-			self.player.set_active(True)
+		if self.player.followcam is None:
+			self.player.create_camera()
 		#--------Section de gestion des pnjs--------
 		for p in self.donnees[self.current_map][1]:
 			if p == "Taya":
@@ -177,12 +196,28 @@ class SetLevel(FSM):
 			noeud.setCollideMask(BitMask32.bit(0)) 
 			noeud_np = self.map.attachNewNode(noeud)
 		if self.debug:
-			self.player.set_active(False)
 			base.enableMouse()
 		else:
-			self.player.set_active(True)
-			base.disableMouse()		
-		self.transition.fadeIn(2)	
+			base.disableMouse()	
+		self.accept("escape", sys.exit)	
+		self.accept("arrow_up", self.heroswalk)
+		self.accept("arrow_up-up", self.herosstop)
+		self.accept("arrow_down", self.heroswalki)
+		self.accept("arrow_down-up", self.herosstopi)
+		self.accept("arrow_left", self.beginleft)
+		self.accept("arrow_left-up", self.endleft)
+		self.accept("arrow_right", self.beginright)
+		self.accept("arrow_right-up", self.endright)
+		self.accept("a", self.player.followcam.change_vue)	
+		self.accept("b", self.augmente)
+		self.accept("b-up", self.diminue)
+		self.accept("into", self.into)
+		self.accept("out", self.out)
+		self.accept("e", self.inventaire)	
+		taskMgr.add(self.update, "update")	
+		self.transition.fadeIn(2)
+		if task is not None:
+			return task.done	
 					
 	#---------------------------Ecran titre--------------------------------			
 	def enterMenu(self):
@@ -298,32 +333,19 @@ class SetLevel(FSM):
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------	
 	
 	def enterMap(self):
-		base.cTrav = CollisionTraverser()
 		self.load_map(self.current_map)
-		#------------------------GESTION DES INPUT----------------------------
-		taskMgr.add(self.update, "update")
-		self.accept("arrow_up", self.heroswalk)
-		self.accept("arrow_up-up", self.herosstop)
-		self.accept("arrow_down", self.heroswalki)
-		self.accept("arrow_down-up", self.herosstopi)
-		self.accept("arrow_left", self.beginleft)
-		self.accept("arrow_left-up", self.endleft)
-		self.accept("arrow_right", self.beginright)
-		self.accept("arrow_right-up", self.endright)
-		self.accept("a", self.player.followcam.change_vue)	
-		self.accept("b", self.augmente)
-		self.accept("b-up", self.diminue)
-		self.accept("into", self.into)
-		self.accept("out", self.out)
 		
 	def into(self, a):
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b[0:len(b)-7] in self.donnees[self.current_map][1]:
 			self.current_pnj = b[0:len(b)-7]
 		elif b in self.donnees[self.current_map][2]:
-			self.transition.fadeOut(0.5)
-			self.player.setPos(self.donnees[self.current_map][2][b].newpos)
-			self.load_map(b)
+			if type(self.donnees[self.current_map][2][b]) is Portail:
+				self.transition.fadeOut(0.5)
+				self.player.setPos(self.donnees[self.current_map][2][b].newpos)
+				taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
+			elif type(self.donnees[self.current_map][2][b]) is Porte:
+				self.current_porte = b
 	
 	def augmente(self):
 		self.player.vitesse *= 2
@@ -331,7 +353,8 @@ class SetLevel(FSM):
 		self.player.vitesse /=2			
 			
 	def out(self, a):
-		self.current_pnj = None		
+		self.current_pnj = None	
+		self.current_porte = None	
 		
 	def heroswalk(self):
 		self.player.walk = True
@@ -362,6 +385,7 @@ class SetLevel(FSM):
 		self.player.right = False
 					
 	def update(self, task):
+		self.player.setZ(self.player, -0.25)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse)
 		if self.player.reverse:
@@ -373,7 +397,92 @@ class SetLevel(FSM):
 		return task.cont	
 			   	
 	def exitMap(self):
-		print("Indéfini pour le moment")		
+		self.map.removeNode()
+		self.map = None	
+			
+	def inventaire(self):
+		self.player.stop()
+		self.index_invent = 0
+		self.player.left = False
+		self.player.right = False
+		self.player.reverse = False
+		self.player.walk = False
+		taskMgr.remove("update")
+		self.accept("escape", self.exit_inventaire)
+		self.ignore("arrow_up")
+		self.ignore("arrow_up-up")
+		self.ignore("arrow_down")
+		self.ignore("arrow_down-up")
+		self.ignore("arrow_left")
+		self.ignore("arrow_left-up")
+		self.ignore("arrow_right")
+		self.ignore("arrow_right-up")
+		self.ignore("a")	
+		self.ignore("b")
+		self.ignore("b-up")
+		self.ignore("into")
+		self.ignore("out")
+		self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
+		self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+		taskMgr.add(self.update_invent, "update_invent")
+		self.music.setVolume(0.6)
+		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.2, 0, 0.2), pos=Vec3(-1.6, 0, 0.7))
+		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1.1, 0.72), scale=0.07)
+		
+	def change_index_invent(self, dir="left"):
+		if dir == "left":
+			if self.index_invent > 0:
+				self.index_invent -= 1
+			else:
+				self.index_invent = 1
+		elif dir == "right":
+			if self.index_invent < 1:
+				self.index_invent += 1
+			else:
+				self.index_invent = 0
+									
+	def update_invent(self, task):
+		self.map_image.removeNode()			
+		self.noai_image.removeNode() 
+		self.noai_text.removeNode()
+		if self.index_invent == 0:
+			self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		elif self.index_invent == 1:
+			self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.2, 0, 0.2), pos=Vec3(-1.6, 0, 0.7))
+			self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+			self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1.1, 0.72), scale=0.07)				
+		return task.cont
+		
+	def exit_inventaire(self):
+		self.remove_invent_elements()
+		self.music.setVolume(1)
+		taskMgr.remove("update_invent")
+		taskMgr.add(self.update, "update")
+		self.accept("escape", sys.exit)	
+		self.accept("arrow_up", self.heroswalk)
+		self.accept("arrow_up-up", self.herosstop)
+		self.accept("arrow_down", self.heroswalki)
+		self.accept("arrow_down-up", self.herosstopi)
+		self.accept("arrow_left", self.beginleft)
+		self.accept("arrow_left-up", self.endleft)
+		self.accept("arrow_right", self.beginright)
+		self.accept("arrow_right-up", self.endright)
+		self.accept("a", self.player.followcam.change_vue)	
+		self.accept("b", self.augmente)
+		self.accept("b-up", self.diminue)
+		self.accept("into", self.into)
+		self.accept("out", self.out)
+		self.accept("e", self.inventaire)
+	
+	def remove_invent_elements(self):
+		self.map_image.removeNode()			
+		self.noai_image.removeNode() 
+		self.noai_text.removeNode()
+		del self.map_image
+		del self.noai_image
+		del self.noai_text	
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
 	def enterGenerique(self):
 		self.music = loader.loadSfx("../sounds/generique.ogg")

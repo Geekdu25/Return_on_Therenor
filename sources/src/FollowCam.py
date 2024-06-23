@@ -7,6 +7,7 @@ class FollowCam():
 		self.turnRate = 2.2
 		self.vue = 0
 		self.camera = camera
+		camera.node().getLens().setFov(90)
 		self.target = target
 		taskMgr.add(self.updateCamera, "updateCamera" + target.getName())
 
@@ -32,14 +33,14 @@ class FollowCam():
 			turn = turnDiff * dt
 			self.dummy.setH(heading + turn * self.turnRate)
 			self.camera.setPos(self.dummy.getPos())
-			self.camera.setY(self.dummy, 40)
-			self.camera.setZ(self.dummy, 10)
+			self.camera.setY(self.dummy, 65)
+			self.camera.setZ(self.dummy, 35)
 			self.camera.lookAt(self.target.getPos() + Vec3(0, 0, 7))
 		elif self.vue == 1:
 			self.camera.setH(self.target.getH()+180)
 			self.camera.setPos(self.target.getPos())
 			self.camera.setY(self.camera, 10)
-			self.camera.setZ(self.camera, 10)
+			self.camera.setZ(self.camera, 25)
 		return task.cont
 
 	def clampAngle(self, angle):

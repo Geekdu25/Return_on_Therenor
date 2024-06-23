@@ -1,1 +1,1 @@
-zzz|2|environment|0|0|0|
+Etienne|2|Village.bam|200.0|-200.0|6.0|

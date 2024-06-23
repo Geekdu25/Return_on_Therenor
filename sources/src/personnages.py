@@ -5,16 +5,19 @@ import os
 
 class Player(Actor):
 	def __init__(self):
+		#-------------Initialisation--------------------------------------
 		Actor.__init__(self, "../models/error.bam", {"walk": "../models/error-marche.bam"})
-		self.vitesse = 0.20
+		#----------------------Noais et autres infos de jeu--------------------------------
+		self.noais = 0
+		#--------------------Quelques paramètres simples-----------------------------------
+		self.vitesse = 0.15
 		self.walk = False
 		self.reverse = False
 		self.right = False
 		self.left = False
 		self.setHpr(90, 0, 0)
-		self.setScale(8)
-		#----------------Notre caméra-------------------
-		self.followcam = FollowCam(base.cam, self)
+		self.setScale(22)
+		self.followcam = None
 		#---------------Section de gestion de l'épée-------------------------
 		self.rightHand = self.exposeJoint(None, 'modelRoot', 'hand.R')
 		self.epee = loader.loadModel("../models/sword.bam")
@@ -24,13 +27,16 @@ class Player(Actor):
 		self.epee.reparentTo(self.rightHand)
 		#---------------Section de gestion des collisions------------------
 		self.col = CollisionNode('player_sphere')
-		self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
+		self.col.addSolid(CollisionSphere((0, 0, 0.75), 1)) 
 		self.col.setFromCollideMask(BitMask32.bit(0))
 		self.col.setIntoCollideMask(BitMask32.allOff()) 
 		self.col_np = self.attachNewNode(self.col)
 	
-	def set_active(self, active=False):
-		self.followcam.set_active(active)
+	
+	def create_camera(self):
+		#----------------Notre caméra-------------------
+		self.followcam = FollowCam(base.cam, self)
+		
 		
 class PNJ(Actor):
 	def __init__(self, name="error"):
