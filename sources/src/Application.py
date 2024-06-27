@@ -4,30 +4,42 @@ from direct.fsm.FSM import FSM
 from direct.gui.OnscreenImage import *
 from direct.gui.OnscreenText import *
 from direct.gui.DirectGui import *
+from direct.gui.DirectFrame import DirectFrame
 from direct.interval.IntervalGlobal import *
-from direct.interval.IntervalGlobal import Sequence
 from direct.interval.LerpInterval import LerpFunc
 from direct.showbase.Transitions import Transitions
 from direct.actor.Actor import Actor
 from personnages import *
-import os, sys
+from monsters import *
+from objects import *
+import os, sys, json
 
 
 class Portail(CollisionBox):
+	"""
+	Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
+	"""
 	def __init__(self, center=(1320, -1000, 6), sx=40, sy=4, sz=150, newpos=(830, -470, 6)):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
 		self.setTangible(False)
 		
 class Porte(CollisionBox):
+	"""
+	Contrairement à un portail, une porte doit être ouverte par le joueur en appuyant sur espace pour le téléporter.
+	"""
 	def __init__(self, center=(1320, -1000, 6), sx=50, sy=10, sz=150, newpos=(830, -460, 6)):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
 		
 class SetLevel(FSM):
+	"""
+	Partez du principe que cette classe sera le coeur du jeu.
+	Tout le script principal s'y trouvera.
+	"""
 	def __init__(self):
-		FSM.__init__(self, "LevelManager")
-		base.cTrav = CollisionTraverser()
+		FSM.__init__(self, "LevelManager") #Initialisation de botre classe en initialisat la super classe.
+		base.cTrav = CollisionTraverser() #Notre gestionnaire de collisions.
 		self.ok = False    
 		self.reading = False    
 		self.termine = True
@@ -35,28 +47,27 @@ class SetLevel(FSM):
 		self.map = None
 		self.player = None
 		self.debug = False
-		self.music = None
+		self.music = None #La musique d'ambiance
+		self.son = None #Le son joué lors des dialogues.
 		self.current_pnj = None #Variable nous indiquant quel pnj on touche
-		self.currents_pnj = [] #Liste dans laquelle sont stockés ous les pnjs de la map
-		self.current_porte = None
-		#------------------Notre gestionnaire de collisions-------------------------
-		self.antimur = CollisionHandlerPusher()
+		self.pnjs = [] #Liste dans laquelle sont stockés ous les pnjs de la map
+		self.current_porte = None #La porte actuellement touchée par le joueur
+		self.portails = {} #Dictionnaure contenant les portails.
+		self.triggers = []
+		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
-		self.chapitre = 0
-		self.coord = [1100, -1100, 6]
-		self.player = Player()
+		self.chapitre = 0 #Où en sommes-nous dans l'histoire ?
+		self.player = Player() #Trèèèèèèèèès important : notre joueur?
 		self.player.reparentTo(render)
-		self.player.setPos(200, -200, 6)
 		self.current_map = "Village.bam"
-		self.donnees = {"Village.bam":("../sounds/village.ogg", ["error"], {"maison_taya.bam":Porte(), "maison_terenor.bam":Porte(center=(2015, -2515, 6), newpos=(820, -240, 6))}),
-						"maison_taya.bam":("../sounds/house.ogg", ["Taya"], {"Village.bam":Porte(center=(840, -500, 6), newpos=(1300, -1035, 6))}),
-						"maison_terenor.bam":("../sounds/house.ogg", [], {"Village.bam":Porte(center=(835, -15, 6), newpos=(2015, -2480, 6))})}
 		self.texts = ["It's a secret to everybody."]
 		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
+		self.font = loader.loadFont("arial.bam") #Notre police
 		self.text_index = 0
 		self.letter_index = 0
 		self.messages = []
+		self.sons_messages = []
 		self.nom = "Link"
 		self.read()
 		self.transition = Transitions(loader)
@@ -66,6 +77,12 @@ class SetLevel(FSM):
 		
 	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------	
 	def check_interact(self):
+		"""
+		Fonction appelée chaque fois que le joueur appuie sur espace.
+		Cela aura pour conséquences de vérifier les portes, les pnjs touchés, ou encore de passer les dialogues.
+		----------------------------------------------------------------------------------------------
+		return -> None
+		"""
 		self.check_interact_dial()
 		if self.current_pnj is not None:
 			if self.current_pnj in self.dialogues_pnj:
@@ -79,15 +96,28 @@ class SetLevel(FSM):
 			self.player.reverse = False
 			self.player.left = False
 			self.player.right = False
-			self.player.setPos(self.donnees[self.current_map][2][self.current_porte].newpos)
+			self.player.setPos(self.portails[self.current_porte].newpos)
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])			 
 	
 	def check_interact_dial(self):
+		"""
+		"Petite" fonction qui permet de passer les dialogues.
+		------------------------------------------------------
+		return -> None
+		"""
 		if not self.reading and not self.termine:
 			self.reading = True
 		elif self.reading:
 			if self.letter_index >= len(self.texts[self.text_index]):
 				self.text_index += 1
+				if self.son is not None:
+					self.son.stop()
+					if len(self.sons_messages) > self.text_index:
+						try:	
+							self.son = loader.loadSfx(f"../sounds/dialogues/{self.sons_messages[self.text_index]}.ogg")
+							self.son.play()
+						except:
+							print("Pas de fichier son valide.")	
 				if self.text_index >= len(self.texts):
 					self.reading = False
 					self.termine = True
@@ -104,14 +134,35 @@ class SetLevel(FSM):
 			else:
 				self.letter_index = len(self.texts[self.text_index])			
 				
-	def set_text(self, text, messages=[]):
+	def set_text(self, text=["Navi, where are thou ?"], messages=[], sons=[]):
+		"""
+		Fonction qui permet d'afficher un texte.
+		--------------------------------------------------
+		text -> list[str]
+		messages -> list[str]
+		sons -> list[str]
+		return -> None
+		"""
 		if not self.reading:
 			self.reading = True
 			self.termine = False
 			self.texts = text
-			self.messages = messages		
+			self.sons_messages = sons
+			self.messages = messages
+			if len(sons) > 0:
+				try:
+					self.son = loader.loadSfx(f"../sounds/dialogues/{self.sons_messages[0]}.ogg")		
+					self.son.play()
+				except:
+					print("Pas de fichier son valide.")	
 			
 	def update_text(self, task):
+		"""
+		Fonction qui met à jour le texte affiché à l'écran.
+		-------------------------------------------------
+		task -> task
+		return -> task.cont
+		"""
 		if self.reading:
 			if self.ok:
 				self.textObject.removeNode()
@@ -127,8 +178,7 @@ class SetLevel(FSM):
 				self.letter_index += 1
 		return task.cont  
 		
-	#-------------Fonction de chargement de map--------------------------------
-	
+	#-------------Fonction de chargement de map--------------------------------	
 	
 	def load_map(self, map="environment", task=None):
 		"""
@@ -137,12 +187,14 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
-		for pnj in self.currents_pnj:
+		for pnj in self.pnjs:
 			pnj.cleanup()
 			pnj.removeNode()
 			del pnj
 		self.current_pnj = None
 		self.current_porte = None
+		self.pnjs = []
+		self.portails = {}
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
 		if self.map:
@@ -157,44 +209,50 @@ class SetLevel(FSM):
 		self.skybox.setDepthWrite(0)
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
+		#--------------------Chargement du fichier json-------------
+		pnj_file = open("../json/data.json")
+		data = json.load(pnj_file)
+		pnj_file.close()	
 		#-----Section de gestion de la musique------
 		if self.music is not None:
 			self.music.stop()
 			self.music = None
-		self.music = base.loader.loadSfx(self.donnees[self.current_map][0])
+		self.music = base.loader.loadSfx(data[self.current_map][0])
 		self.music.setLoop(True)
 		self.music.play()
-		#--------------------LUMIERES--------------------------------------------
-		"""alight = AmbientLight("alight")
-		alnp = render.attachNewNode(alight)
-		render.set_light(alnp)"""
 		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
 		if self.player.followcam is None:
 			self.player.create_camera()
-		#--------Section de gestion des pnjs--------
-		for p in self.donnees[self.current_map][1]:
-			if p == "Taya":
-				t = Taya()
-				t.reparentTo(render)
-				self.currents_pnj.append(t)
-			else:
-				pnj = PNJ(p)
-				pnj.setPos(10, -150, 3)
-				pnj.reparentTo(render)
-				self.currents_pnj.append(pnj)
 		#---------------------------SECTION DE GESTION DES COLLISIONS------------------
 		self.map.setCollideMask(BitMask32.bit(0))
 		if self.debug:
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)	
-		#----------Les triggers-----------------------
-		for portail in self.donnees[self.current_map][2]:
+		#----------Les portes-----------------------
+		for portail in data[self.current_map][2]:
 			noeud = CollisionNode(portail)
-			solid = self.donnees[self.current_map][2][portail]
+			info = data[self.current_map][2][portail]
+			if info[0] == "porte":
+				solid = Porte(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
+			else:
+				solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))	
 			noeud.addSolid(solid) 
+			self.portails[portail] = solid
 			noeud.setCollideMask(BitMask32.bit(0)) 
 			noeud_np = self.map.attachNewNode(noeud)
+		#------------------Les pnjs--------------------------------
+		for pnj in data[self.current_map][1]:
+			info = data[self.current_map][1][pnj]
+			if pnj == "Taya":
+				a = Taya()
+				a.setPos(info[0], info[1], info[2])
+				self.pnjs.append(a)
+			else:
+				a = PNJ(pnj)
+				a.setPos(info[0], info[1], info[2])
+				self.pnjs.append(a)	
+		self.load_triggers(map)		
 		if self.debug:
 			base.enableMouse()
 		else:
@@ -209,27 +267,52 @@ class SetLevel(FSM):
 		self.accept("arrow_right", self.beginright)
 		self.accept("arrow_right-up", self.endright)
 		self.accept("a", self.player.followcam.change_vue)	
-		self.accept("b", self.augmente)
-		self.accept("b-up", self.diminue)
+		self.accept("b", self.change_vitesse, extraArgs=["b"])
+		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
 		self.accept("into", self.into)
 		self.accept("out", self.out)
 		self.accept("e", self.inventaire)	
 		taskMgr.add(self.update, "update")	
+		del data
 		self.transition.fadeIn(2)
 		if task is not None:
 			return task.done	
 					
+	def load_triggers(self, map="Village.bam"):
+		"""
+		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
+		C'est à dire les collisions "scénaristiques".
+		------------------------------------------------------
+		map -> str
+		return -> None
+		"""
+		for trigger in self.triggers:
+			trigger.removeSolid()
+			del trigger
+		if map == "Village.bam":
+			noeud = CollisionNode("1")
+			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
+			solid.setTangible(False)
+			noeud.addSolid(solid)
+			noeud.setIntoCollideMask(BitMask32.bit(0))
+			self.triggers.append(noeud) 
+			chemin_de_noeud = render.attachNewNode(noeud)				
+			
 	#---------------------------Ecran titre--------------------------------			
 	def enterMenu(self):
+		"""
+		Fonction qui prépare l'écran titre.
+		------------------------------------------
+		return -> None
+		"""
 		self.music = base.loader.loadSfx("../sounds/menu.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.menu = True
-		font = loader.loadFont("arial.bam")
-		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(255, 255, 255, 255))
-		self.textObject1.setFont(font)
-		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(255, 255, 255, 255))
-		self.textObject2.setFont(font)
+		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
+		self.textObject1.setFont(self.font)
+		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
+		self.textObject2.setFont(self.font)
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(render)
 		base.cam.lookAt(self.epee)
@@ -244,12 +327,21 @@ class SetLevel(FSM):
 		self.accept("r", self.save, [True])
 		
 	def exitMenu(self):
+		"""
+		Fonction qui s'acive quand on quitte l'écran titre.
+		"""
 		self.music.stop()
 		self.textObject1.remove_node()	
 		self.textObject2.remove_node()	
 		self.epee.remove_node()	
 	
 	def verify(self):
+		"""
+		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
+		On agira de différentes manières selon le chapitre auquel le joueur est rendu.
+		---------------------------------------------------------------------------
+		return -> None
+		"""
 		self.ignore("f1")
 		self.ignore("r")
 		if self.chapitre == 0:
@@ -262,6 +354,11 @@ class SetLevel(FSM):
 			taskMgr.doMethodLater(2, self.on_change, "on change")
 	#-------------------------------Paramètres en début de partie-----------------------------------
 	def enterInit(self):
+		"""
+		Fonction qui s'active quand on entre dans les paramètres en début de partie.
+		----------------------------------------------------------------------------
+		return -> None
+		"""
 		self.music = base.loader.loadSfx("../sounds/para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
@@ -270,14 +367,30 @@ class SetLevel(FSM):
 		self.helloBtn = DirectButton(text = "Confirmer", scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
 			
 	def exitInit(self):
+		"""
+		Fonction qui s'active quand on quitte ces paramètres.
+		--------------------------------------------------------
+		return -> None
+		"""
 		self.music.stop()
 		self.chapitre = 1
 		self.save()
 
 	def setName(self):
+		"""
+		Petit pop-up de vérification.
+		--------------------------------
+		return -> None
+		"""
 		self.acceptDlg = YesNoDialog(text = "C'est tout bon ?", command = self.acceptName)
 
 	def acceptName(self, clickedYes):
+		"""
+		Fonction qui en fonction de la rééponse du joueur commence le jeu ou reste dans les paramètres.
+		--------------------------------------------------------------------------------------------
+		clickedYes -> bool
+		return -> None 
+		"""
 		self.acceptDlg.cleanup()
 		if clickedYes:
 			self.nom = self.nameEnt.get()
@@ -290,19 +403,34 @@ class SetLevel(FSM):
 			self.request("Legende")		
 	#-------------------------------Introduction avec la légende--------------------------------------		
 	def enterLegende(self):
+		"""
+		Fonction au début de l'histoire lorsqu'on raconte la légende.
+		-----------------------------------------------------------------
+		return -> None
+		"""
 		self.music = base.loader.loadSfx("../sounds/legende.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
-		"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"])
+		"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"], ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"])
 		self.accept("Bz", self.change_legende)
 		base.taskMgr.add(self.change_legende_image, "change_legende_image")
 		
 	def exitLegende(self):
+		"""
+		Fonction lorsque la légende est finie.
+		-------------------------------------
+		return -> None
+		"""
 		self.music.stop()	
 		self.chapitre = 2
 		
 	def change_legende(self):
+		"""
+		Fonction s'acivant quand la légende est finie.
+		-----------------------------------------------
+		return -> None
+		"""
 		self.transition.setFadeColor(0, 0, 0)
 		self.transition.fadeOut(2)	
 		taskMgr.doMethodLater(2, self.on_change, "on change")
@@ -310,15 +438,33 @@ class SetLevel(FSM):
 		self.save()
 		
 	def on_change(self, task):
+		"""
+		Fonction appelée deux secondes près la fin de la légende qui charge la map.
+		----------------------------------------------------
+		task -> task
+		return -> task.done
+		"""
 		self.current_map = "Village.bam"
 		self.request("Map")
 		return task.done
 	
 	def fade_in(self, task):
+		"""
+		Fonction qui permet de faire des fade in plus tard.
+		----------------------------------------------------
+		task -> task
+		return -> task.done
+		"""
 		self.transition.fadeIn(2)
 		return task.done	
 		
 	def change_legende_image(self, task):
+		"""
+		Fonction qui en fonction de l'avancement dans la légende change l'image en background.
+		-----------------------------------------------------------------------------------
+		task -> task
+		return -> task.cont ou task.done
+		"""
 		if self.text_index == 8:
 			if not self.image:
 				self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
@@ -333,26 +479,59 @@ class SetLevel(FSM):
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------	
 	
 	def enterMap(self):
+		"""
+		Fonction s'activant quand on souhaite charger la map.
+		-----------------------------------------------------
+		return -> None
+		"""
 		self.load_map(self.current_map)
 		
 	def into(self, a):
+		"""
+		Fonction s'activant quand le joueur ou un autre objet from, touche un objet into.
+		-------------------------------------------------------
+		a -> entry (une info sur la collision)
+		return -> None
+		"""
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
-		if b[0:len(b)-7] in self.donnees[self.current_map][1]:
-			self.current_pnj = b[0:len(b)-7]
-		elif b in self.donnees[self.current_map][2]:
-			if type(self.donnees[self.current_map][2][b]) is Portail:
+		if b in self.pnjs:
+			self.current_pnj = b
+		elif b in self.portails:
+			if type(self.portails[b]) is Portail:
 				self.transition.fadeOut(0.5)
-				self.player.setPos(self.donnees[self.current_map][2][b].newpos)
+				self.player.setPos(self.portails[b].newpos)
 				taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
-			elif type(self.donnees[self.current_map][2][b]) is Porte:
+			elif type(self.portails[b]) is Porte:
 				self.current_porte = b
+		elif b.isdigit():
+			b = int(b)
+			if b == 1:
+				if not "epee" in self.player.inventaire:
+					taskMgr.remove("update")
+					self.player.stop()
+					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"))
+					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])	
+					self.accept("finito", s.start)	
 	
-	def augmente(self):
-		self.player.vitesse *= 2
-	def diminue(self):
-		self.player.vitesse /=2			
+	def change_vitesse(self, touche="b"):
+		"""
+		Fonction qui change la vitesse du joueur si on appuie sur la touche b ou si on la relâche.
+		-------------------------------------------------
+		touche -> str
+		return -> None
+		"""
+		if touche == "b":
+			self.player.vitesse *= 2
+		else:	
+			self.player.vitesse /=2			
 			
 	def out(self, a):
+		"""
+		Fonction s'activant quand un objet from qitte un objet into.
+		----------------------------------------------------------------
+		a -> entry (info sur la collision)
+		return -> None
+		"""
 		self.current_pnj = None	
 		self.current_porte = None	
 		
@@ -385,6 +564,12 @@ class SetLevel(FSM):
 		self.player.right = False
 					
 	def update(self, task):
+		"""
+		Fonction appelée à chaque frame pour mettre certaines choses à jour.
+		---------------------------------------------------------
+		task -> task
+		return -> task.cont
+		"""
 		self.player.setZ(self.player, -0.25)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse)
@@ -397,10 +582,18 @@ class SetLevel(FSM):
 		return task.cont	
 			   	
 	def exitMap(self):
+		"""
+		Fonction appelée quand on quitte la map
+		"""
 		self.map.removeNode()
 		self.map = None	
-			
+	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------		
 	def inventaire(self):
+		"""
+		Fonction utilisée pour ouvrir l'inventaire
+		-------------------------------------------
+		return -> None
+		"""
 		self.player.stop()
 		self.index_invent = 0
 		self.player.left = False
@@ -426,37 +619,76 @@ class SetLevel(FSM):
 		self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
+		pos_croix = self.get_pos_croix()
 		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.2, 0, 0.2), pos=Vec3(-1.6, 0, 0.7))
+		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.15, 0, 0.15), pos=Vec3(-1, 0, 0.8))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1.1, 0.72), scale=0.07)
+		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=pos_croix[0])
+		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.lieu_text = OnscreenText(text=pos_croix[1], pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
+		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.6), scale=0.07, fg=(1, 1, 1, 1))
+		self.invent_image = OnscreenImage("../pictures/inventaire.png", scale=Vec3(0.5, 0.5, 0.5), pos=Vec3(0, 0, 0))
 		
+		
+	def get_pos_croix(self):
+		"""
+		Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
+		-----------------------------------------------------------------------
+		return -> Vec3
+		"""
+		if self.current_map == "Village.bam" or self.current_map == "maison_taya.bam" or self.current_map == "maison_terenor.bam":
+			return	Vec3(-0.06, 0, -0.625), "Village Toal"
+		return Vec3(0, 0, 0), "???"	
+			
 	def change_index_invent(self, dir="left"):
+		"""
+		Fonction qui permet de changer de menu d'inventaire
+		-------------------------------------------------
+		dir -> str
+		return -> None
+		"""
 		if dir == "left":
 			if self.index_invent > 0:
 				self.index_invent -= 1
 			else:
-				self.index_invent = 1
+				self.index_invent = 2
 		elif dir == "right":
-			if self.index_invent < 1:
+			if self.index_invent < 2:
 				self.index_invent += 1
 			else:
 				self.index_invent = 0
 									
 	def update_invent(self, task):
-		self.map_image.removeNode()			
-		self.noai_image.removeNode() 
-		self.noai_text.removeNode()
+		"""
+		Fonction appelée à chaque frame dans l'inventaire pour mettre à jour le contenu
+		-----------------------------------------------------------------------------
+		task -> task
+		return -> task.cont
+		"""
+		self.map_image.hide()	
+		self.invent_image.hide()	
+		self.croix_image.hide()			
+		self.noai_image.hide() 
+		self.noai_text.hide()
+		self.lieu_text.hide()
 		if self.index_invent == 0:
-			self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+			self.map_image.show()
+			self.croix_image.show()
+			self.lieu_text.show()
 		elif self.index_invent == 1:
-			self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.2, 0, 0.2), pos=Vec3(-1.6, 0, 0.7))
-			self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-			self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1.1, 0.72), scale=0.07)				
+			self.noai_image.show()
+			self.noai_text.show()	
+		elif self.index_invent == 2:
+			self.invent_image.show()			
 		return task.cont
 		
 	def exit_inventaire(self):
-		self.remove_invent_elements()
+		"""
+		Fonction appelée lorsqu'on qitte l'inventaire
+		--------------------------------------------------
+		return -> None
+		"""
+		self.map_image.getParent().node().removeAllChildren()
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
@@ -475,16 +707,13 @@ class SetLevel(FSM):
 		self.accept("into", self.into)
 		self.accept("out", self.out)
 		self.accept("e", self.inventaire)
-	
-	def remove_invent_elements(self):
-		self.map_image.removeNode()			
-		self.noai_image.removeNode() 
-		self.noai_text.removeNode()
-		del self.map_image
-		del self.noai_image
-		del self.noai_text	
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
 	def enterGenerique(self):
+		"""
+		Fonction activée quand on entre dans le générique.
+		-------------------------------------------------
+		return -> None
+		"""
 		self.music = loader.loadSfx("../sounds/generique.ogg")
 		self.music.setLoop(True)
 		self.music.play()
@@ -492,7 +721,7 @@ class SetLevel(FSM):
 		OnscreenText("Etienne Pacault       Rémi Martinot", pos=(0, -2), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
 		OnscreenText("Noé Mora              Tyméo Bonvicini-Renaud", pos=(0, -2.25), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
 		OnscreenText("Alexandrine Charette", pos=(0, -2.5), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("3D models :", pos=(0, -3.5), scale=(0.15, 0.15, 0.15), fg=(0.65, 0.4, 0, 1)),
+		OnscreenText("Music :", pos=(0, -3.5), scale=(0.15, 0.15, 0.15), fg=(0.65, 0.4, 0, 1)),
 		OnscreenText("Etienne Pacault", pos=(0, -4), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
 		OnscreenText("Special thanks to :", pos=(0, -5), scale=(0.15, 0.15, 0.15), fg=(1, 1, 0, 1)),
 		OnscreenText("Shigeru Miyamoto and Eiji Aonuma", pos=(0, -5.5), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
@@ -504,6 +733,11 @@ class SetLevel(FSM):
 		taskMgr.add(self.update_generique, "update generique")
 		
 	def exitGenerique(self):
+		"""
+		Fonction activée quand on quitte le générique.
+		-------------------------------------------------
+		return -> None
+		"""
 		for text in self.texts_gen:
 			text.removeNode()
 			del text
@@ -511,12 +745,24 @@ class SetLevel(FSM):
 		self.music.stop()
 		
 	def change_to_menu(self, task):
+		"""
+		Fonction qui après le générique permet d'accéder à l'écran titre.
+		------------------------------------------------------------------
+		task -> task
+		return -> task.done
+		"""
 		self.request("Menu")
 		self.transition.fadeIn(2)
 		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 2)).start()
 		return task.done
 		
 	def update_generique(self, task):
+		"""
+		Fonction qui met à jour le générique.
+		--------------------------------------
+		task -> task
+		return -> task.cont ou task.done
+		"""
 		i = 0
 		for text in self.texts_gen:
 			i += 1
@@ -540,13 +786,10 @@ class SetLevel(FSM):
 			self.chapitre = 0
 			self.nom = "Link"
 			self.current_map = "Village.bam"
-			self.coord = [0, 0, 0]
+			self.coord = [200, -200, 6]
 		file = open("save.txt", "wt")
 		info = [self.nom, str(self.chapitre), self.current_map]
-		if self.player:
-			info += [str(self.player.getX()), str(self.player.getY()), str(self.player.getZ())]
-		else:
-			info += ["0", "0", "0"]	
+		info += [str(self.player.getX()), str(self.player.getY()), str(self.player.getZ())]	
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 		
@@ -570,15 +813,15 @@ class SetLevel(FSM):
 				elif i == 3:
 					self.current_map = truc
 				elif i == 4:
-					self.coord[0] = (float(truc))
+					self.player.setX(float(truc))
 				elif i == 5:
-					self.coord[1] = (float(truc))
+					self.player.setY(float(truc))
 				elif i == 6:
-					self.coord[2] = (float(truc))				
+					self.player.setZ(float(truc))				
 			file.close()
 		else:
 			file = open("save.txt", "wt")
-			file.writelines(["Link|0|environment|0|0|0"])
+			file.writelines(["Link|0|Village.bam|200|-200|6"])
 			file.close()	
 
 class Application(ShowBase):
@@ -588,6 +831,7 @@ class Application(ShowBase):
 	def __init__(self):
 		loadPrcFile("config.prc")
 		ShowBase.__init__(self)
+		#PStatClient.connect()
 		base.set_background_color(0, 0, 0, 0)
 		self.set_level = SetLevel()
 		base.disableMouse()

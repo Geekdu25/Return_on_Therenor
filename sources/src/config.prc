@@ -1,8 +1,8 @@
 window-title The legend of Therenor 2
 model-path $MAIN_DIR/../models
-fullscreen #t
+fullscreen #f
 cursor-hidden #f
 want-directtools #f
 want-tk #f
-basic-shaders-only #f
+basic-shaders-only #t
 show-frame-rate-meter false

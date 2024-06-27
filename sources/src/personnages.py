@@ -4,13 +4,17 @@ from FollowCam import FollowCam
 import os
 
 class Player(Actor):
+	"""
+	Classe gérant le joueur.
+	"""
 	def __init__(self):
 		#-------------Initialisation--------------------------------------
 		Actor.__init__(self, "../models/error.bam", {"walk": "../models/error-marche.bam"})
 		#----------------------Noais et autres infos de jeu--------------------------------
 		self.noais = 0
+		self.inventaire = []
 		#--------------------Quelques paramètres simples-----------------------------------
-		self.vitesse = 0.15
+		self.vitesse = 0.1
 		self.walk = False
 		self.reverse = False
 		self.right = False
@@ -39,7 +43,12 @@ class Player(Actor):
 		
 		
 class PNJ(Actor):
+	"""
+	Classe nous servant de base pour tous les pnjs du jeu.
+	On peut bien sûr créer de nouvelles classes qui en héritent.
+	"""
 	def __init__(self, name="error"):
+		#On cherche l'existence des modèles 3D de notre personnage.
 		if os.path.exists(f"../models/{name}.bam"):
 			if os.path.exists(f"../models/{name}-marche.bam"):
 				Actor.__init__(self, f"../models/{name}.bam", {"marche" : f"../models/{name}-marche.bam"})
@@ -49,7 +58,7 @@ class PNJ(Actor):
 			Actor.__init__(self, name)	
 		self.name = name		
 		self.setScale(6)
-		self.col = CollisionNode(f"{name}_sphere")
+		self.col = CollisionNode(name)
 		self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
 		self.col.setIntoCollideMask(BitMask32.bit(0)) 
 		self.col_np = self.attachNewNode(self.col)
