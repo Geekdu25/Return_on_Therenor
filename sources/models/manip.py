@@ -1,11 +1,11 @@
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 def write():
-	model.writeBamFile("maison_taya.bam")
+	model.writeBamFile("lit.bam")
 loadPrcFileData("", "want-directtools #t")
 loadPrcFileData("", "want-tk #t")
 base = ShowBase()
-model = loader.loadModel("maison_taya.bam")
+model = loader.loadModel("maison_terenor.bam")
 #------------------Changer l'orientation d'un modèle----------------------
 "mon_modèle.setHpr(0, 270, 180)"
 #--------------------Trouver un objet du modèle et le supprimer-------------
