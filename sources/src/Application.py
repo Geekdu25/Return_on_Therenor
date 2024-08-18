@@ -286,8 +286,7 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
-		for trigger in self.triggers:
-			trigger.removeSolid()
+		for trigger in self.triggers: 
 			del trigger
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
