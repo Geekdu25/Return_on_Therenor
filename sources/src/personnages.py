@@ -14,7 +14,7 @@ class Player(Actor):
 		self.noais = 0
 		self.inventaire = []
 		#--------------------Quelques paramètres simples-----------------------------------
-		self.vitesse = 0.1
+		self.vitesse = 5
 		self.walk = False
 		self.reverse = False
 		self.right = False

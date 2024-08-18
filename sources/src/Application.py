@@ -570,15 +570,18 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
-		self.player.setZ(self.player, -0.25)
+		if self.player.getZ() > 0: 
+		  self.player.setZ(self.player, -0.25)
+		else:
+		  self.player.setZ(self.player, 0.5)  
 		if self.player.walk:
-			self.player.setY(self.player, -self.player.vitesse)
+			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:
-			self.player.setY(self.player, self.player.vitesse)
+			self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
 		if self.player.right:
-			self.player.setH(self.player, -self.player.vitesse*2)
+			self.player.setH(self.player, -self.player.vitesse*2*globalClock.getDt())
 		if self.player.left:
-			self.player.setH(self.player, self.player.vitesse*2)	
+			self.player.setH(self.player, self.player.vitesse*2*globalClock.getDt())	
 		return task.cont	
 			   	
 	def exitMap(self):
@@ -717,19 +720,27 @@ class SetLevel(FSM):
 		self.music = loader.loadSfx("../sounds/generique.ogg")
 		self.music.setLoop(True)
 		self.music.play()
-		self.texts_gen = [OnscreenText("Programming : ", pos=(0, -1.5), scale=(0.15, 0.15, 0.15), fg=(1, 0, 0, 1)),
-		OnscreenText("Etienne Pacault       Rémi Martinot", pos=(0, -2), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Noé Mora              Tyméo Bonvicini-Renaud", pos=(0, -2.25), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Alexandrine Charette", pos=(0, -2.5), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Music :", pos=(0, -3.5), scale=(0.15, 0.15, 0.15), fg=(0.65, 0.4, 0, 1)),
-		OnscreenText("Etienne Pacault", pos=(0, -4), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Special thanks to :", pos=(0, -5), scale=(0.15, 0.15, 0.15), fg=(1, 1, 0, 1)),
-		OnscreenText("Shigeru Miyamoto and Eiji Aonuma", pos=(0, -5.5), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("for The legend of Zelda which has us inspired", pos=(0, -5.75), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Special thanks to Aimeline Cara", pos=(0, -6), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("The Carnegie Mellon University who update the Panda 3D source code", pos=(0, -6.5), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("Disney who has the great idea to create Panda 3D", pos=(0, -6.75), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1)),
-		OnscreenText("...and to everyone we forgot...thank you ! :-)", pos=(0, -7), scale=(0.1, 0.1, 0.1), fg=(1, 1, 1, 1))]
+		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémi Martinot     Noé Mora", False), ("Etienne Pacault", False),
+		("Music :", True),  ("Etienne Pacault", False),
+		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False),
+		("And thank you to everyone we probably forgot ! :-)", False)]
+		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1)]
+		i_color = 0
+		y = -1
+		self.texts_gen = []
+		s = (0.15, 0.15, 0.15)
+		c = (1, 0, 0, 1)
+		for text in self.texts_gen_1:
+			if text[1]:
+				s = (0.15, 0.15, 0.15)
+				c = colors[i_color]
+				i_color += 1
+				y -= 0.5
+			else:
+				s = (0.1, 0.1, 0.1)
+				c = (1, 1, 1, 1)
+				y -= 0.25	
+			self.texts_gen.append(OnscreenText(text[0], pos=(0, y), scale=s , fg=(c)))
 		taskMgr.add(self.update_generique, "update generique")
 		
 	def exitGenerique(self):
@@ -766,7 +777,7 @@ class SetLevel(FSM):
 		i = 0
 		for text in self.texts_gen:
 			i += 1
-			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+task.time/5000)
+			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/5000)
 			if i == len(self.texts_gen) -1:
 				if text.getTextPos()[1] > 2:
 					taskMgr.doMethodLater(2, self.change_to_menu, "change to menu")
