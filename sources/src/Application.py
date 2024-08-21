@@ -40,6 +40,8 @@ class SetLevel(FSM):
 	def __init__(self):
 		FSM.__init__(self, "LevelManager") #Initialisation de botre classe en initialisat la super classe.
 		base.cTrav = CollisionTraverser() #Notre gestionnaire de collisions.
+		base.cTrav.setRespectPrevTransform(True)
+		#base.cTrav.showCollisions(render)
 		self.ok = False    
 		self.reading = False    
 		self.termine = True
@@ -569,10 +571,10 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
-		if self.player.getZ() > 0: 
+		if self.player.getZ() > 50: 
 		  self.player.setZ(self.player, -0.25)
 		else:
-		  self.player.setZ(self.player, 0.5)  
+		  self.player.setZ(10)  
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:

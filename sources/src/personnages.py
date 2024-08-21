@@ -20,7 +20,7 @@ class Player(Actor):
 		self.right = False
 		self.left = False
 		self.setHpr(90, 0, 0)
-		self.setScale(22)
+		self.setScale(30)
 		self.followcam = None
 		#---------------Section de gestion de l'épée-------------------------
 		self.rightHand = self.exposeJoint(None, 'modelRoot', 'hand.R')

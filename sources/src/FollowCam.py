@@ -59,7 +59,7 @@ class FollowCam():
 			self.camera.setPos(self.dummy.getPos())
 			self.camera.setY(self.dummy, 40)
 			self.camera.setZ(self.dummy, 25)
-			self.camera.lookAt(self.target.getPos() + Vec3(0, 0, 7))
+			self.camera.lookAt(self.target.getPos() + Vec3(0, 0, 20))
 		elif self.vue == 1:
 			self.camera.setPos(self.target.getPos())
 			self.camera.setY(self.camera, 5)
