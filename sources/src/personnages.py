@@ -12,11 +12,12 @@ class Player(Actor):
 		Actor.__init__(self, "../models/error.bam", {"walk": "../models/error-marche.bam"})
 		#----------------------Noais et autres infos de jeu--------------------------------
 		self.noais = 0
+		self.nom = "Link"
 		self.vies = 3
 		self.maxvies = 3
 		self.inventaire = []
 		#--------------------Quelques paramètres simples-----------------------------------
-		self.vitesse = 4
+		self.vitesse = 2.5
 		self.walk = False
 		self.reverse = False
 		self.right = False

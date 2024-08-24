@@ -70,7 +70,7 @@ class SetLevel(FSM):
 		self.letter_index = 0
 		self.messages = []
 		self.sons_messages = []
-		self.nom = "Link"
+		self.current_point = 1
 		self.read()
 		self.transition = Transitions(loader)
 		base.taskMgr.add(self.update_text, "update_text")
@@ -397,7 +397,7 @@ class SetLevel(FSM):
 		"""
 		self.acceptDlg.cleanup()
 		if clickedYes:
-			self.nom = self.nameEnt.get()
+			self.player.nom = self.nameEnt.get()
 			self.nameLbl.removeNode()        
 			del self.nameLbl
 			self.helloBtn.removeNode()        
@@ -536,7 +536,6 @@ class SetLevel(FSM):
 		a -> entry (info sur la collision)
 		return -> None
 		"""
-		self.player.vies -= 0.5
 		self.current_pnj = None	
 		self.current_porte = None	
 		
@@ -806,7 +805,6 @@ class SetLevel(FSM):
 		
 	#-------------------------Fonctions gérant le game over---------------------------------------
 	def launch_game_over(self, task):
-		self.transition.fadeIn(0.5)
 		self.request("Game_over")
 		return task.done
 		
@@ -814,10 +812,10 @@ class SetLevel(FSM):
 		render.node().removeAllChildren()
 		render2d.node().removeAllChildren()
 		self.player.vies = 3
+		self.transition.fadeIn(0.5)
 		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
 		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
 		self.accept("a", self.change_to_map)
-		return None
 	
 	def change_to_map(self):
 		self.load_map(self.current_map)
@@ -836,12 +834,10 @@ class SetLevel(FSM):
 		"""	
 		if reset:
 			self.chapitre = 0
-			self.nom = "Link"
+			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
-			self.coord = [200, -200, 6]
 		file = open("save.txt", "wt")
-		info = [self.nom, str(self.chapitre), self.current_map]
-		info += [str(self.player.getX()), str(self.player.getY()), str(self.player.getZ())]	
+		info = [self.player.nom, str(self.chapitre), self.current_point, str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 		
@@ -859,21 +855,19 @@ class SetLevel(FSM):
 			for truc in file.read().split("|"):
 				i += 1
 				if i == 1:
-					self.nom = truc
+					self.player.nom = truc
 				elif i == 2:
 					self.chapitre = int(truc)
 				elif i == 3:
-					self.current_map = truc
+					self.current_point = truc				
 				elif i == 4:
-					self.player.setX(float(truc))
+					self.player.vies = float(truc)
 				elif i == 5:
-					self.player.setY(float(truc))
-				elif i == 6:
-					self.player.setZ(float(truc))				
+					self.player.maxvies = int(truc)		
 			file.close()
 		else:
 			file = open("save.txt", "wt")
-			file.writelines(["Link|0|Village.bam|200|-200|6"])
+			file.writelines(["Link|0|maison_terenor.bam|1|3|3"])
 			file.close()	
 
 class Application(ShowBase):
