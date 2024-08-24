@@ -1,9 +1,9 @@
 {
-"Village.bam":["../sounds/village.ogg", {"error":[200, -200, 0]}, {"maison_taya.bam":["porte", [1320, -996, 6], 50, 10, 150, [830, -470, 6]],
+"Village.bam":["../sounds/village.ogg", {"error":[200, -200, 0]}, {"maison_taya.bam":["porte", [1320, -996, 6], 60, 15, 150, [830, -470, 6]],
  	"maison_terenor.bam":["porte", [2015, -2515, 6], 50, 10, 150, [820, -240, 6]],
         "verdantia.bam":["portail", [1780, -5500, 10], 350, 20, 100, [0, 0, 0]]}],
 "maison_taya.bam":["../sounds/house.ogg", {"error":[200, -200, 0]}, {"Village.bam":["porte", [840, -500, 6], 50, 10, 150, [1300, -1035, 6]]}],
-"maison_terenor.bam":["../sounds/house.ogg", {"error":[200, -200, 0]}, {"Village.bam":["porte", [835, -15, 6], 50, 10, 150, [2015, -2480, 6]]}],
+"maison_terenor.bam":["../sounds/house.ogg", {"error":[200, -200, 0]}, {"Village.bam":["porte", [835, -15, 6], 50, 10, 150, [2015, -2470, 6]]}],
 "verdantia.bam":["../sounds/Verdantia.ogg", {}, {"Village.bam":["portail", [0, 0, 0], 200, 200, 200, [3000, 3000, 6]]}],
 "ignirift.bam":["../sounds/Ignirift.ogg", {}, {"Village.bam":["portail", [0, 0, 0], 200, 200, 200, [3000, 3000, 6]]}],
 "marelys.bam":["../sounds/Marelys.ogg", {}, {"Village.bam":["portail", [0, 0, 0], 200, 200, 200, [3000, 3000, 6]]}],
