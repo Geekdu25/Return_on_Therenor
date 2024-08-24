@@ -98,9 +98,12 @@ class SetLevel(FSM):
 			self.player.reverse = False
 			self.player.left = False
 			self.player.right = False
-			self.player.setPos(self.portails[self.current_porte].newpos)
+			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])			 
 	
+	def set_player_pos_later(self, newpos = (0, 0, 0)):
+		self.player.setPos(newpos)
+		
 	def check_interact_dial(self):
 		"""
 		"Petite" fonction qui permet de passer les dialogues.
@@ -182,7 +185,7 @@ class SetLevel(FSM):
 		
 	#-------------Fonction de chargement de map--------------------------------	
 	
-	def load_map(self, map="environment", task=None):
+	def load_map(self, map="maison_terenor.bam", task=None):
 		"""
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
@@ -260,14 +263,14 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()	
 		self.accept("escape", sys.exit)	
-		self.accept("arrow_up", self.heroswalk)
-		self.accept("arrow_up-up", self.herosstop)
-		self.accept("arrow_down", self.heroswalki)
-		self.accept("arrow_down-up", self.herosstopi)
-		self.accept("arrow_left", self.beginleft)
-		self.accept("arrow_left-up", self.endleft)
-		self.accept("arrow_right", self.beginright)
-		self.accept("arrow_right-up", self.endright)
+		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
+		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
+		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
+		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
+		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
+		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
+		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept("a", self.player.followcam.change_vue)	
 		self.accept("b", self.change_vitesse, extraArgs=["b"])
 		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
@@ -445,7 +448,7 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.done
 		"""
-		self.current_map = "Village.bam"
+		self.current_map = "maison_terenor.bam"
 		self.request("Map")
 		return task.done
 	
@@ -533,36 +536,31 @@ class SetLevel(FSM):
 		a -> entry (info sur la collision)
 		return -> None
 		"""
+		self.player.vies -= 0.5
 		self.current_pnj = None	
 		self.current_porte = None	
 		
-	def heroswalk(self):
-		self.player.walk = True
-		self.player.loop("walk")
-		
-	def herosstop(self):
-		self.player.walk = False
-		self.player.stop()	
-		
-	def heroswalki(self):
-		self.player.reverse = True
-		self.player.loop("walk")
-		
-	def herosstopi(self):
-		self.player.reverse = False
-		self.player.stop()	
-		
-	def beginleft(self):
-		self.player.left = True
-		
-	def beginright(self):
-		self.player.right = True	
-		
-	def endleft(self):
-		self.player.left = False
-	
-	def endright(self):
-		self.player.right = False
+	def touche_pave(self, message="arrow_up"):
+		if message == "arrow_up":
+			self.player.walk = True
+			self.player.loop("walk")
+		elif message == "arrow_up-up":  
+			self.player.walk = False
+			self.player.stop()	
+		elif message == "arrow_down":  
+			self.player.reverse = True
+			self.player.loop("walk")
+		elif message == "arrow_down-up":	
+			self.player.reverse = False
+			self.player.stop()
+		elif message == "arrow_left":
+			self.player.left = True
+		elif message == "arrow_right":
+			self.player.right = True
+		elif message == "arrow_left-up":
+			self.player.left = False
+		elif message == "arrow_right-up":	
+			self.player.right = False
 					
 	def update(self, task):
 		"""
@@ -571,6 +569,25 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
+		#render2d.node().removeAllChildren()
+		x = -1.2
+		for loop in range(self.player.maxvies):
+			OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
+			x += 0.12
+		x = -1.2	
+		for loop in range(int(self.player.vies)):
+			OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
+			x += 0.12	
+		if self.player.vies % 1 != 0:
+			x = -1.2+0.12*int(self.player.vies)
+			OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
+		if self.player.vies > self.player.maxvies:
+			self.player.vies = self.player.maxvies
+		elif self.player.vies <= 0:
+			self.transition.fadeOut(0.5)
+			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
+		OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
+		OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72)).setTransparency(TransparencyAttrib.MAlpha)	
 		if self.player.getZ() > 50: 
 		  self.player.setZ(self.player, -0.25)
 		else:
@@ -591,21 +608,11 @@ class SetLevel(FSM):
 		"""
 		self.map.removeNode()
 		self.map = None	
-	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------		
-	def inventaire(self):
-		"""
-		Fonction utilisée pour ouvrir l'inventaire
-		-------------------------------------------
-		return -> None
-		"""
-		self.player.stop()
-		self.index_invent = 0
 		self.player.left = False
 		self.player.right = False
 		self.player.reverse = False
 		self.player.walk = False
 		taskMgr.remove("update")
-		self.accept("escape", self.exit_inventaire)
 		self.ignore("arrow_up")
 		self.ignore("arrow_up-up")
 		self.ignore("arrow_down")
@@ -619,8 +626,18 @@ class SetLevel(FSM):
 		self.ignore("b-up")
 		self.ignore("into")
 		self.ignore("out")
+		self.player.stop()
+	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------		
+	def inventaire(self):
+		"""
+		Fonction utilisée pour ouvrir l'inventaire
+		-------------------------------------------
+		return -> None
+		"""
+		self.index_invent = 0		
 		self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
 		self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+		self.accept("escape", self.exit_inventaire)
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
 		pos_croix = self.get_pos_croix()
@@ -697,14 +714,14 @@ class SetLevel(FSM):
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
 		self.accept("escape", sys.exit)	
-		self.accept("arrow_up", self.heroswalk)
-		self.accept("arrow_up-up", self.herosstop)
-		self.accept("arrow_down", self.heroswalki)
-		self.accept("arrow_down-up", self.herosstopi)
-		self.accept("arrow_left", self.beginleft)
-		self.accept("arrow_left-up", self.endleft)
-		self.accept("arrow_right", self.beginright)
-		self.accept("arrow_right-up", self.endright)
+		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
+		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
+		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
+		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
+		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
+		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
+		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept("a", self.player.followcam.change_vue)	
 		self.accept("b", self.change_vitesse, extraArgs=["b"])
 		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
@@ -725,7 +742,7 @@ class SetLevel(FSM):
 		("Music :", True),  ("Etienne Pacault", False),
 		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False),
 		("And thank you to everyone we probably forgot ! :-)", False)]
-		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1)]
+		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
 		i_color = 0
 		y = -1
 		self.texts_gen = []
@@ -786,6 +803,29 @@ class SetLevel(FSM):
 					Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 					return task.done
 		return task.cont	
+		
+	#-------------------------Fonctions gérant le game over---------------------------------------
+	def launch_game_over(self, task):
+		self.transition.fadeIn(0.5)
+		self.request("Game_over")
+		return task.done
+		
+	def enterGame_over(self):
+		render.node().removeAllChildren()
+		render2d.node().removeAllChildren()
+		self.player.vies = 3
+		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
+		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		self.accept("a", self.change_to_map)
+		return None
+	
+	def change_to_map(self):
+		self.load_map(self.current_map)
+		self.request("Map")
+		
+	def exitGame_over(self):		
+		self.text_game_over.removeNode()
+		self.text_game_over_2.removeNode()
 				
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
 	def save(self, reset=False):
@@ -797,7 +837,7 @@ class SetLevel(FSM):
 		if reset:
 			self.chapitre = 0
 			self.nom = "Link"
-			self.current_map = "Village.bam"
+			self.current_map = "maison_terenor.bam"
 			self.coord = [200, -200, 6]
 		file = open("save.txt", "wt")
 		info = [self.nom, str(self.chapitre), self.current_map]
