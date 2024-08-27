@@ -6,3 +6,4 @@ want-directtools #f
 want-tk #f
 basic-shaders-only #t
 show-frame-rate-meter false
+icon-filename $MAIN_DIR/icon.ico
