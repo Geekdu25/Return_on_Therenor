@@ -488,6 +488,33 @@ class SetLevel(FSM):
 		-----------------------------------------------------
 		return -> None
 		"""
+		self.coeurs_vides = []
+		self.coeurs_moitie = []
+		self.coeur_pleins = []
+		x = -1.2
+		for loop in range(10):
+			self.coeurs_vides.append(OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			x += 0.12
+		x = -1.2	
+		for loop in range(10):
+			self.coeurs_pleins.append(OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			x += 0.12	
+		x = -1.2
+		for loop in range(10):
+			self.coeurs_moitie.append(OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			x+= 0.12
+		if self.player.vies > self.player.maxvies:
+			self.player.vies = self.player.maxvies
+		elif self.player.vies <= 0:
+			self.transition.fadeOut(0.5)
+			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
+		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
+		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
+		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
+		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
 		self.load_map(self.current_map)
 		
 	def into(self, a):
@@ -513,7 +540,7 @@ class SetLevel(FSM):
 				if not "epee" in self.player.inventaire:
 					taskMgr.remove("update")
 					self.player.stop()
-					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"))
+					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
 					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])	
 					self.accept("finito", s.start)	
 	
@@ -568,25 +595,26 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
-		#render2d.node().removeAllChildren()
-		x = -1.2
+		#---------------Section éléments 2D-------------------------------------------
+		self.noai_text.show()
+		self.noai_image.show()
+		self.croix_image.hide()
+		self.lieu_text.hide()
+		self.map_image.hide()
+		for coeur in self.coeurs_vides:
+                                        coeur.hide()
+		for coeur in self.coeurs_moitie:
+                                        coeur.hide()
+		for coeur in self.coeurs_pleins:
+                                        coeur.hide()
 		for loop in range(self.player.maxvies):
-			OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
-			x += 0.12
-		x = -1.2	
-		for loop in range(int(self.player.vies)):
-			OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
-			x += 0.12	
-		if self.player.vies % 1 != 0:
-			x = -1.2+0.12*int(self.player.vies)
-			OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha)
-		if self.player.vies > self.player.maxvies:
-			self.player.vies = self.player.maxvies
-		elif self.player.vies <= 0:
-			self.transition.fadeOut(0.5)
-			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
-		OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
-		OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72)).setTransparency(TransparencyAttrib.MAlpha)	
+                                        self.coeurs_vides[loop].show()
+		if self.player.vies%1 != 0:        
+                                        for loop in range(self.player.vies+1):
+                                                self.coeurs_moitie[loop].show()
+		for loop in range(self.player.vies):
+                                        self.coeurs_pleins[loop].show()
+		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 50: 
 		  self.player.setZ(self.player, -0.25)
 		else:
@@ -639,17 +667,9 @@ class SetLevel(FSM):
 		self.accept("escape", self.exit_inventaire)
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
-		pos_croix = self.get_pos_croix()
-		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.15, 0, 0.15), pos=Vec3(-1, 0, 0.8))
-		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=pos_croix[0])
-		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.lieu_text = OnscreenText(text=pos_croix[1], pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
-		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.6), scale=0.07, fg=(1, 1, 1, 1))
-		self.invent_image = OnscreenImage("../pictures/inventaire.png", scale=Vec3(0.5, 0.5, 0.5), pos=Vec3(0, 0, 0))
-		
-		
+		self.croix_image.setPos(self.get_pos_croix()[0])
+		self.lieu_text.setText(self.get_pos_croix()[1])
+				
 	def get_pos_croix(self):
 		"""
 		Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
@@ -671,9 +691,9 @@ class SetLevel(FSM):
 			if self.index_invent > 0:
 				self.index_invent -= 1
 			else:
-				self.index_invent = 2
+				self.index_invent = 1
 		elif dir == "right":
-			if self.index_invent < 2:
+			if self.index_invent < 1:
 				self.index_invent += 1
 			else:
 				self.index_invent = 0
@@ -686,20 +706,23 @@ class SetLevel(FSM):
 		return -> task.cont
 		"""
 		self.map_image.hide()	
-		self.invent_image.hide()	
 		self.croix_image.hide()			
 		self.noai_image.hide() 
 		self.noai_text.hide()
 		self.lieu_text.hide()
+		for coeur in self.coeurs_pleins:
+                                        coeur.hide()
+                                    for coeur in self.coeurs_moitie:
+                                        coeur.hide()
+                                    for coeur in self.coeur_vides:
+                                        coeur.hide()    
 		if self.index_invent == 0:
 			self.map_image.show()
 			self.croix_image.show()
 			self.lieu_text.show()
 		elif self.index_invent == 1:
 			self.noai_image.show()
-			self.noai_text.show()	
-		elif self.index_invent == 2:
-			self.invent_image.show()			
+			self.noai_text.show()			
 		return task.cont
 		
 	def exit_inventaire(self):
@@ -708,7 +731,6 @@ class SetLevel(FSM):
 		--------------------------------------------------
 		return -> None
 		"""
-		self.map_image.getParent().node().removeAllChildren()
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
@@ -818,7 +840,6 @@ class SetLevel(FSM):
 		self.accept("a", self.change_to_map)
 	
 	def change_to_map(self):
-		self.load_map(self.current_map)
 		self.request("Map")
 		
 	def exitGame_over(self):		
