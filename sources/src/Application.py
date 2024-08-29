@@ -448,7 +448,9 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.done
 		"""
-		self.current_map = "maison_terenor.bam"
+		if self.current_point == "1":
+			self.current_map = "maison_terenor.bam"
+			self.player.setPos(50, 50, 6)
 		self.request("Map")
 		return task.done
 	
@@ -490,18 +492,24 @@ class SetLevel(FSM):
 		"""
 		self.coeurs_vides = []
 		self.coeurs_moitie = []
-		self.coeur_pleins = []
+		self.coeurs_pleins = []
 		x = -1.2
 		for loop in range(10):
-			self.coeurs_vides.append(OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			a = OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_vides.append(a)
 			x += 0.12
 		x = -1.2	
 		for loop in range(10):
-			self.coeurs_pleins.append(OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			a = OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_pleins.append(a)
 			x += 0.12	
 		x = -1.2
 		for loop in range(10):
-			self.coeurs_moitie.append(OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9)).setTransparency(TransparencyAttrib.MAlpha))
+			a = OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_moitie.append(a)
 			x+= 0.12
 		if self.player.vies > self.player.maxvies:
 			self.player.vies = self.player.maxvies
@@ -524,6 +532,7 @@ class SetLevel(FSM):
 		a -> entry (une info sur la collision)
 		return -> None
 		"""
+		self.player.vies -= 0.5
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b in self.pnjs:
 			self.current_pnj = b
@@ -602,18 +611,18 @@ class SetLevel(FSM):
 		self.lieu_text.hide()
 		self.map_image.hide()
 		for coeur in self.coeurs_vides:
-                                        coeur.hide()
+			coeur.hide()
 		for coeur in self.coeurs_moitie:
-                                        coeur.hide()
+			coeur.hide()	
 		for coeur in self.coeurs_pleins:
-                                        coeur.hide()
+			coeur.hide()
 		for loop in range(self.player.maxvies):
-                                        self.coeurs_vides[loop].show()
+			self.coeurs_vides[loop].show()
 		if self.player.vies%1 != 0:        
-                                        for loop in range(self.player.vies+1):
-                                                self.coeurs_moitie[loop].show()
-		for loop in range(self.player.vies):
-                                        self.coeurs_pleins[loop].show()
+			for loop in range(int(self.player.vies)+1):
+				self.coeurs_moitie[loop].show()
+		for loop in range(int(self.player.vies)):
+			self.coeurs_pleins[loop].show()
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 50: 
 		  self.player.setZ(self.player, -0.25)
@@ -711,11 +720,11 @@ class SetLevel(FSM):
 		self.noai_text.hide()
 		self.lieu_text.hide()
 		for coeur in self.coeurs_pleins:
-                                        coeur.hide()
-                                    for coeur in self.coeurs_moitie:
-                                        coeur.hide()
-                                    for coeur in self.coeur_vides:
-                                        coeur.hide()    
+			coeur.hide()
+		for coeur in self.coeurs_moitie:
+			coeur.hide()
+		for coeur in self.coeurs_vides:
+			coeur.hide()    
 		if self.index_invent == 0:
 			self.map_image.show()
 			self.croix_image.show()
@@ -883,12 +892,14 @@ class SetLevel(FSM):
 					self.current_point = truc				
 				elif i == 4:
 					self.player.vies = float(truc)
+					if self.player.vies < 3:
+						self.player.vies = 3
 				elif i == 5:
 					self.player.maxvies = int(truc)		
 			file.close()
 		else:
 			file = open("save.txt", "wt")
-			file.writelines(["Link|0|maison_terenor.bam|1|3|3"])
+			file.writelines(["Link|0|1|3|3"])
 			file.close()	
 
 class Application(ShowBase):

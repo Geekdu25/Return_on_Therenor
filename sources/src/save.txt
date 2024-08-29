@@ -1,1 +1,1 @@
-Etienne|2|maison_terenor.bam|3.0|3|
+Etienne|2|1|3.0|3|
