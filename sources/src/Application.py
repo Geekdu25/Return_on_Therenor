@@ -71,11 +71,64 @@ class SetLevel(FSM):
 		self.messages = []
 		self.sons_messages = []
 		self.current_point = 1
+		self.load_gui()
 		self.read()
 		self.transition = Transitions(loader)
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
 		self.accept("escape", sys.exit)
+	
+	def load_gui(self):
+		"""
+		Fonction qui nous permet de charger les éléments 2D (car on n'a besoin de les charger qu'une fois)
+		--------------------------------------------------
+		return -> None
+		"""
+		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
+		self.text_game_over.hide()
+		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		self.text_game_over_2.hide()
+		self.coeurs_vides = []
+		self.coeurs_moitie = []
+		self.coeurs_pleins = []
+		x = -1.2
+		for loop in range(10):
+			a = OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_vides.append(a)
+			a.hide()
+			x += 0.12
+		x = -1.2	
+		for loop in range(10):
+			a = OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_pleins.append(a)
+			a.hide()
+			x += 0.12	
+		x = -1.2
+		for loop in range(10):
+			a = OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a.setTransparency(TransparencyAttrib.MAlpha)
+			self.coeurs_moitie.append(a)
+			a.hide()
+			x+= 0.12
+		if self.player.vies > self.player.maxvies:
+			self.player.vies = self.player.maxvies
+		elif self.player.vies <= 0:
+			self.transition.fadeOut(0.5)
+			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
+		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
+		self.noai_text.hide()
+		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
+		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.noai_image.hide()
+		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		self.map_image.hide()
+		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
+		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
+		self.croix_image.hide()
+		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))	
+		self.lieu_text.hide()
 		
 	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------	
 	def check_interact(self):
@@ -450,7 +503,7 @@ class SetLevel(FSM):
 		"""
 		if self.current_point == "1":
 			self.current_map = "maison_terenor.bam"
-			self.player.setPos(50, 50, 6)
+			self.player.setPos(200, -200, 6)
 		self.request("Map")
 		return task.done
 	
@@ -490,39 +543,6 @@ class SetLevel(FSM):
 		-----------------------------------------------------
 		return -> None
 		"""
-		self.coeurs_vides = []
-		self.coeurs_moitie = []
-		self.coeurs_pleins = []
-		x = -1.2
-		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_vides.append(a)
-			x += 0.12
-		x = -1.2	
-		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_pleins.append(a)
-			x += 0.12	
-		x = -1.2
-		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_moitie.append(a)
-			x+= 0.12
-		if self.player.vies > self.player.maxvies:
-			self.player.vies = self.player.maxvies
-		elif self.player.vies <= 0:
-			self.transition.fadeOut(0.5)
-			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
-		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
-		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
-		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
-		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
 		self.load_map(self.current_map)
 		
 	def into(self, a):
@@ -619,8 +639,7 @@ class SetLevel(FSM):
 		for loop in range(self.player.maxvies):
 			self.coeurs_vides[loop].show()
 		if self.player.vies%1 != 0:        
-			for loop in range(int(self.player.vies)+1):
-				self.coeurs_moitie[loop].show()
+			self.coeurs_moitie[int(self.player.vies)].show()
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
 		#-----------------------Section mouvements du joueur------------------------
@@ -636,6 +655,11 @@ class SetLevel(FSM):
 			self.player.setH(self.player, -self.player.vitesse*2*globalClock.getDt())
 		if self.player.left:
 			self.player.setH(self.player, self.player.vitesse*2*globalClock.getDt())	
+		#--------------------Sections gestion des vies-----------------------------
+		if self.player.vies <= 0:
+			self.transition.fadeOut(0.5)
+			taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")	
+			return task.done
 		return task.cont	
 			   	
 	def exitMap(self):
@@ -663,6 +687,7 @@ class SetLevel(FSM):
 		self.ignore("into")
 		self.ignore("out")
 		self.player.stop()
+		
 	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------		
 	def inventaire(self):
 		"""
@@ -840,21 +865,39 @@ class SetLevel(FSM):
 		return task.done
 		
 	def enterGame_over(self):
-		render.node().removeAllChildren()
-		render2d.node().removeAllChildren()
+		render.hide()
+		self.noai_text.hide()
+		self.noai_image.hide()
+		for coeur in self.coeurs_pleins:
+			coeur.hide()
+		for coeur in self.coeurs_moitie:
+			coeur.hide()
+		for coeur in self.coeurs_vides:
+			coeur.hide()		
+		self.music.stop()
+		self.music = loader.loadSfx("../sounds/game_over.ogg")
+		self.music.play()
 		self.player.vies = 3
 		self.transition.fadeIn(0.5)
-		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
-		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		self.text_game_over.show()
+		self.text_game_over_2.show()
 		self.accept("a", self.change_to_map)
 	
 	def change_to_map(self):
-		self.request("Map")
+		self.transition.fadeOut(0.5)
+		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
+		base.taskMgr.doMethodLater(0.5, self.apparaitre_render, "render_appearing")
+		base.taskMgr.doMethodLater(1, self.load_map, "request", extraArgs=[self.current_map])
 		
-	def exitGame_over(self):		
+	def exitGame_over(self):
+		print("ok")
+	
+	def apparaitre_render(self, task):
+		render.show()				
 		self.text_game_over.removeNode()
 		self.text_game_over_2.removeNode()
-				
+		return task.done
+					
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
 	def save(self, reset=False):
 		"""
