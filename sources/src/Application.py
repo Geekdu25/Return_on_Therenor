@@ -48,6 +48,7 @@ class SetLevel(FSM):
 		self.image = None
 		self.map = None
 		self.player = None
+		self.epee = None
 		self.debug = False
 		self.music = None #La musique d'ambiance
 		self.son = None #Le son joué lors des dialogues.
@@ -60,8 +61,9 @@ class SetLevel(FSM):
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.chapitre = 0 #Où en sommes-nous dans l'histoire ?
-		self.player = Player() #Trèèèèèèèèès important : notre joueur?
+		self.player = Player()
 		self.player.reparentTo(render)
+		self.player.hide()
 		self.current_map = "Village.bam"
 		self.texts = ["It's a secret to everybody."]
 		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
@@ -76,7 +78,6 @@ class SetLevel(FSM):
 		self.transition = Transitions(loader)
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
-		self.accept("escape", sys.exit)
 	
 	def load_gui(self):
 		"""
@@ -96,21 +97,18 @@ class SetLevel(FSM):
 			a = OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_vides.append(a)
-			a.hide()
 			x += 0.12
 		x = -1.2	
 		for loop in range(10):
 			a = OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_pleins.append(a)
-			a.hide()
 			x += 0.12	
 		x = -1.2
 		for loop in range(10):
 			a = OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_moitie.append(a)
-			a.hide()
 			x+= 0.12
 		if self.player.vies > self.player.maxvies:
 			self.player.vies = self.player.maxvies
@@ -118,18 +116,26 @@ class SetLevel(FSM):
 			self.transition.fadeOut(0.5)
 			taskMgr.doMethodLater(1, self.launch_game_over, "request")	
 		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))	
-		self.noai_text.hide()
 		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.noai_image.hide()
 		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.map_image.hide()
 		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
 		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.croix_image.hide()
 		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))	
-		self.lieu_text.hide()
-		
+		self.hide_gui()
+	
+	def hide_gui(self):
+		for a in self.coeurs_pleins:
+			a.hide()
+		for a in self.coeurs_moitie:
+			a.hide()
+		for a in self.coeurs_vides:
+			a.hide()		
+		self.noai_text.hide()
+		self.noai_image.hide()
+		self.map_image.hide()
+		self.croix_image.hide()
+		self.lieu_text.hide()	
 	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------	
 	def check_interact(self):
 		"""
@@ -235,126 +241,7 @@ class SetLevel(FSM):
 			if self.letter_index < len(self.texts[self.text_index]):
 				self.letter_index += 1
 		return task.cont  
-		
-	#-------------Fonction de chargement de map--------------------------------	
 	
-	def load_map(self, map="maison_terenor.bam", task=None):
-		"""
-		Fonction qui nous permet de charger une map
-		-------------------------------------------
-		map -> str
-		return -> None
-		"""
-		for pnj in self.pnjs:
-			pnj.cleanup()
-			pnj.removeNode()
-			del pnj
-		self.current_pnj = None
-		self.current_porte = None
-		self.pnjs = []
-		self.portails = {}
-		#-------Section de gestion de la map en elle-même-----
-		self.current_map = map
-		if self.map:
-			self.map.removeNode()
-			del self.map
-		self.map = loader.loadModel(map)			
-		self.map.reparentTo(render)	
-		#-------------La skybox-----------------
-		self.skybox = loader.loadModel("skybox.bam")
-		self.skybox.setScale(10000)
-		self.skybox.setBin('background', 1)
-		self.skybox.setDepthWrite(0)
-		self.skybox.setLightOff()
-		self.skybox.reparentTo(render)
-		#--------------------Chargement du fichier json-------------
-		pnj_file = open("../json/data.json")
-		data = json.load(pnj_file)
-		pnj_file.close()	
-		#-----Section de gestion de la musique------
-		if self.music is not None:
-			self.music.stop()
-			self.music = None
-		self.music = base.loader.loadSfx(data[self.current_map][0])
-		self.music.setLoop(True)
-		self.music.play()
-		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
-		if self.player.followcam is None:
-			self.player.create_camera()
-		#---------------------------SECTION DE GESTION DES COLLISIONS------------------
-		self.map.setCollideMask(BitMask32.bit(0))
-		if self.debug:
-			base.cTrav.showCollisions(render)
-		self.antimur.addCollider(self.player.col_np, self.player)
-		base.cTrav.addCollider(self.player.col_np, self.antimur)	
-		#----------Les portes-----------------------
-		for portail in data[self.current_map][2]:
-			noeud = CollisionNode(portail)
-			info = data[self.current_map][2][portail]
-			if info[0] == "porte":
-				solid = Porte(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
-			else:
-				solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))	
-			noeud.addSolid(solid) 
-			self.portails[portail] = solid
-			noeud.setCollideMask(BitMask32.bit(0)) 
-			noeud_np = self.map.attachNewNode(noeud)
-		#------------------Les pnjs--------------------------------
-		for pnj in data[self.current_map][1]:
-			info = data[self.current_map][1][pnj]
-			if pnj == "Taya":
-				a = Taya()
-				a.setPos(info[0], info[1], info[2])
-				self.pnjs.append(a)
-			else:
-				a = PNJ(pnj)
-				a.setPos(info[0], info[1], info[2])
-				self.pnjs.append(a)	
-		self.load_triggers(map)		
-		if self.debug:
-			base.enableMouse()
-		else:
-			base.disableMouse()	
-		self.accept("escape", sys.exit)	
-		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
-		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
-		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
-		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
-		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
-		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
-		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
-		self.accept("a", self.player.followcam.change_vue)	
-		self.accept("b", self.change_vitesse, extraArgs=["b"])
-		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
-		self.accept("into", self.into)
-		self.accept("out", self.out)
-		self.accept("e", self.inventaire)	
-		taskMgr.add(self.update, "update")	
-		del data
-		self.transition.fadeIn(2)
-		if task is not None:
-			return task.done	
-					
-	def load_triggers(self, map="Village.bam"):
-		"""
-		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
-		C'est à dire les collisions "scénaristiques".
-		------------------------------------------------------
-		map -> str
-		return -> None
-		"""
-		for trigger in self.triggers: 
-			del trigger
-		if map == "Village.bam":
-			noeud = CollisionNode("1")
-			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
-			solid.setTangible(False)
-			noeud.addSolid(solid)
-			noeud.setIntoCollideMask(BitMask32.bit(0))
-			self.triggers.append(noeud) 
-			chemin_de_noeud = render.attachNewNode(noeud)				
-			
 	#---------------------------Ecran titre--------------------------------			
 	def enterMenu(self):
 		"""
@@ -362,6 +249,9 @@ class SetLevel(FSM):
 		------------------------------------------
 		return -> None
 		"""
+		if self.player.followcam is not None:
+			self.player.followcam.set_active(False)
+		self.hide_gui()	
 		self.music = base.loader.loadSfx("../sounds/menu.ogg")
 		self.music.setLoop(True)
 		self.music.play()
@@ -370,8 +260,12 @@ class SetLevel(FSM):
 		self.textObject1.setFont(self.font)
 		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
 		self.textObject2.setFont(self.font)
-		self.epee = loader.loadModel("sword.bam")
-		self.epee.reparentTo(render)
+		if self.epee is None:
+			self.epee = loader.loadModel("sword.bam")
+			self.epee.reparentTo(render)
+		else:
+			self.epee.show()	
+		base.cam.setPos(0, 0, 0)
 		base.cam.lookAt(self.epee)
 		self.epee.setPosHprScale(0.00, 5.00, 0.00, 0.00, 270, 90.00, 1.00, 1.00, 1.00)
 		interval = self.epee.hprInterval(2, Vec3(0, 270, 90), startHpr = Vec3(0, 270, 0))
@@ -380,6 +274,7 @@ class SetLevel(FSM):
 		interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
 		s = Sequence(interval, interval2, interval3, interval4)
 		s.loop()	
+		self.accept("escape", sys.exit)
 		self.accept("f1", self.verify)
 		self.accept("r", self.save, [True])
 		
@@ -390,7 +285,7 @@ class SetLevel(FSM):
 		self.music.stop()
 		self.textObject1.remove_node()	
 		self.textObject2.remove_node()	
-		self.epee.remove_node()	
+		self.epee.hide()
 	
 	def verify(self):
 		"""
@@ -533,16 +428,140 @@ class SetLevel(FSM):
 				self.image = None	
 		if self.text_index > 11:
 			return task.done
-		return task.cont	 
+		return task.cont	 	
+	#-------------Fonction de chargement de map--------------------------------		
+	def load_map(self, map="maison_terenor.bam", task=None):
+		"""
+		Fonction qui nous permet de charger une map
+		-------------------------------------------
+		map -> str
+		return -> None
+		"""
+		for pnj in self.pnjs:
+			pnj.cleanup()
+			pnj.removeNode()
+			del pnj
+		self.current_pnj = None
+		self.current_porte = None
+		self.pnjs = []
+		self.portails = {}
+		#-------Section de gestion de la map en elle-même-----
+		self.current_map = map
+		if self.map:
+			self.map.removeNode()
+			del self.map
+		self.map = loader.loadModel(map)			
+		self.map.reparentTo(render)	
+		#-------------La skybox-----------------
+		self.skybox = loader.loadModel("skybox.bam")
+		self.skybox.setScale(10000)
+		self.skybox.setBin('background', 1)
+		self.skybox.setDepthWrite(0)
+		self.skybox.setLightOff()
+		self.skybox.reparentTo(render)
+		#--------------------Chargement du fichier json-------------
+		pnj_file = open("../json/data.json")
+		data = json.load(pnj_file)
+		pnj_file.close()	
+		#-----Section de gestion de la musique------
+		if self.music is not None:
+			self.music.stop()
+			self.music = None
+		self.music = base.loader.loadSfx(data[self.current_map][0])
+		self.music.setLoop(True)
+		self.music.play()
+		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
+		if self.player.followcam is None:
+			self.player.create_camera()
+		if not self.player.followcam.active:
+			self.player.followcam.set_active(True)	
+		#---------------------------SECTION DE GESTION DES COLLISIONS------------------
+		self.map.setCollideMask(BitMask32.bit(0))
+		if self.debug:
+			base.cTrav.showCollisions(render)
+		self.antimur.addCollider(self.player.col_np, self.player)
+		base.cTrav.addCollider(self.player.col_np, self.antimur)	
+		#----------Les portes-----------------------
+		for portail in data[self.current_map][2]:
+			noeud = CollisionNode(portail)
+			info = data[self.current_map][2][portail]
+			if info[0] == "porte":
+				solid = Porte(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
+			else:
+				solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))	
+			noeud.addSolid(solid) 
+			self.portails[portail] = solid
+			noeud.setCollideMask(BitMask32.bit(0)) 
+			noeud_np = self.map.attachNewNode(noeud)
+		#------------------Les pnjs--------------------------------
+		for pnj in data[self.current_map][1]:
+			info = data[self.current_map][1][pnj]
+			if pnj == "Taya":
+				a = Taya()
+				a.setPos(info[0], info[1], info[2])
+				self.pnjs.append(a)
+			else:
+				a = PNJ(pnj)
+				a.setPos(info[0], info[1], info[2])
+				self.pnjs.append(a)	
+		self.load_triggers(map)		
+		if self.debug:
+			base.enableMouse()
+		else:
+			base.disableMouse()	
+		#-------------Lumière----------------------------
+		#aLight = AmbientLight("ambient")
+		#aNode = render.attachNewNode(aLight)
+		#render.setLight(aNode)	
+		self.accept("escape", self.request, extraArgs=["Menu"])	
+		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
+		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
+		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
+		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
+		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
+		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
+		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
+		self.accept("a", self.player.followcam.change_vue)	
+		self.accept("b", self.change_vitesse, extraArgs=["b"])
+		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
+		self.accept("into", self.into)
+		self.accept("out", self.out)
+		self.accept("e", self.inventaire)	
+		taskMgr.add(self.update, "update")	
+		del data
+		self.transition.fadeIn(2)
+		if task is not None:
+			return task.done	
+					
+	def load_triggers(self, map="Village.bam"):
+		"""
+		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
+		C'est à dire les collisions "scénaristiques".
+		------------------------------------------------------
+		map -> str
+		return -> None
+		"""
+		for trigger in self.triggers: 
+			del trigger
+		if map == "Village.bam":
+			noeud = CollisionNode("1")
+			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
+			solid.setTangible(False)
+			noeud.addSolid(solid)
+			noeud.setIntoCollideMask(BitMask32.bit(0))
+			self.triggers.append(noeud) 
+			chemin_de_noeud = render.attachNewNode(noeud)				
+			
 		
-	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------	
-	
+	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------		
 	def enterMap(self):
 		"""
 		Fonction s'activant quand on souhaite charger la map.
 		-----------------------------------------------------
 		return -> None
 		"""
+		self.player.show()
 		self.load_map(self.current_map)
 		
 	def into(self, a):
@@ -552,7 +571,6 @@ class SetLevel(FSM):
 		a -> entry (une info sur la collision)
 		return -> None
 		"""
-		self.player.vies -= 0.5
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b in self.pnjs:
 			self.current_pnj = b
@@ -667,6 +685,8 @@ class SetLevel(FSM):
 		Fonction appelée quand on quitte la map
 		"""
 		self.map.removeNode()
+		self.skybox.removeNode()
+		self.player.hide()
 		self.map = None	
 		self.player.left = False
 		self.player.right = False
@@ -768,7 +788,7 @@ class SetLevel(FSM):
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
-		self.accept("escape", sys.exit)	
+		self.accept("escape", self.request, extraArgs=["Menu"])	
 		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
 		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
 		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])

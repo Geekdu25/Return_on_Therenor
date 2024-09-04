@@ -12,6 +12,7 @@ class FollowCam():
 		self.turnRate = 2.2
 		self.vue = 0
 		self.camera = camera
+		self.active = True
 		camera.node().getLens().setFov(120)
 		self.target = target
 		taskMgr.add(self.updateCamera, "updateCamera" + target.getName())
@@ -35,8 +36,10 @@ class FollowCam():
 		return -> None
 		"""
 		if active:
+			self.active = True
 			taskMgr.add(self.updateCamera, "updateCamera" + self.target.getName())
 		else:
+			self.active = False
 			taskMgr.remove("updateCamera")			
 
 	def updateCamera(self, task):
@@ -63,7 +66,7 @@ class FollowCam():
 		elif self.vue == 1:
 			self.camera.setPos(self.target.getPos())
 			self.camera.setY(self.camera, 5)
-			self.camera.setZ(self.camera, 35)
+			self.camera.setZ(self.camera, 45)
 			self.camera.lookAt(self.camera.getPos() + Vec3(0, -10, 0))
 			self.camera.setH(self.target.getH()+180)
 		return task.cont
