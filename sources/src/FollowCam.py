@@ -37,6 +37,7 @@ class FollowCam():
 		"""
 		if active:
 			self.active = True
+			base.cam.node().getLens().setFov(120)
 			taskMgr.add(self.updateCamera, "updateCamera" + self.target.getName())
 		else:
 			self.active = False

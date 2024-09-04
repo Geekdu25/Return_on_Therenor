@@ -55,7 +55,8 @@ class SetLevel(FSM):
 		self.current_pnj = None #Variable nous indiquant quel pnj on touche
 		self.pnjs = [] #Liste dans laquelle sont stockés ous les pnjs de la map
 		self.current_porte = None #La porte actuellement touchée par le joueur
-		self.portails = {} #Dictionnaure contenant les portails.
+		self.skybox = None
+		self.portails = {} #Dictionnaire contenant les portails.
 		self.triggers = []
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		self.antimur.addInPattern("into")
@@ -66,7 +67,6 @@ class SetLevel(FSM):
 		self.player.hide()
 		self.current_map = "Village.bam"
 		self.texts = ["It's a secret to everybody."]
-		self.dialogues_pnj = {"error":["I am Error.", "And you, what's your name ?"], "Taya":["Je crois bien que je suis la seule habitante de ce village..."]}
 		self.font = loader.loadFont("arial.bam") #Notre police
 		self.text_index = 0
 		self.letter_index = 0
@@ -249,6 +249,9 @@ class SetLevel(FSM):
 		------------------------------------------
 		return -> None
 		"""
+		self.transition.fadeIn(1)
+		if self.music is not None:
+			Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()	
 		if self.player.followcam is not None:
 			self.player.followcam.set_active(False)
 		self.hide_gui()	
@@ -260,12 +263,10 @@ class SetLevel(FSM):
 		self.textObject1.setFont(self.font)
 		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
 		self.textObject2.setFont(self.font)
-		if self.epee is None:
-			self.epee = loader.loadModel("sword.bam")
-			self.epee.reparentTo(render)
-		else:
-			self.epee.show()	
+		self.epee = loader.loadModel("sword.bam")
+		self.epee.reparentTo(base.cam)	
 		base.cam.setPos(0, 0, 0)
+		base.cam.node().getLens().setFov(70)
 		base.cam.lookAt(self.epee)
 		self.epee.setPosHprScale(0.00, 5.00, 0.00, 0.00, 270, 90.00, 1.00, 1.00, 1.00)
 		interval = self.epee.hprInterval(2, Vec3(0, 270, 90), startHpr = Vec3(0, 270, 0))
@@ -285,7 +286,8 @@ class SetLevel(FSM):
 		self.music.stop()
 		self.textObject1.remove_node()	
 		self.textObject2.remove_node()	
-		self.epee.hide()
+		self.epee.removeNode()
+		del self.epee
 	
 	def verify(self):
 		"""
@@ -453,6 +455,8 @@ class SetLevel(FSM):
 		self.map = loader.loadModel(map)			
 		self.map.reparentTo(render)	
 		#-------------La skybox-----------------
+		if self.skybox is not None:
+			self.skybox.removeNode()
 		self.skybox = loader.loadModel("skybox.bam")
 		self.skybox.setScale(10000)
 		self.skybox.setBin('background', 1)
@@ -513,7 +517,7 @@ class SetLevel(FSM):
 		#aLight = AmbientLight("ambient")
 		#aNode = render.attachNewNode(aLight)
 		#render.setLight(aNode)	
-		self.accept("escape", self.request, extraArgs=["Menu"])	
+		self.accept("escape", self.confirm_quit)	
 		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
 		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
 		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
@@ -707,7 +711,21 @@ class SetLevel(FSM):
 		self.ignore("into")
 		self.ignore("out")
 		self.player.stop()
+	
+	def confirm_quit(self):
+		self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non suvegardées seront effacés)", command = self.quit_confirm)
 		
+	def quit_confirm(self, clickedYes):
+		self.quitDlg.cleanup()		
+		if clickedYes:
+			self.read()
+			self.transition.fadeOut(0.5)
+			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
+			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
+	
+	def return_to_menu(self, task):
+		self.request("Menu")
+		return task.done		
 	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------		
 	def inventaire(self):
 		"""
@@ -788,7 +806,7 @@ class SetLevel(FSM):
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
-		self.accept("escape", self.request, extraArgs=["Menu"])	
+		self.accept("escape", self.confirm_quit)	
 		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
 		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
 		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
