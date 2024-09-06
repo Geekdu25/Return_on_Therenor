@@ -1,4 +1,3 @@
-#Importation des modules
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.fsm.FSM import FSM
@@ -15,7 +14,7 @@ from monsters import *
 from objects import *
 import os, sys, json
 
-#----------------------Classes supplémentaires-------------------------------------------------
+
 class Portail(CollisionBox):
 	"""
 	Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
@@ -33,41 +32,35 @@ class Porte(CollisionBox):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
 		
-#----------------------------Notre gestionnaire de jeu----------------------------------------------		
 class SetLevel(FSM):
 	"""
 	Partez du principe que cette classe sera le coeur du jeu.
 	Tout le script principal s'y trouvera.
 	"""
 	def __init__(self):
-		#---------------------Initialisation--------------------------
-		FSM.__init__(self, "LevelManager")
-		#-----------------Gestion des collisions---------------------------------------------
-		base.cTrav = CollisionTraverser()
-		#base.cTrav.showCollisions(render) #Décommentez cette ligne si vous souhaitez voir les collisions s'afficher.
-		self.current_porte = None
-		self.portails = {}
-		self.triggers = []
-		self.antimur = CollisionHandlerPusher()
-		self.antimur.addInPattern("into")
-		self.antimur.addOutPattern("out")
-		#------------------Variables nécessaires au fonctionnement de la boîte de dialogue----------------
+		FSM.__init__(self, "LevelManager") #Initialisation de botre classe en initialisat la super classe.
+		base.cTrav = CollisionTraverser() #Notre gestionnaire de collisions.
+		base.cTrav.setRespectPrevTransform(True)
+		#base.cTrav.showCollisions(render)
 		self.ok = False    
 		self.reading = False    
 		self.termine = True
-		#------------------------Autres variables (qui doivent être initialisées pour ne pas faire crash le programme)------------------
 		self.image = None
 		self.map = None
 		self.player = None
 		self.epee = None
-		self.skybox = None
 		self.debug = False
-		#---------------------Musique et sons---------------------------
-		self.music = None
-		self.son = None
-		#--------------------Gestion des pnj---------------------------------
-		self.current_pnj = None
-		self.pnjs = []
+		self.music = None #La musique d'ambiance
+		self.son = None #Le son joué lors des dialogues.
+		self.current_pnj = None #Variable nous indiquant quel pnj on touche
+		self.pnjs = [] #Liste dans laquelle sont stockés ous les pnjs de la map
+		self.current_porte = None #La porte actuellement touchée par le joueur
+		self.skybox = None
+		self.portails = {} #Dictionnaire contenant les portails.
+		self.triggers = []
+		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
+		self.antimur.addInPattern("into")
+		self.antimur.addOutPattern("out")
 		self.chapitre = 0 #Où en sommes-nous dans l'histoire ?
 		self.player = Player()
 		self.player.reparentTo(render)
@@ -681,9 +674,9 @@ class SetLevel(FSM):
 		if self.player.reverse:
 			self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
 		if self.player.right:
-			self.player.setH(self.player, -self.player.vitesse*2*globalClock.getDt())
+			self.player.setH(self.player, -self.player.vitesse*10*globalClock.getDt())
 		if self.player.left:
-			self.player.setH(self.player, self.player.vitesse*2*globalClock.getDt())	
+			self.player.setH(self.player, self.player.vitesse*10*globalClock.getDt())	
 		#--------------------Sections gestion des vies-----------------------------
 		if self.player.vies <= 0:
 			self.transition.fadeOut(0.5)
@@ -695,6 +688,7 @@ class SetLevel(FSM):
 		"""
 		Fonction appelée quand on quitte la map
 		"""
+		self.music.stop()
 		self.map.removeNode()
 		self.skybox.removeNode()
 		self.player.hide()
