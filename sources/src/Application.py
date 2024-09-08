@@ -575,6 +575,7 @@ class SetLevel(FSM):
 		a -> entry (une info sur la collision)
 		return -> None
 		"""
+		self.player.vies -= 0.5
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b in self.pnjs:
 			self.current_pnj = b
@@ -829,7 +830,7 @@ class SetLevel(FSM):
 		-------------------------------------------------
 		return -> None
 		"""
-		self.music = loader.loadSfx("../sounds/generique.ogg")
+		self.music = loader.loadSfx("../sounds/Thème_de_Therenor.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémi Martinot     Noé Mora", False), ("Etienne Pacault", False),
@@ -926,15 +927,19 @@ class SetLevel(FSM):
 		self.transition.fadeOut(0.5)
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 		base.taskMgr.doMethodLater(0.5, self.apparaitre_render, "render_appearing")
-		base.taskMgr.doMethodLater(1, self.load_map, "request", extraArgs=[self.current_map])
+		#base.taskMgr.doMethodLater(1, self.load_map, "request", extraArgs=[self.current_map])
+		self.request("Map")
 		
 	def exitGame_over(self):
-		print("ok")
+		self.music.stop()
+		self.text_game_over.hide()
+		self.text_game_over_2.hide()
+		render.show()
 	
 	def apparaitre_render(self, task):
 		render.show()				
-		self.text_game_over.removeNode()
-		self.text_game_over_2.removeNode()
+		self.text_game_over.hide()
+		self.text_game_over_2.hide()
 		return task.done
 					
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
