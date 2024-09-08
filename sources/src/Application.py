@@ -31,6 +31,15 @@ class Porte(CollisionBox):
 	def __init__(self, center=(1320, -1000, 6), sx=50, sy=10, sz=150, newpos=(830, -460, 6)):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
+
+class Save_bloc(CollisionBox):
+	"""
+	Ce type de collision sera utilisé pour sauvegarder.
+	"""		
+	def __init__(self, nom=1, center=(0, 0, 0)):
+		CollisionBox.__init__(self, (center[0], center[1], center[2]), 15, 15, 30)
+		self.nom = nom
+		
 		
 class SetLevel(FSM):
 	"""
@@ -58,6 +67,7 @@ class SetLevel(FSM):
 		self.skybox = None
 		self.portails = {} #Dictionnaire contenant les portails.
 		self.triggers = []
+		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
@@ -75,6 +85,7 @@ class SetLevel(FSM):
 		self.current_point = 1
 		self.load_gui()
 		self.read()
+		self.actual_statue = None
 		self.transition = Transitions(loader)
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
@@ -158,7 +169,9 @@ class SetLevel(FSM):
 			self.player.left = False
 			self.player.right = False
 			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
-			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])			 
+			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])	
+		if self.actual_statue is not None:
+			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)			 
 	
 	def set_player_pos_later(self, newpos = (0, 0, 0)):
 		self.player.setPos(newpos)
@@ -306,7 +319,8 @@ class SetLevel(FSM):
 			self.transition.fadeOut(2)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 			taskMgr.doMethodLater(2, self.on_change, "on change")
-	#-------------------------------Paramètres en début de partie-----------------------------------
+			
+	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
 		"""
 		Fonction qui s'active quand on entre dans les paramètres en début de partie.
@@ -400,7 +414,7 @@ class SetLevel(FSM):
 		"""
 		if self.current_point == "1":
 			self.current_map = "maison_terenor.bam"
-			self.player.setPos(200, -200, 6)
+			self.player.setPos(200, -110, 6)
 		self.request("Map")
 		return task.done
 	
@@ -447,6 +461,9 @@ class SetLevel(FSM):
 		self.current_porte = None
 		self.pnjs = []
 		self.portails = {}
+		for statue in self.save_statues:
+			self.save_statues[statue].removeSolid()
+		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
 		if self.map:
@@ -508,6 +525,12 @@ class SetLevel(FSM):
 				a = PNJ(pnj)
 				a.setPos(info[0], info[1], info[2])
 				self.pnjs.append(a)	
+		for save in data[self.current_map][3]:
+			noeud = CollisionNode(save)
+			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
+			self.save_statues[save] = noeud		
+			noeud.setCollideMask(BitMask32.bit(0))
+			noeud_np = self.map.attachNewNode(noeud)
 		self.load_triggers(map)		
 		if self.debug:
 			base.enableMouse()
@@ -575,7 +598,6 @@ class SetLevel(FSM):
 		a -> entry (une info sur la collision)
 		return -> None
 		"""
-		self.player.vies -= 0.5
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b in self.pnjs:
 			self.current_pnj = b
@@ -594,7 +616,10 @@ class SetLevel(FSM):
 					self.player.stop()
 					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
 					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])	
-					self.accept("finito", s.start)	
+					self.accept("finito", s.start)
+		elif b in self.save_statues:
+			self.actual_statue = b
+							
 	
 	def change_vitesse(self, touche="b"):
 		"""
@@ -617,6 +642,7 @@ class SetLevel(FSM):
 		"""
 		self.current_pnj = None	
 		self.current_porte = None	
+		self.actual_statue = None
 		
 	def touche_pave(self, message="arrow_up"):
 		if message == "arrow_up":
@@ -839,7 +865,7 @@ class SetLevel(FSM):
 		("And thank you to everyone we probably forgot ! :-)", False)]
 		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
 		i_color = 0
-		y = -1
+		y = -0.9
 		self.texts_gen = []
 		s = (0.15, 0.15, 0.15)
 		c = (1, 0, 0, 1)
@@ -890,7 +916,7 @@ class SetLevel(FSM):
 		i = 0
 		for text in self.texts_gen:
 			i += 1
-			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/5000)
+			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/20)
 			if i == len(self.texts_gen) -1:
 				if text.getTextPos()[1] > 2:
 					taskMgr.doMethodLater(2, self.change_to_menu, "change to menu")
@@ -942,7 +968,7 @@ class SetLevel(FSM):
 		self.text_game_over_2.hide()
 		return task.done
 					
-    #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
+    #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------			
 	def save(self, reset=False):
 		"""
 		Fonction qui permet de sauvegarder les données de la partie.
@@ -957,6 +983,14 @@ class SetLevel(FSM):
 		info = [self.player.nom, str(self.chapitre), self.current_point, str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
+		
+	def will_save(self, clickedYes):
+		"""
+		Fonction qui s'active si on touche une statue de sauvegarde.
+		"""
+		self.saveDlg.cleanup()
+		if clickedYes:
+			self.save()	
 		
 
 	
