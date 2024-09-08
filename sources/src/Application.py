@@ -171,6 +171,7 @@ class SetLevel(FSM):
 			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])	
 		if self.actual_statue is not None:
+			taskMgr.remove("update")
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)			 
 	
 	def set_player_pos_later(self, newpos = (0, 0, 0)):
@@ -461,8 +462,6 @@ class SetLevel(FSM):
 		self.current_porte = None
 		self.pnjs = []
 		self.portails = {}
-		for statue in self.save_statues:
-			self.save_statues[statue].removeSolid()
 		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
@@ -741,15 +740,18 @@ class SetLevel(FSM):
 		self.player.stop()
 	
 	def confirm_quit(self):
+		taskMgr.remove("update")
 		self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non suvegardées seront effacés)", command = self.quit_confirm)
 		
 	def quit_confirm(self, clickedYes):
 		self.quitDlg.cleanup()		
+		taskMgr.add(self.update, "update")
 		if clickedYes:
 			self.read()
 			self.transition.fadeOut(0.5)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
+			
 	
 	def return_to_menu(self, task):
 		self.request("Menu")
@@ -989,10 +991,17 @@ class SetLevel(FSM):
 		Fonction qui s'active si on touche une statue de sauvegarde.
 		"""
 		self.saveDlg.cleanup()
+		taskMgr.add(self.update, "update")
 		if clickedYes:
 			self.save()	
+			self.myOkDialog = OkDialog(text="Sauvegarde effectuée !", command = self.reupdate)
 		
-
+	def reupdate(self, inutile):
+		"""
+		Fonction pour remettre la fonction de mise à jour en éxécution.
+		"""
+		self.myOkDialog.cleanup()
+		taskMgr.add(self.update, "update")
 	
 	def read(self):
 		"""
