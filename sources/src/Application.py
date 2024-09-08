@@ -524,6 +524,8 @@ class SetLevel(FSM):
 				a = PNJ(pnj)
 				a.setPos(info[0], info[1], info[2])
 				self.pnjs.append(a)	
+		for pnj in self.pnjs:
+			pnj.reparentTo(render)		
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
 			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
@@ -600,6 +602,7 @@ class SetLevel(FSM):
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
 		if b in self.pnjs:
 			self.current_pnj = b
+			a.node().s.stop()
 		elif b in self.portails:
 			if type(self.portails[b]) is Portail:
 				self.transition.fadeOut(0.5)
@@ -639,7 +642,10 @@ class SetLevel(FSM):
 		a -> entry (info sur la collision)
 		return -> None
 		"""
-		self.current_pnj = None	
+		if self.current_pnj is not None:
+			if self.current_pnj.node().s is not None:
+				s.loop()
+			self.current_pnj = None	
 		self.current_porte = None	
 		self.actual_statue = None
 		
@@ -718,6 +724,10 @@ class SetLevel(FSM):
 		self.map.removeNode()
 		self.skybox.removeNode()
 		self.player.hide()
+		for pnj in self.pnjs:
+			pnj.cleanup()
+			pnj.removeNode()
+		self.pnjs = []	
 		self.map = None	
 		self.player.left = False
 		self.player.right = False

@@ -2,6 +2,7 @@ from direct.actor.Actor import Actor
 from panda3d.core import *
 from FollowCam import FollowCam
 import os
+from direct.interval.IntervalGlobal import *
 
 class Player(Actor):
 	"""
@@ -62,6 +63,7 @@ class PNJ(Actor):
 		else:
 			Actor.__init__(self, name)	
 		self.name = name		
+		self.s = None
 		self.setScale(6)
 		self.col = CollisionNode(name)
 		self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
@@ -71,5 +73,10 @@ class PNJ(Actor):
 class Taya(PNJ):
 	def __init__(self):
 		PNJ.__init__(self, name="Taya")
-		self.setScale(0.2)
-		self.setPos(-150, 150, 0)		
+		self.setScale(0.45)	
+		self.s = Sequence(self.posInterval(10, Vec3(200, -500, 6), startPos=Vec3(200, -200, 6)), self.hprInterval(1, Vec3(180, 0, 0), startHpr=Vec3(0, 0, 0)), self.posInterval(10, Vec3(200, -200, 6), startPos=Vec3(200, -500, 6)), self.hprInterval(1, Vec3(0, 0, 0), startHpr=Vec3(180, 0, 0)))
+		self.s.loop()
+		self.col = CollisionNode("Taya")
+		self.col.addSolid(CollisionSphere((0, 0, 15), 50)) 
+		self.col.setIntoCollideMask(BitMask32.bit(0)) 
+		self.col_np = self.attachNewNode(self.col)
