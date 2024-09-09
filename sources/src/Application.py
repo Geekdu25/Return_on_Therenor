@@ -778,7 +778,21 @@ class SetLevel(FSM):
 		-------------------------------------------
 		return -> None
 		"""
+		self.player.stop()
+		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
 		self.index_invent = 0
+		self.ignore("arrow_up")
+		self.ignore("arrow_up-up")
+		self.ignore("arrow_down")
+		self.ignore("arrow_down-up")
+		self.ignore("arrow_left-up")
+		self.ignore("arrow_right-up")
+		self.ignore("a")
+		self.ignore("b")
+		self.ignore("b-up")
+		self.ignore("into")
+		self.ignore("out")
+		self.ignore("e")
 		self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
 		self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
 		self.accept("escape", self.exit_inventaire)
