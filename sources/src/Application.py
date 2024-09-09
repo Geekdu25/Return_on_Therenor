@@ -779,6 +779,7 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.player.stop()
+		taskMgr.remove("update")
 		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
 		self.index_invent = 0
 		self.ignore("arrow_up")
