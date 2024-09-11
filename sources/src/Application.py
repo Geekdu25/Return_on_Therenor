@@ -361,7 +361,7 @@ class SetLevel(FSM):
 			else:
 				noms.append("Fichier vide")	
 		self.player.nom = "Link"							
-		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08)) for i in range(3)]	
+		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]	
 		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18)) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]	
 		self.transition.fadeIn(1)
@@ -378,13 +378,14 @@ class SetLevel(FSM):
 			button.removeNode()
 		del self.buttons_erase		
 	
-	def verify(self):
+	def verify(self, file):
 		"""
 		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
 		On agira de différentes manières selon le chapitre auquel le joueur est rendu.
 		---------------------------------------------------------------------------
 		return -> None
 		"""
+		self.read(file=file)
 		if self.chapitre == 0:
 			self.request("Init")
 		elif self.chapitre == 1:
