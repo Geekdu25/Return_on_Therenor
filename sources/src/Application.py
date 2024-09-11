@@ -575,6 +575,7 @@ class SetLevel(FSM):
 		#aLight = AmbientLight("ambient")
 		#aNode = render.attachNewNode(aLight)
 		#render.setLight(aNode)
+		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
 		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
 		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
@@ -633,9 +634,10 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
+		#-----------Si on touche un pnj--------------------------
 		if b in self.pnjs:
 			self.current_pnj = b
-			a.node().s.stop()
+			b.node().s.stop()
 		elif b in self.portails:
 			if type(self.portails[b]) is Portail:
 				self.transition.fadeOut(0.5)
@@ -643,6 +645,7 @@ class SetLevel(FSM):
 				taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
 			elif type(self.portails[b]) is Porte:
 				self.current_porte = b
+		#--------------Si on touche un trigger------------------------------		
 		elif b.isdigit():
 			b = int(b)
 			if b == 1:
@@ -652,6 +655,7 @@ class SetLevel(FSM):
 					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
 					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])
 					self.accept("finito", s.start)
+		#--------------Si on touche une statue de sauvegarde----------------------------------			
 		elif b in self.save_statues:
 			self.actual_statue = b
 
@@ -683,6 +687,9 @@ class SetLevel(FSM):
 		self.actual_statue = None
 
 	def touche_pave(self, message="arrow_up"):
+		"""
+  		Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
+  		"""
 		if message == "arrow_up":
 			self.player.walk = True
 			self.player.loop("walk")
