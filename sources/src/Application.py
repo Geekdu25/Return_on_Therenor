@@ -1056,7 +1056,7 @@ class SetLevel(FSM):
 				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "wt")
 		else:
 				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "wt")	
-		info = [self.player.nom, str(self.chapitre), self.current_point, str(self.player.vies), str(self.player.maxvies)]
+		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 
