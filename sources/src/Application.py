@@ -12,7 +12,7 @@ from direct.actor.Actor import Actor
 from personnages import *
 from monsters import *
 from objects import *
-import os, sys, json
+import os, sys, json, platform
 
 
 class Portail(CollisionBox):
@@ -82,6 +82,7 @@ class SetLevel(FSM):
 		self.letter_index = 0
 		self.messages = []
 		self.sons_messages = []
+		self.objects = []
 		self.current_point = 1
 		self.load_gui()
 		self.read()
@@ -460,6 +461,9 @@ class SetLevel(FSM):
 			pnj.cleanup()
 			pnj.removeNode()
 			del pnj
+		for objet in self.objects:
+			objet.object.removeNode()
+		self.objects = []		
 		self.current_pnj = None
 		self.current_porte = None
 		self.pnjs = []
@@ -481,7 +485,19 @@ class SetLevel(FSM):
 		self.skybox.setDepthWrite(0)
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
-		#--------------------Chargement du fichier json-------------
+		#--------------------Chargement du premier fichier json---------------
+		objects_file = open("../json/objects.json")
+		data = json.load(objects_file)
+		objects_file.close()
+		if self.current_map in data:
+			for object in data[self.current_map]:
+				if object == "lit.bam":
+					objet = Lit()
+				objet.object.reparentTo(render)
+				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
+				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
+				self.objects.append(objet)
+		#--------------------Chargement du deuxième fichier json-------------
 		pnj_file = open("../json/data.json")
 		data = json.load(pnj_file)
 		pnj_file.close()
@@ -729,6 +745,9 @@ class SetLevel(FSM):
 		for pnj in self.pnjs:
 			pnj.cleanup()
 			pnj.removeNode()
+		for objet in self.objects:
+			objet.object.removeNode()	
+		self.objects = []	
 		self.pnjs = []
 		self.map = None
 		self.player.left = False
@@ -1011,7 +1030,10 @@ class SetLevel(FSM):
 			self.chapitre = 0
 			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
-		file = open("save.txt", "wt")
+		if platform.system() == "Windows":
+				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "wt")
+		else:
+				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "wt")	
 		info = [self.player.nom, str(self.chapitre), self.current_point, str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
@@ -1039,8 +1061,11 @@ class SetLevel(FSM):
 		-------------------------------------------------------------------
 		return -> None
 		"""
-		if os.path.exists("save.txt"):
-			file = open("save.txt", "rt")
+		if (os.path.exists(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt") and platform.system() == "Windows") or (os.path.exists(f"/home/{os.getlogin()}/.Therenor/save.txt") and platform.system() == "Linux"):
+			if platform.system() == "Windows":
+				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "rt")
+			else:
+				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "rt")	
 			i = 0
 			for truc in file.read().split("|"):
 				i += 1
@@ -1058,7 +1083,12 @@ class SetLevel(FSM):
 					self.player.maxvies = int(truc)
 			file.close()
 		else:
-			file = open("save.txt", "wt")
+			if platform.system() == "Windows":
+				os.mkdir(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor")
+				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "wt")
+			else:
+				os.mkdir(f"/home/{os.getlogin()}/.Therenor")
+				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "wt")	
 			file.writelines(["Link|0|1|3|3"])
 			file.close()
 
