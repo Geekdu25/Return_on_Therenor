@@ -457,7 +457,7 @@ class SetLevel(FSM):
 			if not self.image:
 				self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
 		if self.text_index == 11:
-			if type(self.image) is not None:
+			if self.image != None:
 				self.image.removeNode()
 				self.image = None
 		if self.text_index > 11:
