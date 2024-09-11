@@ -93,8 +93,8 @@ class SetLevel(FSM):
 		self.objects = []
 		self.current_point = 1
 		self.load_gui()
-		self.read()
 		self.actual_statue = None
+		self.actual_file = 1
 		self.transition = Transitions(loader)
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
@@ -270,7 +270,14 @@ class SetLevel(FSM):
 			if self.letter_index < len(self.texts[self.text_index]):
 				self.letter_index += 1
 		return task.cont
-
+	
+	def fade_out(self, state="Menu"):
+		self.transition.fadeOut(1)
+		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 1)).start()
+		taskMgr.doMethodLater(1, self.change_state, "requete", extraArgs=[state])
+		
+	def change_state(self, state):
+		self.request(state)
 	#---------------------------Ecran titre--------------------------------
 	def enterMenu(self):
 		"""
@@ -305,19 +312,72 @@ class SetLevel(FSM):
 		s = Sequence(interval, interval2, interval3, interval4)
 		s.loop()
 		self.accept("escape", sys.exit)
-		self.accept("f1", self.verify)
-		self.accept("r", self.save, [True])
+		self.accept("f1", self.fade_out, extraArgs=["Trois_fichiers"])
 
+	
+		
 	def exitMenu(self):
 		"""
 		Fonction qui s'acive quand on quitte l'écran titre.
 		"""
-		self.music.stop()
 		self.textObject1.remove_node()
 		self.textObject2.remove_node()
 		self.epee.removeNode()
 		del self.epee
 
+	#-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------		
+	def enterTrois_fichiers(self):
+		self.music = loader.loadSfx("../sounds/para.ogg")
+		self.music.setLoop(True)
+		self.music.play()
+		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
+		self.ignore("f1")
+		self.skybox = loader.loadModel("skybox.bam")
+		self.skybox.setScale(10000)
+		self.skybox.setBin('background', 1)
+		self.skybox.setDepthWrite(0)
+		self.skybox.setLightOff()
+		self.skybox.reparentTo(render)
+		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
+		if (not os.path.exists(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor") and platform.system() == "Windows") or (not os.path.exists(f"/home/{os.getlogin()}/.Therenor") and platform.system() == "Linux"):
+			if platform.system() == "Windows":
+				os.mkdir(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor")
+			else:
+				os.mkdir(f"/home/{os.getlogin()}/.Therenor")
+			for loop in range(3):
+				if platform.system() == "Windows":
+					file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{loop+1}.txt", "wt")
+					file.writelines(["_|0|1|3|3"])
+					file.close()
+				else:
+					file = open(f"/home/{os.getlogin()}/.Therenor/save_{loop+1}.txt", "wt")
+					file.writelines(["_|0|1|3|3"])
+					file.close()
+		noms = []			
+		for loop in range(3):
+			self.read(file=loop+1)
+			if self.player.nom != "_":
+				noms.append(self.player.nom)
+			else:
+				noms.append("Fichier vide")	
+		self.player.nom = "Link"							
+		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08)) for i in range(3)]	
+		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18)) for i in range(3)]
+		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]	
+		self.transition.fadeIn(1)
+		
+	def exitTrois_fichiers(self):
+		self.skybox.removeNode()
+		for file in self.files:
+			file.removeNode()
+		del self.files		
+		for button in self.buttons_continue:
+			button.removeNode()
+		del self.buttons_continue	
+		for button in self.buttons_erase:
+			button.removeNode()
+		del self.buttons_erase		
+	
 	def verify(self):
 		"""
 		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
@@ -325,8 +385,6 @@ class SetLevel(FSM):
 		---------------------------------------------------------------------------
 		return -> None
 		"""
-		self.ignore("f1")
-		self.ignore("r")
 		if self.chapitre == 0:
 			self.request("Init")
 		elif self.chapitre == 1:
@@ -336,8 +394,7 @@ class SetLevel(FSM):
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 			taskMgr.doMethodLater(2, self.on_change, "on change")
 		else:
-			self.request("Generique")
-
+			self.request("Generique")	
 	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
 		"""
@@ -572,9 +629,8 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
-		#aLight = AmbientLight("ambient")
-		#aNode = render.attachNewNode(aLight)
-		#render.setLight(aNode)
+		if self.debug:
+			render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
 		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
@@ -1042,7 +1098,7 @@ class SetLevel(FSM):
 		return task.done
 
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
-	def save(self, reset=False):
+	def save(self, reset=False, file=1):
 		"""
 		Fonction qui permet de sauvegarder les données de la partie.
 		------------------------------------------------------------
@@ -1053,9 +1109,9 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
 		if platform.system() == "Windows":
-				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "wt")
+				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt", "wt")
 		else:
-				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "wt")	
+				file = open(f"/home/{os.getlogin()}/.Therenor/save_{file}.txt", "wt")	
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
@@ -1077,42 +1133,32 @@ class SetLevel(FSM):
 		self.myOkDialog.cleanup()
 		taskMgr.add(self.update, "update")
 
-	def read(self):
+	def read(self, file=1):
 		"""
 		Fonction qui permet de lire les données préalablement enregistrées.
 		-------------------------------------------------------------------
 		return -> None
 		"""
-		if (os.path.exists(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt") and platform.system() == "Windows") or (os.path.exists(f"/home/{os.getlogin()}/.Therenor/save.txt") and platform.system() == "Linux"):
-			if platform.system() == "Windows":
-				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "rt")
-			else:
-				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "rt")	
-			i = 0
-			for truc in file.read().split("|"):
-				i += 1
-				if i == 1:
-					self.player.nom = truc
-				elif i == 2:
-					self.chapitre = int(truc)
-				elif i == 3:
-					self.current_point = truc
-				elif i == 4:
-					self.player.vies = float(truc)
-					if self.player.vies < 3:
-						self.player.vies = 3
-				elif i == 5:
-					self.player.maxvies = int(truc)
-			file.close()
+		if platform.system() == "Windows":
+			file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt", "rt")
 		else:
-			if platform.system() == "Windows":
-				os.mkdir(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor")
-				file = open(f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save.txt", "wt")
-			else:
-				os.mkdir(f"/home/{os.getlogin()}/.Therenor")
-				file = open(f"/home/{os.getlogin()}/.Therenor/save.txt", "wt")	
-			file.writelines(["Link|0|1|3|3"])
-			file.close()
+			file = open(f"/home/{os.getlogin()}/.Therenor/save_{file}.txt", "rt")	
+		i = 0
+		for truc in file.read().split("|"):
+			i += 1
+			if i == 1:
+				self.player.nom = truc
+			elif i == 2:
+				self.chapitre = int(truc)
+			elif i == 3:
+				self.current_point = truc
+			elif i == 4:
+				self.player.vies = float(truc)
+				if self.player.vies < 3:
+					self.player.vies = 3
+			elif i == 5:
+				self.player.maxvies = int(truc)
+		file.close()
 
 class Application(ShowBase):
 	"""
