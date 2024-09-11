@@ -1,3 +1,5 @@
+#---------------Importation des différents modules-----------------------------
+#-------------Section spécifique à panda3d---------------------
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.fsm.FSM import FSM
@@ -9,9 +11,11 @@ from direct.interval.IntervalGlobal import *
 from direct.interval.LerpInterval import LerpFunc
 from direct.showbase.Transitions import Transitions
 from direct.actor.Actor import Actor
+#-----------Section spécifique aux fichiers python du dossier-----------
 from personnages import *
 from monsters import *
 from objects import *
+#-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
 import os, sys, json, platform
 
 
@@ -22,7 +26,7 @@ class Portail(CollisionBox):
 	def __init__(self, center=(1320, -1000, 6), sx=40, sy=4, sz=150, newpos=(830, -470, 6)):
 		CollisionBox.__init__(self, center, sx, sy, sz)
 		self.newpos = newpos
-		self.setTangible(False)
+		self.setTangible(False) #On peut traverser un portail
 
 class Porte(CollisionBox):
 	"""
@@ -38,7 +42,7 @@ class Save_bloc(CollisionBox):
 	"""
 	def __init__(self, nom=1, center=(0, 0, 0)):
 		CollisionBox.__init__(self, (center[0], center[1], center[2]), 15, 15, 30)
-		self.nom = nom
+		self.nom = nom #Un nom lui est attribué pour se repérer.
 
 
 class SetLevel(FSM):
@@ -47,50 +51,57 @@ class SetLevel(FSM):
 	Tout le script principal s'y trouvera.
 	"""
 	def __init__(self):
-		FSM.__init__(self, "LevelManager") #Initialisation de botre classe en initialisat la super classe.
-		base.cTrav = CollisionTraverser() #Notre gestionnaire de collisions.
-		base.cTrav.setRespectPrevTransform(True)
-		#base.cTrav.showCollisions(render)
+		FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
+		#-----------------Variables nécessaires au fonctinnement de la boîte de dialogue----------------
 		self.ok = False
 		self.reading = False
 		self.termine = True
-		self.image = None
+		self.messages = []
+		self.sons_messages = []
+		self.image = None #On utilise cette variable lors de la légende
+		#---------------Modèles 3d non initialisés------------------- 
 		self.map = None
-		self.player = None
 		self.epee = None
-		self.debug = False
-		self.music = None #La musique d'ambiance
-		self.son = None #Le son joué lors des dialogues.
-		self.current_pnj = None #Variable nous indiquant quel pnj on touche
-		self.pnjs = [] #Liste dans laquelle sont stockés ous les pnjs de la map
-		self.current_porte = None #La porte actuellement touchée par le joueur
+		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
+		if self.debug:
+			base.cTrav.showCollisions(render)
+		#------------Section sons (musique, dialogues...)--------------------
+		self.music = None
+		self.son = None
+		#-----------------------Varibles de collisions (pnj touché, liste de pnjs, porte touchée...)-------------------
+		self.current_pnj = None
+		self.pnjs = []
+		self.current_porte = None
+		base.cTrav = CollisionTraverser()
 		self.skybox = None
-		self.portails = {} #Dictionnaire contenant les portails.
+		self.portails = {}
 		self.triggers = []
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
-		self.chapitre = 0 #Où en sommes-nous dans l'histoire ?
+		#-----------------Autres variables-----------------------
+		self.chapitre = 0
 		self.player = Player()
 		self.player.reparentTo(render)
 		self.player.hide()
 		self.current_map = "Village.bam"
 		self.texts = ["It's a secret to everybody."]
-		self.font = loader.loadFont("arial.bam") #Notre police
+		self.font = loader.loadFont("arial.bam")
 		self.text_index = 0
 		self.letter_index = 0
-		self.messages = []
-		self.sons_messages = []
 		self.objects = []
 		self.current_point = 1
 		self.load_gui()
 		self.read()
 		self.actual_statue = None
 		self.transition = Transitions(loader)
+		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
 
+	
+	#---------------Fonctions de manipulation de la GUI------------------------------
 	def load_gui(self):
 		"""
 		Fonction qui nous permet de charger les éléments 2D (car on n'a besoin de les charger qu'une fois)
@@ -137,6 +148,11 @@ class SetLevel(FSM):
 		self.hide_gui()
 
 	def hide_gui(self):
+		"""
+  		Fonction permettant de cacher la GUI (utile lors des cinématiques).
+    		---------------------------------------------------------------------
+      		return -> None
+  		"""
 		for a in self.coeurs_pleins:
 			a.hide()
 		for a in self.coeurs_moitie:
@@ -148,6 +164,7 @@ class SetLevel(FSM):
 		self.map_image.hide()
 		self.croix_image.hide()
 		self.lieu_text.hide()
+		
 	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------
 	def check_interact(self):
 		"""
@@ -174,9 +191,6 @@ class SetLevel(FSM):
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
-
-	def set_player_pos_later(self, newpos = (0, 0, 0)):
-		self.player.setPos(newpos)
 
 	def check_interact_dial(self):
 		"""
@@ -411,7 +425,7 @@ class SetLevel(FSM):
 
 	def on_change(self, task):
 		"""
-		Fonction appelée deux secondes près la fin de la légende qui charge la map.
+		Fonction appelée deux secondes après la fin de la légende ou lors de la vérification qui charge la map.
 		----------------------------------------------------
 		task -> task
 		return -> task.done
@@ -443,7 +457,7 @@ class SetLevel(FSM):
 			if not self.image:
 				self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
 		if self.text_index == 11:
-			if self.image != None:
+			if type(self.image) is not None:
 				self.image.removeNode()
 				self.image = None
 		if self.text_index > 11:
@@ -476,6 +490,12 @@ class SetLevel(FSM):
 			del self.map
 		self.map = loader.loadModel(map)
 		self.map.reparentTo(render)
+		#---------------------------Collisions de la map------------------
+		self.map.setCollideMask(BitMask32.bit(0))
+		if self.debug:
+			base.cTrav.showCollisions(render)
+		self.antimur.addCollider(self.player.col_np, self.player)
+		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
@@ -485,7 +505,7 @@ class SetLevel(FSM):
 		self.skybox.setDepthWrite(0)
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
-		#--------------------Chargement du premier fichier json---------------
+		#--------------------Chargement du premier fichier json (objets)---------------
 		objects_file = open("../json/objects.json")
 		data = json.load(objects_file)
 		objects_file.close()
@@ -508,17 +528,11 @@ class SetLevel(FSM):
 		self.music = base.loader.loadSfx(data[self.current_map][0])
 		self.music.setLoop(True)
 		self.music.play()
-		#---------------------NOTRE HEROS ET SA CAMERA-------------------------------------
+		#---------------------Gestion de la caméra du joueur-------------------------------------
 		if self.player.followcam is None:
 			self.player.create_camera()
 		if not self.player.followcam.active:
 			self.player.followcam.set_active(True)
-		#---------------------------SECTION DE GESTION DES COLLISIONS------------------
-		self.map.setCollideMask(BitMask32.bit(0))
-		if self.debug:
-			base.cTrav.showCollisions(render)
-		self.antimur.addCollider(self.player.col_np, self.player)
-		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#----------Les portes-----------------------
 		for portail in data[self.current_map][2]:
 			noeud = CollisionNode(portail)
@@ -551,11 +565,13 @@ class SetLevel(FSM):
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
 		self.load_triggers(map)
+		del data
+		#------------Mode debug------------------------
 		if self.debug:
 			base.enableMouse()
 		else:
 			base.disableMouse()
-		#-------------Lumière----------------------------
+		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
 		#aLight = AmbientLight("ambient")
 		#aNode = render.attachNewNode(aLight)
 		#render.setLight(aNode)
@@ -575,7 +591,6 @@ class SetLevel(FSM):
 		self.accept("out", self.out)
 		self.accept("e", self.inventaire)
 		taskMgr.add(self.update, "update")
-		del data
 		self.transition.fadeIn(2)
 		if task is not None:
 			return task.done
