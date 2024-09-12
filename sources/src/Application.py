@@ -1118,7 +1118,7 @@ class SetLevel(FSM):
                 		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
 		else:
             		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-        	file = open(path, "wt")
+		file = open(path, "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
@@ -1146,13 +1146,13 @@ class SetLevel(FSM):
 		-------------------------------------------------------------------
 		return -> None
 		"""
-		if platform.system() == "Windows":
-			if self.augustins:
-                		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-            		else:
-                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
-		else:
-            		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
+        if platform.system() == "Windows":
+            if self.augustins:
+                path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
+            else:
+                path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
+        else:
+            path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
 		fichier = open(path, "rt")
 		i = 0
 		for truc in fichier.read().split("|"):
