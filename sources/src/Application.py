@@ -341,12 +341,12 @@ class SetLevel(FSM):
 		self.skybox.reparentTo(render)
 		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
 		if platform.system() == "Windows":
-            if self.augustins:
-                path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
-            else:
-                path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
+			if self.augustins:
+                		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
+            		else:
+              			path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
 		elif platform.system() == "Linux":
-            path = f"/home/{os.getlogin()}/.Therenor"
+            		path = f"/home/{os.getlogin()}/.Therenor"
 		if not os.path.exists(path):
 			os.mkdir(path)
 			for loop in range(3):
@@ -1110,13 +1110,13 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
 		if platform.system() == "Windows":
-            if self.augustins:
-                path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-            else:
-                path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
+           		if self.augustins:
+               			path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
+            		else:
+                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
 		else:
-            path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-        file = open(path, "wt")
+            		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
+        	file = open(path, "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
@@ -1145,12 +1145,12 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		if platform.system() == "Windows":
-            if self.augustins:
-                path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-            else:
-                path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
+			if self.augustins:
+                		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
+            		else:
+                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
 		else:
-            path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
+            		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
 		fichier = open(path, "rt")
 		i = 0
 		for truc in fichier.read().split("|"):
@@ -1181,8 +1181,3 @@ class Application(ShowBase):
 		self.set_level = SetLevel()
 		base.disableMouse()
 		self.set_level.request("Menu")
-
-
-
-
-
