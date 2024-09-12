@@ -78,8 +78,6 @@ class SetLevel(FSM):
 		self.triggers = []
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
-		self.antimur.addInPattern("into")
-		self.antimur.addOutPattern("out")
 		#-----------------Autres variables-----------------------
 		self.chapitre = 0
 		self.player = Player()
@@ -95,6 +93,7 @@ class SetLevel(FSM):
 		self.load_gui()
 		self.actual_statue = None
 		self.actual_file = 1
+		self.quitDlg = None
 		self.transition = Transitions(loader)
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
@@ -364,9 +363,34 @@ class SetLevel(FSM):
 				noms.append("Fichier vide")
 		self.player.nom = "Link"
 		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
-		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18)) for i in range(3)]
+		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
 		self.transition.fadeIn(1)
+
+	def confirm_erase(self, file=1):
+		self.eraseDlg =YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
+
+
+	def erase_file(self, file, clickedYes):
+		self.eraseDlg.cleanup()
+		if clickedYes:
+			if platform.system() == "Windows":
+				if self.augustins:
+				    path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
+				else:
+				    path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
+			elif platform.system() == "Linux":
+				path = f"/home/{os.getlogin()}/.Therenor"
+			fichier = open(path, "wt")
+			fichier.writelines(["_|0|1|3|3"])
+			fichier.close()
+			for button in self.buttons_erase:
+				button.removeNode()
+			for button in self.buttons_continue:
+				button.removeNode()
+			self.fade_out()
+
+
 
 	def exitTrois_fichiers(self):
 		self.skybox.removeNode()
@@ -379,6 +403,9 @@ class SetLevel(FSM):
 		for button in self.buttons_erase:
 			button.removeNode()
 		del self.buttons_erase
+		for name in self.names:
+			name.removeNode()
+		del self.names
 
 	def verify(self, file):
 		"""
@@ -387,6 +414,7 @@ class SetLevel(FSM):
 		---------------------------------------------------------------------------
 		return -> None
 		"""
+		self.actual_file = file
 		self.read(file=file)
 		if self.chapitre == 0:
 			self.request("Init")
@@ -420,7 +448,6 @@ class SetLevel(FSM):
 		"""
 		self.music.stop()
 		self.chapitre = 1
-		self.save()
 
 	def setName(self):
 		"""
@@ -481,7 +508,6 @@ class SetLevel(FSM):
 		self.transition.fadeOut(2)
 		taskMgr.doMethodLater(2, self.on_change, "on change")
 		self.chapitre = 2
-		self.save()
 
 	def on_change(self, task):
 		"""
@@ -551,6 +577,8 @@ class SetLevel(FSM):
 		self.map = loader.loadModel(map)
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
+		self.antimur.addInPattern("into")
+		self.antimur.addOutPattern("out")
 		self.map.setCollideMask(BitMask32.bit(0))
 		if self.debug:
 			base.cTrav.showCollisions(render)
@@ -618,6 +646,7 @@ class SetLevel(FSM):
 				self.pnjs.append(a)
 		for pnj in self.pnjs:
 			pnj.reparentTo(render)
+        #-------------Les sauvegardes------------------------
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
 			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
@@ -828,6 +857,11 @@ class SetLevel(FSM):
 			pnj.removeNode()
 		for objet in self.objects:
 			objet.object.removeNode()
+		for statue in self.save_statues:
+			self.save_statues[statue].removeSolid(0)
+		self.save_statues = {}
+		self.antimur.clearInPatterns()
+		self.antimur.clearOutPatterns()
 		self.objects = []
 		self.pnjs = []
 		self.map = None
@@ -849,18 +883,22 @@ class SetLevel(FSM):
 		self.ignore("b-up")
 		self.ignore("into")
 		self.ignore("out")
+		self.ignore("e")
+		self.ignore("escape")
 		self.player.stop()
 
 	def confirm_quit(self):
 		taskMgr.remove("update")
 		self.ignore("escape")
-		self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non suvegardées seront effacés)", command = self.quit_confirm)
+		if self.quitDlg is None:
+		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
 	def quit_confirm(self, clickedYes):
 		self.quitDlg.cleanup()
+		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
-			self.read()
+			self.read(file=self.actual_file)
 			self.transition.fadeOut(0.5)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
@@ -1130,7 +1168,7 @@ class SetLevel(FSM):
 		self.saveDlg.cleanup()
 		taskMgr.add(self.update, "update")
 		if clickedYes:
-			self.save()
+			self.save(file=self.actual_file)
 			self.myOkDialog = OkDialog(text="Sauvegarde effectuée !", command = self.reupdate)
 
 	def reupdate(self, inutile):
