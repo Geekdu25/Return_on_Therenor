@@ -1112,7 +1112,7 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
 		if platform.system() == "Windows":
-           		if self.augustins:
+			if self.augustins:
                			path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
 			else:
                 		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
