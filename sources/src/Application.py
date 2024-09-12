@@ -344,9 +344,9 @@ class SetLevel(FSM):
 		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
 		if platform.system() == "Windows":
 			if self.augustins:
-                		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
-            		else:
-              			path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
+                path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
+            else:
+                path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
 		elif platform.system() == "Linux":
             		path = f"/home/{os.getlogin()}/.Therenor"
 		if not os.path.exists(path):
