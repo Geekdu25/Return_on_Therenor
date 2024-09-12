@@ -97,8 +97,8 @@ class SetLevel(FSM):
 		self.actual_file = 1
 		self.transition = Transitions(loader)
 		if platform.system() == "Windows":
-          if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
-            self.augustins = True
+			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
+				self.augustins = True
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
