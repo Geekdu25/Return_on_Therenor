@@ -1149,7 +1149,7 @@ class SetLevel(FSM):
 		if platform.system() == "Windows":
             		if self.augustins:
                 		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-                    	else:
+			else:
                         	path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
 		else:
             		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
