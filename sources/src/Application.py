@@ -96,7 +96,9 @@ class SetLevel(FSM):
 		self.actual_statue = None
 		self.actual_file = 1
 		self.transition = Transitions(loader)
-		self.augustins = True #Mettre la variable sur True si on est aux Augustins.
+		if platform.system() == "Windows":
+          if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
+            self.augustins = True
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("space", self.check_interact)
