@@ -104,6 +104,7 @@ class SetLevel(FSM):
 		self.manette = base.devices.getDevices(InputDevice.DeviceClass.gamepad)
 		if self.manette:
 			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+			self.player.manette = True
 		self.quitDlg = None		
 		self.load_gui()
 		self.transition = Transitions(loader)
@@ -867,14 +868,19 @@ class SetLevel(FSM):
 			base.devices.update()
 			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 				self.music.setVolume(0)
+				self.hide_gui()
 				self.transition.fadeScreenColor((0, 0, 0, 0.6))
+				self.transition.letterboxOn()
 				self.gamepad_text = OnscreenText(text="Veuillez reconnecter votre manette.", pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1))
 				self.gamepad_text.setBin("gui-popup", 80)
 				taskMgr.remove("update")
 				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
+				return None
 			gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]	
 			left_x = gamepad.findAxis(InputDevice.Axis.left_x)
 			left_y = gamepad.findAxis(InputDevice.Axis.left_y)
+			right_x = gamepad.findAxis(InputDevice.Axis.right_x)
+			right_y = gamepad.findAxis(InputDevice.Axis.right_y)
 			if left_x.value > 0.5:
 				self.player.left = False
 				self.player.right = True
@@ -887,12 +893,23 @@ class SetLevel(FSM):
 			if left_y.value > 0.5:
 				self.player.reverse = False
 				self.player.walk = True
+				self.player.loop("walk")
 			elif left_y.value < -0.5:
 				self.player.walk = False
-				self.player.reverse = True	
+				self.player.reverse = True
+				self.player.loop("walk")	
 			else:
 				self.player.walk = False
-				self.player.reverse = False						
+				self.player.reverse = False
+				self.player.stop()	
+			"""if right_y.value > 0.5:
+				self.player.followcam.move("up", globalClock.getDt())
+			elif right_y.value < -0.5:
+				self.player.followcam.move("down", globalClock.getDt())	
+			if right_x.value > 0.5:
+				self.player.followcam.move("right", globalClock.getDt())
+			elif right_x.value < -0.5:
+				self.player.followcam.move("left", globalClock.getDt())"""					
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 50:
 		  self.player.setZ(self.player, -0.25)
@@ -1327,6 +1344,7 @@ class SetLevel(FSM):
 			self.transition.noTransitions()
 			self.gamepad_text.removeNode()
 			del self.gamepad_text
+			self.transition.letterboxOff()
 			taskMgr.add(self.update, "update")
 			self.music.setVolume(1)
 			return task.done

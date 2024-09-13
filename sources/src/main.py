@@ -6,7 +6,7 @@ Date de sortie prévue  Fin mars 2025
 Créateurs :
 Tyméo Bonvicini-Renaud
 Alexandrine Charette
-Rémi Martinot
+Rémy Martinot
 Noé Mora
 Etienne Pacault
 """

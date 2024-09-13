@@ -1,6 +1,6 @@
 from direct.actor.Actor import Actor
 from panda3d.core import *
-from FollowCam import FollowCam
+from FollowCam import *
 import os
 from direct.interval.IntervalGlobal import *
 
@@ -17,6 +17,7 @@ class Player(Actor):
 		self.vies = 3
 		self.maxvies = 3
 		self.inventaire = []
+		self.manette = False
 		#--------------------Quelques paramètres simples-----------------------------------
 		self.vitesse = 2.5
 		self.walk = False
@@ -45,7 +46,11 @@ class Player(Actor):
 	
 	def create_camera(self):
 		#----------------Notre caméra-------------------
-		self.followcam = FollowCam(base.cam, self)
+		"""if self.manette:
+			self.followcam = ManetteCam(base.cam, self)
+		else:
+			self.followcam = FollowCam(base.cam, self)"""
+		self.followcam = FollowCam(base.cam, self)	
 		
 		
 class PNJ(Actor):

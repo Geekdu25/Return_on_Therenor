@@ -84,3 +84,39 @@ class FollowCam():
 		while angle > 180:
 			angle = angle - 360
 		return angle
+
+class ManetteCam():
+	def __init__(self, camera, target):
+		self.camera = camera
+		self.target = target
+		self.active = True
+		self.vue = True
+		
+	def change_vue(self):
+		if self.vue:
+			self.vue = False
+		else:
+			self.vue = True		
+		
+	def move(self, direction="up", time=0.1):
+		if self.vue:
+			self.camera.setPos(self.target.getPos())
+			if direction == "up":
+				self.camera.setZ(self.camera, 2*time)
+			elif direction == "down":
+				self.camera.setZ(self.camera, -2*time)
+			elif direction == "left":
+				self.camera.setY(self.camera, 2*time)
+			else:
+				self.camera.setY(self.camera, -2*time)			
+			self.camera.lookAt(self.target)	
+		else:
+			self.camera.setPos(self.target.getPos())
+			if direction == "up":
+				self.camera.setH(self.camera, 2*time)
+			elif direction == "down":
+				self.camera.setH(self.camera, -2*time)
+			elif direction == "left":
+				self.camera.setR(self.camera, 2*time)
+			else:
+				self.camera.setR(self.camera, -2*time)			
