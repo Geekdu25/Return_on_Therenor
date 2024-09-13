@@ -98,18 +98,24 @@ class SetLevel(FSM):
 		self.text_index = 0
 		self.letter_index = 0
 		self.objects = []
-		self.current_point = 1
-		self.load_gui()
+		self.current_point = 1		
 		self.actual_statue = None
 		self.actual_file = 1
-		self.quitDlg = None
+		self.manette = base.devices.getDevices(InputDevice.DeviceClass.gamepad)
+		if self.manette:
+			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+		self.quitDlg = None		
+		self.load_gui()
 		self.transition = Transitions(loader)
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
-		self.accept("space", self.check_interact)
+		if not self.manette:
+			self.accept("space", self.check_interact)
+		else:
+			self.accept("manette-face_b", self.check_interact)	
 
 
 	#---------------Fonctions de manipulation de la GUI------------------------------
@@ -121,7 +127,10 @@ class SetLevel(FSM):
 		"""
 		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
 		self.text_game_over.hide()
-		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		if self.manette:
+			self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		else:
+			self.text_game_over_2 = OnscreenText("Appuyez sur B pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))	
 		self.text_game_over_2.hide()
 		self.myOkDialog = None
 		self.coeurs_vides = []
@@ -202,7 +211,10 @@ class SetLevel(FSM):
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
-			self.ignore("escape")
+			if not self.manette:
+				self.ignore("escape")
+			else:
+				self.ignore("manette-back")	
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
 
 	def check_interact_dial(self):
@@ -313,6 +325,8 @@ class SetLevel(FSM):
 		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
 		self.textObject1.setFont(self.font)
 		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
+		if self.manette:
+			self.textObject2.setText("Appuyez sur B pour commencer")
 		self.textObject2.setFont(self.font)
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(base.cam)
@@ -326,8 +340,12 @@ class SetLevel(FSM):
 		interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
 		s = Sequence(interval, interval2, interval3, interval4)
 		s.loop()
-		self.accept("escape", sys.exit)
-		self.accept("f1", self.fade_out, extraArgs=["Trois_fichiers"])
+		if not self.manette:
+			self.accept("escape", sys.exit)
+			self.accept("f1", self.fade_out, extraArgs=["Trois_fichiers"])
+		else:
+			self.accept("manette-back", sys.exit)
+			self.accept("manette-face_b", self.fade_out, extraArgs=["Trois_fichiers"])
 
 
 
@@ -346,7 +364,11 @@ class SetLevel(FSM):
 		self.music.setLoop(True)
 		self.music.play()
 		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		self.ignore("f1")
+		if not self.manette:
+			self.ignore("f1")
+		else:
+			self.ignore("manette-face_b")
+			self.accept("manette-face_b", self.check_interact)	
 		self.skybox = loader.loadModel("skybox.bam")
 		self.skybox.setScale(10000)
 		self.skybox.setBin('background', 1)
@@ -446,9 +468,6 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------------
 		return -> None
 		"""
-		self.music = base.loader.loadSfx("../sounds/para.ogg")
-		self.music.setLoop(True)
-		self.music.play()
 		self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
 		self.nameLbl = DirectLabel(text = "Salutations jeune aventurier, quel est ton nom ?", pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1))
 		self.helloBtn = DirectButton(text = "Confirmer", scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
@@ -677,21 +696,28 @@ class SetLevel(FSM):
 		if self.debug:
 			render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
-		self.accept("escape", self.confirm_quit)
-		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
-		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
-		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
-		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
-		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
-		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
-		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
-		self.accept("a", self.player.followcam.change_vue)
-		self.accept("b", self.change_vitesse, extraArgs=["b"])
-		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
+		if not self.manette:
+			self.accept("escape", self.confirm_quit)
+			self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
+			self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
+			self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
+			self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
+			self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
+			self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
+			self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
+			self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
+			self.accept("a", self.player.followcam.change_vue)
+			self.accept("b", self.change_vitesse, extraArgs=["b"])
+			self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
+			self.accept("e", self.inventaire)
+		else:
+			self.accept("manette-back", self.confirm_quit)
+			self.accept("manette-lshoulder", self.player.followcam.change_vue)
+			self.accept("manette-face_a", self.change_vitesse, extraArgs=["b"])
+			self.accept("manette-face_a-up", self.change_vitesse, extraArgs=["b-up"])
+			self.accept("manette-face_y", self.inventaire)	
 		self.accept("into", self.into)
-		self.accept("out", self.out)
-		self.accept("e", self.inventaire)
+		self.accept("out", self.out)	
 		taskMgr.add(self.update, "update")
 		self.transition.fadeIn(2)
 		if task is not None:
@@ -836,6 +862,24 @@ class SetLevel(FSM):
 			self.coeurs_moitie[int(self.player.vies)].show()
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
+		#-----------------------Section gestion de la manette-----------------
+		if self.manette:		
+			base.devices.update()
+			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+				taskMgr.remove("update")
+				self.music.setVolume(0)
+				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
+			"""gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]	
+			left_x = gamepad.findAxis(InputDevice.Axis.left_x)
+			if left_x > 0.5:
+				self.player.left = False
+				self.player.right = True
+			elif left_x < -0.5:
+				self.player.right = False
+				self.player.left = True	
+			else:
+				self.player.right = False
+				self.player.right = False"""						
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 50:
 		  self.player.setZ(self.player, -0.25)
@@ -882,26 +926,41 @@ class SetLevel(FSM):
 		self.player.reverse = False
 		self.player.walk = False
 		taskMgr.remove("update")
-		self.ignore("arrow_up")
-		self.ignore("arrow_up-up")
-		self.ignore("arrow_down")
-		self.ignore("arrow_down-up")
-		self.ignore("arrow_left")
-		self.ignore("arrow_left-up")
-		self.ignore("arrow_right")
-		self.ignore("arrow_right-up")
-		self.ignore("a")
-		self.ignore("b")
-		self.ignore("b-up")
-		self.ignore("into")
-		self.ignore("out")
-		self.ignore("e")
-		self.ignore("escape")
+		if not self.manette:
+			self.ignore("arrow_up")
+			self.ignore("arrow_up-up")
+			self.ignore("arrow_down")
+			self.ignore("arrow_down-up")
+			self.ignore("arrow_left")
+			self.ignore("arrow_left-up")
+			self.ignore("arrow_right")
+			self.ignore("arrow_right-up")
+			self.ignore("a")
+			self.ignore("b")
+			self.ignore("b-up")
+			self.ignore("into")
+			self.ignore("out")
+			self.ignore("e")
+			self.ignore("escape")
+		else:
+			self.ignore("manette-face_b")
+			self.ignore("manette-face_a")
+			self.ignore("manette-face_a-up")
+			self.ignore("into")
+			self.ignore("out")
+			self.ignore("manette-face_y")
+			self.ignore("manette-back")	
+			self.ignore("manette-lshoulder")			
 		self.player.stop()
 
 	def confirm_quit(self):
 		taskMgr.remove("update")
-		self.ignore("escape")
+		if self.manette:
+			self.ignore("manette-back")
+			self.ignore("manette-face_y")
+		else:
+			self.ignore("e")
+			self.ignore("escape")	
 		if self.quitDlg is None:
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
@@ -915,7 +974,12 @@ class SetLevel(FSM):
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
 		else:
-			self.accept("escape", self.confirm_quit)
+			if not self.manette:
+				self.accept("escape", self.confirm_quit)
+				self.accept("e", self.inventaire)
+			else:
+				self.accept("manette-back", self.confirm_quit)
+				self.accept("manette-face_y", self.inventaire)	
 
 
 	def return_to_menu(self, task):
@@ -932,21 +996,32 @@ class SetLevel(FSM):
 		taskMgr.remove("update")
 		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
 		self.index_invent = 0
-		self.ignore("arrow_up")
-		self.ignore("arrow_up-up")
-		self.ignore("arrow_down")
-		self.ignore("arrow_down-up")
-		self.ignore("arrow_left-up")
-		self.ignore("arrow_right-up")
-		self.ignore("a")
-		self.ignore("b")
-		self.ignore("b-up")
-		self.ignore("into")
-		self.ignore("out")
-		self.ignore("e")
-		self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
-		self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
-		self.accept("escape", self.exit_inventaire)
+		if not self.manette:
+			self.ignore("arrow_up")
+			self.ignore("arrow_up-up")
+			self.ignore("arrow_down")
+			self.ignore("arrow_down-up")
+			self.ignore("arrow_left-up")
+			self.ignore("arrow_right-up")
+			self.ignore("a")
+			self.ignore("b")
+			self.ignore("b-up")
+			self.ignore("into")
+			self.ignore("out")
+			self.ignore("e")
+			self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
+			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+			self.accept("escape", self.exit_inventaire)
+		else:
+			self.ignore("manette-face_b")
+			self.ignore("manette-face_a")
+			self.ignore("manette-face_a-up")
+			self.ignore("into")
+			self.ignore("out")
+			self.accept("manette-face_y", self.exit_inventaire)
+			self.accept("manette-dpad_left", self.change_index_invent, extraArgs=["left"])
+			self.accept("manette-dpad_right", self.change_index_invent, extraArgs=["right"])
+			self.accept("manette-back", self.exit_inventaire)	
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
 		self.croix_image.setPos(self.get_pos_croix()[0])
@@ -1016,21 +1091,28 @@ class SetLevel(FSM):
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
-		self.accept("escape", self.confirm_quit)
-		self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
-		self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
-		self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
-		self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
-		self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
-		self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
-		self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
-		self.accept("a", self.player.followcam.change_vue)
-		self.accept("b", self.change_vitesse, extraArgs=["b"])
-		self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
+		if not self.manette:
+			self.accept("escape", self.confirm_quit)
+			self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
+			self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
+			self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
+			self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
+			self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
+			self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
+			self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
+			self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
+			self.accept("a", self.player.followcam.change_vue)
+			self.accept("b", self.change_vitesse, extraArgs=["b"])
+			self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
+			self.accept("e", self.inventaire)
+		else:
+			self.accept("manette-back", self.confirm_quit)
+			self.accept("manette-lshoulder", self.player.followcam.change_vue)
+			self.accept("manette-face_a", self.change_vitesse, extraArgs=["b"])
+			self.accept("manette-face_a-up", self.change_vitesse, extraArgs=["b-up"])
+			self.accept("manette-face_y", self.inventaire)
 		self.accept("into", self.into)
-		self.accept("out", self.out)
-		self.accept("e", self.inventaire)
+		self.accept("out", self.out)		
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
 	def enterGenerique(self):
 		"""
@@ -1188,7 +1270,10 @@ class SetLevel(FSM):
 		Fonction pour remettre la fonction de mise à jour en éxécution.
 		"""
 		self.myOkDialog.cleanup()
-		self.accept("escape", self.confirm_quit)
+		if not self.manette:
+			self.accept("escape", self.confirm_quit)
+		else:
+			self.accept("manette-back", self.confirm_quit)	
 		taskMgr.add(self.update, "update")
 
 	def read(self, file=1):
@@ -1222,6 +1307,14 @@ class SetLevel(FSM):
 				self.player.maxvies = int(truc)
 		fichier.close()
 
+	def wait_for_gamepad(self, task):
+		base.devices.update()
+		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+			self.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+			self.music.setVolume(1)
+			return task.done
+		return task.cont
+		
 class Application(ShowBase):
 	"""
 	Classe principale, celle du jeu
@@ -1229,8 +1322,9 @@ class Application(ShowBase):
 	def __init__(self):
 		loadPrcFile("config.prc")
 		ShowBase.__init__(self)
-		#PStatClient.connect()
+		#PStatClient.connect() #Décommentez si vous voulez voir les stats du PC
 		base.set_background_color(0, 0, 0, 0)
 		self.set_level = SetLevel()
 		base.disableMouse()
+		#messenger.toggleVerbose() #Décommentez si vous voulez voir les messages d'input
 		self.set_level.request("Menu")
