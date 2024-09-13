@@ -18,7 +18,16 @@ from objects import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
 import os, sys, json, platform
 
-
+class YesNoDialog(DirectDialog):
+	"""
+	Il s'agit de la même classe que celle présente avec Panda3d, mais on traduit Yes et No par Oui et Non.
+	"""
+	def __init__(self, parent = None, **kw):
+		optiondefs = (('buttonTextList',  ['Oui', 'Non'],       DGG.INITOPT), ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),)
+		self.defineoptions(kw, optiondefs)
+		DirectDialog.__init__(self, parent)
+		self.initialiseoptions(YesNoDialog)
+		
 class Portail(CollisionBox):
 	"""
 	Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
@@ -114,6 +123,7 @@ class SetLevel(FSM):
 		self.text_game_over.hide()
 		self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
 		self.text_game_over_2.hide()
+		self.myOkDialog = None
 		self.coeurs_vides = []
 		self.coeurs_moitie = []
 		self.coeurs_pleins = []
@@ -192,6 +202,7 @@ class SetLevel(FSM):
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
+			self.ignore("escape")
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
 
 	def check_interact_dial(self):
@@ -242,6 +253,8 @@ class SetLevel(FSM):
 			self.reading = True
 			self.termine = False
 			self.texts = text
+			self.text_index = 0
+			self.letter_index = 0
 			self.sons_messages = sons
 			self.messages = messages
 			if len(sons) > 0:
@@ -368,10 +381,10 @@ class SetLevel(FSM):
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
-		self.eraseDlg =YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
+		self.eraseDlg = YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
 
 
-	def erase_file(self, file, clickedYes):
+	def erase_file(self, clickedYes, file):
 		self.eraseDlg.cleanup()
 		if clickedYes:
 			if platform.system() == "Windows":
@@ -380,7 +393,7 @@ class SetLevel(FSM):
 				else:
 				    path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
 			elif platform.system() == "Linux":
-				path = f"/home/{os.getlogin()}/.Therenor"
+				path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
 			fichier = open(path, "wt")
 			fichier.writelines(["_|0|1|3|3"])
 			fichier.close()
@@ -692,8 +705,7 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
-		for trigger in self.triggers:
-			del trigger
+		self.triggers = []
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
 			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
@@ -1176,6 +1188,7 @@ class SetLevel(FSM):
 		Fonction pour remettre la fonction de mise à jour en éxécution.
 		"""
 		self.myOkDialog.cleanup()
+		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")
 
 	def read(self, file=1):
