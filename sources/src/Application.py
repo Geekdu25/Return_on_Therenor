@@ -866,20 +866,33 @@ class SetLevel(FSM):
 		if self.manette:		
 			base.devices.update()
 			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
-				taskMgr.remove("update")
 				self.music.setVolume(0)
+				self.transition.fadeScreenColor((0, 0, 0, 0.6))
+				self.gamepad_text = OnscreenText(text="Veuillez reconnecter votre manette.", pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1))
+				self.gamepad_text.setBin("gui-popup", 80)
+				taskMgr.remove("update")
 				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
-			"""gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]	
+			gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]	
 			left_x = gamepad.findAxis(InputDevice.Axis.left_x)
-			if left_x > 0.5:
+			left_y = gamepad.findAxis(InputDevice.Axis.left_y)
+			if left_x.value > 0.5:
 				self.player.left = False
 				self.player.right = True
-			elif left_x < -0.5:
+			elif left_x.value < -0.5:
 				self.player.right = False
 				self.player.left = True	
 			else:
 				self.player.right = False
-				self.player.right = False"""						
+				self.player.left = False
+			if left_y.value > 0.5:
+				self.player.reverse = False
+				self.player.walk = True
+			elif left_y.value < -0.5:
+				self.player.walk = False
+				self.player.reverse = True	
+			else:
+				self.player.walk = False
+				self.player.reverse = False						
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 50:
 		  self.player.setZ(self.player, -0.25)
@@ -1310,7 +1323,11 @@ class SetLevel(FSM):
 	def wait_for_gamepad(self, task):
 		base.devices.update()
 		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
-			self.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+			self.transition.noTransitions()
+			self.gamepad_text.removeNode()
+			del self.gamepad_text
+			taskMgr.add(self.update, "update")
 			self.music.setVolume(1)
 			return task.done
 		return task.cont
