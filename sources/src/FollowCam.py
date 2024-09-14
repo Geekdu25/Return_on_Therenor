@@ -92,7 +92,6 @@ class ManetteCam():
 		self.dummy = self.target.attachNewNode("cam" + target.getName())
 		self.dummy.setZ(self.dummy, 0.25)
 		self.dummy.setH(90)
-		self.target.setH(180)
 		self.camera.reparentTo(self.dummy)
 		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		self.active = True
@@ -122,25 +121,30 @@ class ManetteCam():
 		self.camera.lookAt(self.dummy)
 		return task.cont
 		
+	def recenter(self):
+		self.dummy.setPos((0, 0, 0.25))
+		self.dummy.setHpr((0, 0, 0))
+		self.camera.setPos((-2, 0, 0))	
+		self.camera.setHpr((0, 0, 0))
 		
 	def move(self, direction="up", time=0.1):
 		if self.vue:
 			if direction == "up":
-				if self.dummy.getR() < 180:
-					self.dummy.setR(self.dummy, time*20)
+				if self.dummy.getR() < 30:
+					self.dummy.setR(self.dummy, time*50)
 			elif direction == "down":
-				if self.dummy.getR() > 0:
-					self.dummy.setR(self.dummy, -time*20)
+				if self.dummy.getR() > -30:
+					self.dummy.setR(self.dummy, -time*50)
 			elif direction == "left":
-				self.dummy.setH(self.dummy, -time*20)
+				self.dummy.setH(self.dummy, -time*50)
 			else:
-				self.dummy.setH(self.dummy, time*20)			
+				self.dummy.setH(self.dummy, time*50)			
 		else:
 			if direction == "up":
-				self.dummy.setP(self.dummy, time*20)
+				self.dummy.setP(self.dummy, time*50)
 			elif direction == "down":
-				self.dummy.setP(self.dummy, -time*20)
+				self.dummy.setP(self.dummy, -time*50)
 			elif direction == "left":
-				self.target.setH(self.dummy, time*20)
+				self.target.setH(self.target, time*50)
 			else:
-				self.target.setH(self.dummy, -time*20)		
+				self.target.setH(self.target, -time*50)		
