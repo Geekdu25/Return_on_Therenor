@@ -114,9 +114,7 @@ class SetLevel(FSM):
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		if not self.manette:
-			self.accept("space", self.check_interact)
-		else:
-			self.accept("manette-face_b", self.check_interact)	
+			self.accept("space", self.check_interact)	
 
 
 	#---------------Fonctions de manipulation de la GUI------------------------------
@@ -381,7 +379,7 @@ class SetLevel(FSM):
 			if self.augustins:
 				path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
 			else:
-                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
+				path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
 		elif platform.system() == "Linux":
             		path = f"/home/{os.getlogin()}/.Therenor"
 		if not os.path.exists(path):
@@ -694,8 +692,7 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
-		if self.debug:
-			render.setLight(render.attachNewNode(AmbientLight("a")))
+		render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
 		if not self.manette:
 			self.accept("escape", self.confirm_quit)
@@ -902,19 +899,19 @@ class SetLevel(FSM):
 				self.player.walk = False
 				self.player.reverse = False
 				self.player.stop()	
-			"""if right_y.value > 0.5:
+			if right_y.value > 0.5:
 				self.player.followcam.move("up", globalClock.getDt())
 			elif right_y.value < -0.5:
 				self.player.followcam.move("down", globalClock.getDt())	
 			if right_x.value > 0.5:
 				self.player.followcam.move("right", globalClock.getDt())
 			elif right_x.value < -0.5:
-				self.player.followcam.move("left", globalClock.getDt())"""					
+				self.player.followcam.move("left", globalClock.getDt())				
 		#-----------------------Section mouvements du joueur------------------------
-		if self.player.getZ() > 50:
+		if self.player.getZ() > 60:
 		  self.player.setZ(self.player, -0.25)
 		else:
-		  self.player.setZ(10)
+		  self.player.setZ(60)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:

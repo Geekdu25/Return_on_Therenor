@@ -67,7 +67,7 @@ class FollowCam():
 		elif self.vue == 1:
 			self.camera.setPos(self.target.getPos())
 			self.camera.setY(self.camera, 5)
-			self.camera.setZ(self.camera, 60)
+			self.camera.setZ(self.camera, 80)
 			self.camera.lookAt(self.camera.getPos() + Vec3(0, -10, 0))
 			self.camera.setH(self.target.getH()+180)
 		return task.cont
@@ -89,34 +89,58 @@ class ManetteCam():
 	def __init__(self, camera, target):
 		self.camera = camera
 		self.target = target
+		self.dummy = self.target.attachNewNode("cam" + target.getName())
+		self.dummy.setZ(self.dummy, 0.25)
+		self.dummy.setH(90)
+		self.target.setH(180)
+		self.camera.reparentTo(self.dummy)
+		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		self.active = True
 		self.vue = True
+		camera.node().getLens().setFov(120)
+		taskMgr.add(self.update_camera, "updateCamera")
 		
 	def change_vue(self):
 		if self.vue:
 			self.vue = False
+			self.camera.setPos(self.dummy, Vec3(0, 0, 0))
 		else:
-			self.vue = True		
+			self.vue = True	
+			self.camera.setPos(self.camera, Vec3(-2, 0, 0))	
+			
+	def set_active(self, active=True):
+		self.active = active
+		if self.active:
+			taskMgr.add(self.update_camera, "updateCamera")	
+		else:
+			taskMgr.remove("updateCamera")		
+			
+	def	update_camera(self, task):
+		"""
+		Fonction de mise à jour de la caméra.
+		"""
+		self.camera.lookAt(self.dummy)
+		return task.cont
+		
 		
 	def move(self, direction="up", time=0.1):
 		if self.vue:
-			self.camera.setPos(self.target.getPos())
 			if direction == "up":
-				self.camera.setZ(self.camera, 2*time)
+				if self.dummy.getR() < 180:
+					self.dummy.setR(self.dummy, time*20)
 			elif direction == "down":
-				self.camera.setZ(self.camera, -2*time)
+				if self.dummy.getR() > 0:
+					self.dummy.setR(self.dummy, -time*20)
 			elif direction == "left":
-				self.camera.setY(self.camera, 2*time)
+				self.dummy.setH(self.dummy, -time*20)
 			else:
-				self.camera.setY(self.camera, -2*time)			
-			self.camera.lookAt(self.target)	
+				self.dummy.setH(self.dummy, time*20)			
 		else:
-			self.camera.setPos(self.target.getPos())
 			if direction == "up":
-				self.camera.setH(self.camera, 2*time)
+				self.dummy.setP(self.dummy, time*20)
 			elif direction == "down":
-				self.camera.setH(self.camera, -2*time)
+				self.dummy.setP(self.dummy, -time*20)
 			elif direction == "left":
-				self.camera.setR(self.camera, 2*time)
+				self.target.setH(self.dummy, time*20)
 			else:
-				self.camera.setR(self.camera, -2*time)			
+				self.target.setH(self.dummy, -time*20)		

@@ -25,19 +25,11 @@ class Player(Actor):
 		self.right = False
 		self.left = False
 		self.setHpr(90, 0, 0)
-		self.setScale(30)
+		self.setScale(50)
 		self.followcam = None
-		#---------------Section de gestion de l'épée-------------------------
-		if "epee" in self.inventaire:
-			self.rightHand = self.exposeJoint(None, 'modelRoot', 'hand.R')
-			self.epee = loader.loadModel("../models/sword.bam")
-			self.epee.setScale(0.3)
-			self.epee.setHpr(270, 0, 0)
-			self.epee.setX(self.epee, -1.5)
-			self.epee.reparentTo(self.rightHand)
 		#---------------Section de gestion des collisions------------------
 		self.col = CollisionNode('player_sphere')
-		self.col.addSolid(CollisionSphere((0, 0, 0.75), 1)) 
+		self.col.addSolid(CollisionSphere((0, 0, 0), 1.5)) 
 		self.col.setFromCollideMask(BitMask32.bit(0))
 		self.col.setIntoCollideMask(BitMask32.allOff()) 
 		self.col_np = self.attachNewNode(self.col)
@@ -46,11 +38,11 @@ class Player(Actor):
 	
 	def create_camera(self):
 		#----------------Notre caméra-------------------
-		"""if self.manette:
+		if self.manette:
 			self.followcam = ManetteCam(base.cam, self)
 		else:
-			self.followcam = FollowCam(base.cam, self)"""
-		self.followcam = FollowCam(base.cam, self)	
+			self.followcam = FollowCam(base.cam, self)
+		#self.followcam = FollowCam(base.cam, self)	
 		
 		
 class PNJ(Actor):
