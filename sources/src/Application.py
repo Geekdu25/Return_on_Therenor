@@ -324,6 +324,7 @@ class SetLevel(FSM):
 
 	def fade_out(self, state="Menu"):
 		self.transition.fadeOut(1)
+		self.ignore("f1")
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 1)).start()
 		taskMgr.doMethodLater(1, self.change_state, "requete", extraArgs=[state])
 
@@ -465,8 +466,10 @@ class SetLevel(FSM):
 		del self.buttons_erase
 		for name in self.names:
 			name.removeNode()
-		del self.names
-
+		del self.names	
+		self.button_mapping.removeNode()
+		del self.button_mapping	
+		
 	def verify(self, file):
 		"""
 		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
@@ -489,18 +492,14 @@ class SetLevel(FSM):
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
 		self.transition.fadeIn(2)
-		#DGG.getDefaultFont().setPixelsPerUnit(100)
-        # Store our mapping, with some sensible defaults.  In a real game, you
-        # will want to load these from a configuration file.
 		self.mapping = InputMapping()
-		self.mapping.mapAxis("Move forward", InputDevice.Axis.left_y)
-		self.mapping.mapAxis("Move backward", InputDevice.Axis.left_y)
-		self.mapping.mapAxis("Move left", InputDevice.Axis.left_x)
-		self.mapping.mapAxis("Move right", InputDevice.Axis.left_x)
-		self.mapping.mapButton("Jump", GamepadButton.face_a())
-		self.mapping.mapButton("Use", GamepadButton.face_b())
-		self.mapping.mapButton("Break", GamepadButton.face_x())
-		self.mapping.mapButton("Fix", GamepadButton.face_y())
+		self.mapping.mapAxis("Avancer", InputDevice.Axis.left_y)
+		self.mapping.mapAxis("Reculer", InputDevice.Axis.left_y)
+		self.mapping.mapAxis("Aller à gauche", InputDevice.Axis.left_x)
+		self.mapping.mapAxis("Aller à droite", InputDevice.Axis.left_x)
+		self.mapping.mapButton("Courir", GamepadButton.face_a())
+		self.mapping.mapButton("Interagir", GamepadButton.face_b())
+		self.mapping.mapButton("Inventaire", GamepadButton.face_y())
 
         # The geometry for our basic buttons
 		maps = loader.loadModel("gui/button_map")
@@ -585,6 +584,7 @@ class SetLevel(FSM):
 		# recalculate the canvas size to set scrollbars if necesary
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
 		self.lstActionMap.setCanvasSize()		
+		self.button_retour = DirectButton(text="Retour", pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
         
 	def closeDialog(self, action, newInputType, newInput):
 		self.dlgInput = None
@@ -663,7 +663,6 @@ class SetLevel(FSM):
 					self.axisStates[device][axis.axis] - DEAD_ZONE > axis.value:
                     # set the current state in the dict
 					self.axisStates[device][axis.axis] = axis.value
-
                     # Format the axis for being displayed.
 					if axis.axis != InputDevice.Axis.none:
                         #label = axis.axis.name.replace('_', ' ').title()
@@ -722,6 +721,18 @@ class SetLevel(FSM):
 		btn.setTransparency(True)
 		btn.reparentTo(item)
 		return item    
+	
+	def exitMapping(self):
+		self.listBGEven.removeNode()
+		self.listBGOdd.removeNode()
+		del self.listBGEven
+		del self.listBGOdd
+		self.title.removeNode()
+		self.lstActionMap.removeNode()
+		del self.lstActionMap
+		del self.title
+		self.button_retour.removeNode()
+		del self.button_retour	
 	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
 		"""
