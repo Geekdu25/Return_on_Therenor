@@ -15,7 +15,6 @@ from direct.actor.Actor import Actor
 from personnages import *
 from monsters import *
 from objects import *
-from mappingGUI import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
 import os, sys, json, platform
 
@@ -397,116 +396,6 @@ class SetLevel(FSM):
 		self.textObject2.remove_node()
 		self.epee.removeNode()
 		del self.epee
-
-	#-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
-	def enterTrois_fichiers(self):
-		"""
-		Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
-		------------------------------------------------------------------------------------
-		return -> None
-		"""
-		self.music = loader.loadSfx("../sounds/para.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		if not self.manette:
-			self.ignore("f1")
-		else:
-			self.ignore("manette-face_b")
-			self.accept("manette-face_b", self.check_interact)	
-		self.skybox = loader.loadModel("skybox.bam")
-		self.skybox.setScale(10000)
-		self.skybox.setBin('background', 1)
-		self.skybox.setDepthWrite(0)
-		self.skybox.setLightOff()
-		self.skybox.reparentTo(render)
-		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
-		if platform.system() == "Windows":
-			if self.augustins:
-				path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
-			else:
-				path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
-		elif platform.system() == "Linux":
-            		path = f"/home/{os.getlogin()}/.Therenor"
-		if not os.path.exists(path):
-			os.mkdir(path)
-			for loop in range(3):
-				file = open(path+f"/save_{loop+1}.txt", "wt")
-				file.writelines(["_|0|1|3|3"])
-				file.close()
-		noms = []
-		for loop in range(3):
-			self.read(file=loop+1)
-			if self.player.nom != "_":
-				noms.append(self.player.nom)
-			else:
-				noms.append("Fichier vide")
-		self.player.nom = "Link"
-		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
-		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
-		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
-		self.button_mapping = DirectButton(text="Mappage de touches", scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
-		self.transition.fadeIn(1)
-
-	def confirm_erase(self, file=1):
-		"""
-		Fonction qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
-		----------------------------------------------------------------------------------------------------
-		file -> int
-		return -> None
-		"""
-		self.eraseDlg = YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
-
-
-	def erase_file(self, clickedYes, file):
-		"""
-		Fonction qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
-		---------------------------------------------------------------------------------------------
-		clickedYes -> bool
-		file -> int
-		return -> None
-		"""
-		self.eraseDlg.cleanup()
-		if clickedYes:
-			if platform.system() == "Windows":
-				if self.augustins:
-				    path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-				else:
-				    path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
-			elif platform.system() == "Linux":
-				path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-			fichier = open(path, "wt")
-			fichier.writelines(["_|0|1|3|3"])
-			fichier.close()
-			for button in self.buttons_erase:
-				button.removeNode()
-			for button in self.buttons_continue:
-				button.removeNode()
-			self.fade_out()
-
-
-
-	def exitTrois_fichiers(self):
-		"""
-		Fonction qui s'active lorsque l'on quitte l'état trois_fichiers.
-		----------------------------------------------------------------------
-		return -> None
-		"""
-		self.skybox.removeNode()
-		for file in self.files:
-			file.removeNode()
-		del self.files
-		for button in self.buttons_continue:
-			button.removeNode()
-		del self.buttons_continue
-		for button in self.buttons_erase:
-			button.removeNode()
-		del self.buttons_erase
-		for name in self.names:
-			name.removeNode()
-		del self.names	
-		self.button_mapping.removeNode()
-		del self.button_mapping	
 		
 	def verify(self, file):
 		"""
