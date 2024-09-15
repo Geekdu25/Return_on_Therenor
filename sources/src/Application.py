@@ -72,8 +72,6 @@ class SetLevel(FSM):
 		self.map = None
 		self.epee = None
 		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
-		if self.debug:
-			base.cTrav.showCollisions(render)
 		#------------Section sons (musique, dialogues...)--------------------
 		self.music = None
 		self.son = None
@@ -82,6 +80,8 @@ class SetLevel(FSM):
 		self.pnjs = []
 		self.current_porte = None
 		base.cTrav = CollisionTraverser()
+		if self.debug:
+			base.cTrav.showCollisions(render)
 		self.skybox = None
 		self.portails = {}
 		self.triggers = []
@@ -206,6 +206,29 @@ class SetLevel(FSM):
 			self.player.reverse = False
 			self.player.left = False
 			self.player.right = False
+			if not self.manette:
+				self.ignore("escape")
+				self.ignore("arrow_up")
+				self.ignore("arrow_up-up")
+				self.ignore("arrow_down")
+				self.ignore("arrow_down-up")
+				self.ignore("arrow_left")
+				self.ignore("arrow_left-up")
+				self.ignore("arrow_right")
+				self.ignore("arrow_right-up")
+				self.ignore("a")
+				self.ignore("b")
+				self.ignore("b-up")
+				self.ignore("e")
+			else:
+				self.ignore("manette-back")
+				self.ignore("manette-lshoulder")
+				self.ignore("manette-rshoulder")
+				self.ignore("manette-face_a")
+				self.ignore("manette-face_a-up")
+				self.ignore("manette-face_y")	
+			self.ignore("into")
+			self.ignore("out")
 			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:

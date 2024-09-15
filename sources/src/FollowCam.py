@@ -91,7 +91,7 @@ class ManetteCam():
 		self.target = target
 		self.dummy = self.target.attachNewNode("cam" + target.getName())
 		self.dummy.setZ(self.dummy, 0.25)
-		self.dummy.setH(90)
+		self.dummy.setH(270)
 		self.camera.reparentTo(self.dummy)
 		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		self.active = True
@@ -102,9 +102,11 @@ class ManetteCam():
 	def change_vue(self):
 		if self.vue:
 			self.vue = False
+			self.dummy.setH(270)
 			self.camera.setPos(self.dummy, Vec3(0, 0, 0))
 		else:
 			self.vue = True	
+			self.dummy.setH(180)
 			self.camera.setPos(self.camera, Vec3(-2, 0, 0))	
 			
 	def set_active(self, active=True):
@@ -122,10 +124,16 @@ class ManetteCam():
 		return task.cont
 		
 	def recenter(self):
-		self.dummy.setPos((0, 0, 0.25))
-		self.dummy.setHpr((0, 0, 0))
-		self.camera.setPos((-2, 0, 0))	
-		self.camera.setHpr((0, 0, 0))
+		if self.vue:
+			self.dummy.setPos((0, 0, 0.25))
+			self.dummy.setHpr((270, 0, 0))
+			self.camera.setPos((-2, 0, 0))	
+			self.camera.setHpr((0, 0, 0))
+		else:
+			self.dummy.setPos((0, 0, 0.25))
+			self.dummy.setHpr((180, 0, 0))
+			self.camera.setPos((0, 0, 0))	
+			self.camera.setHpr((0, 0, 0))	
 		
 	def move(self, direction="up", time=0.1):
 		if self.vue:
@@ -136,14 +144,22 @@ class ManetteCam():
 				if self.dummy.getR() > -30:
 					self.dummy.setR(self.dummy, -time*50)
 			elif direction == "left":
+				save_r = self.dummy.getR()
+				self.dummy.setR(0)
 				self.dummy.setH(self.dummy, -time*50)
+				self.dummy.setR(save_r)
 			else:
-				self.dummy.setH(self.dummy, time*50)			
+				save_r = self.dummy.getR()
+				self.dummy.setR(0)
+				self.dummy.setH(self.dummy, time*50)
+				self.dummy.setR(save_r)			
 		else:
 			if direction == "up":
-				self.dummy.setP(self.dummy, time*50)
+				if self.dummy.getP() < 30:
+					self.dummy.setP(self.dummy, time*50)
 			elif direction == "down":
-				self.dummy.setP(self.dummy, -time*50)
+				if self.dummy.getP() > -30:
+					self.dummy.setP(self.dummy, -time*50)
 			elif direction == "left":
 				self.target.setH(self.target, time*50)
 			else:
