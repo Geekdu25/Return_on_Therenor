@@ -109,6 +109,7 @@ class SetLevel(FSM):
 		self.quitDlg = None		
 		self.load_gui()
 		self.transition = Transitions(loader)
+		self.augustins = False
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
