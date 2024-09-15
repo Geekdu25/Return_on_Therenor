@@ -102,10 +102,7 @@ class SetLevel(FSM):
 		self.current_point = 1		
 		self.actual_statue = None
 		self.actual_file = 1
-		self.manette = base.devices.getDevices(InputDevice.DeviceClass.gamepad)
-		if self.manette:
-			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
-			self.player.manette = True
+		self.manette = False
 		self.quitDlg = None		
 		self.load_gui()
 		self.transition = Transitions(loader)
@@ -554,8 +551,6 @@ class SetLevel(FSM):
         #On charge la géométrie des boutons
 		maps = loader.loadModel("gui/button_map")
 		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
-        #On charge la forme de notre nouvelle boîte de dilogue.
-		DGG.setDefaultDialogGeom("gui/dialog.png")
         #Ici, on crée un titre
 		self.textscale = 0.1
 		self.title = DirectLabel(
@@ -619,7 +614,7 @@ class SetLevel(FSM):
 			mapped = self.mapping.formatMapping(action)
 			item = self.__makeListItem(action, mapped, idx)
 			item.reparentTo(self.lstActionMap.getCanvas())
-			idx += 1
+			idx += 1		
 		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
 		self.lstActionMap.setCanvasSize()		

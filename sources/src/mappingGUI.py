@@ -98,9 +98,6 @@ class ChangeActionDialog(object):
             command=self.onClose)
         self.dialog.setTransparency(True)
         self.dialog.configureDialog()
-        scale = self.dialog["image_scale"]
-        self.dialog["image_scale"] = (scale[0]/2.0, scale[1], scale[2]/2.0)
-        self.dialog["text_pos"] = (self.dialog["text_pos"][0], self.dialog["text_pos"][1] + 0.06)
 
     def buttonPressed(self, button):
         if any(button.guiItem.getState() == 1 for button in self.dialog.buttonList):
