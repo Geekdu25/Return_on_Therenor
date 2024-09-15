@@ -443,7 +443,6 @@ class SetLevel(FSM):
 		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
 		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
-		self.button_mapping = DirectButton(text="Mappage de touches", scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
