@@ -502,8 +502,6 @@ class SetLevel(FSM):
 		for name in self.names:
 			name.removeNode()
 		del self.names	
-		self.button_mapping.removeNode()
-		del self.button_mapping	
 		
 	def verify(self, file):
 		"""
