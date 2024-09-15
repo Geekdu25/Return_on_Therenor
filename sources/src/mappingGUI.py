@@ -4,22 +4,8 @@ Demonstrate how a simple button mapping gui can be written
 '''
 
 from direct.showbase.ShowBase import ShowBase
-from direct.gui.DirectGui import (
-    DGG,
-    DirectFrame,
-    DirectButton,
-    DirectLabel,
-    OkCancelDialog,
-    DirectScrolledFrame)
-from panda3d.core import (
-    VBase4,
-    TextNode,
-    Vec2,
-    InputDevice,
-    loadPrcFileData,
-    loadPrcFile,
-    GamepadButton,
-    KeyboardButton)
+from direct.gui.DirectGui import *
+from panda3d.core import *
 
 # Make sure the textures look crisp on every device that supports
 # non-power-2 textures

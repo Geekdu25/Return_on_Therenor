@@ -323,13 +323,26 @@ class SetLevel(FSM):
 		return task.cont
 
 	def fade_out(self, state="Menu"):
+		"""
+		Fonction qui permet au FSM de changer de state avec un fade out visuel et sonore.
+		---------------------------------------------------------------------
+		state -> str
+		return None
+		"""
 		self.transition.fadeOut(1)
 		self.ignore("f1")
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 1)).start()
 		taskMgr.doMethodLater(1, self.change_state, "requete", extraArgs=[state])
 
 	def change_state(self, state):
+		"""
+		Fonction qui fonctionne de paire avec la fonction fade_out.
+		------------------------------------------------------------
+		state -> str
+		return -> None
+		"""
 		self.request(state)
+		
 	#---------------------------Ecran titre--------------------------------
 	def enterMenu(self):
 		"""
@@ -377,6 +390,8 @@ class SetLevel(FSM):
 	def exitMenu(self):
 		"""
 		Fonction qui s'acive quand on quitte l'écran titre.
+		-----------------------------------------------------
+		return -> None
 		"""
 		self.textObject1.remove_node()
 		self.textObject2.remove_node()
@@ -385,6 +400,11 @@ class SetLevel(FSM):
 
 	#-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
 	def enterTrois_fichiers(self):
+		"""
+		Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
+		------------------------------------------------------------------------------------
+		return -> None
+		"""
 		self.music = loader.loadSfx("../sounds/para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
@@ -429,10 +449,23 @@ class SetLevel(FSM):
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
+		"""
+		Fonction qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
+		----------------------------------------------------------------------------------------------------
+		file -> int
+		return -> None
+		"""
 		self.eraseDlg = YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
 
 
 	def erase_file(self, clickedYes, file):
+		"""
+		Fonction qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
+		---------------------------------------------------------------------------------------------
+		clickedYes -> bool
+		file -> int
+		return -> None
+		"""
 		self.eraseDlg.cleanup()
 		if clickedYes:
 			if platform.system() == "Windows":
@@ -454,6 +487,11 @@ class SetLevel(FSM):
 
 
 	def exitTrois_fichiers(self):
+		"""
+		Fonction qui s'active lorsque l'on quitte l'état trois_fichiers.
+		----------------------------------------------------------------------
+		return -> None
+		"""
 		self.skybox.removeNode()
 		for file in self.files:
 			file.removeNode()
@@ -479,20 +517,33 @@ class SetLevel(FSM):
 		"""
 		self.actual_file = file
 		self.read(file=file)
+		#--------------Initialisation-----------------
 		if self.chapitre == 0:
 			self.request("Init")
+		#----------------La légende------------------------	
 		elif self.chapitre == 1:
 			self.request("Legende")
+		#-----------------On charge la map-----------------------------------	
 		elif self.chapitre == 2:
 			self.transition.fadeOut(2)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 			taskMgr.doMethodLater(2, self.on_change, "on change")
+		#------------Générique---------------------------	
 		else:
 			self.request("Generique")
+			
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
+		"""
+		Fonction inspirée du script mappingGUI des samples de panda3d.
+		----------------------------------------------------------------
+		Elle se déclenche lorsque l'on entre dans l'état Mapping.
+		-------------------------------------------------------------
+		return -> None
+		"""
+		#Petit fade in (sinon on n'y voit rien)
 		self.transition.fadeIn(2)
-		self.mapping = InputMapping()
+		self.mapping = InputMapping() #On crée une instnce de la classe InputMapping.
 		self.mapping.mapAxis("Avancer", InputDevice.Axis.left_y)
 		self.mapping.mapAxis("Reculer", InputDevice.Axis.left_y)
 		self.mapping.mapAxis("Aller à gauche", InputDevice.Axis.left_x)
@@ -500,15 +551,12 @@ class SetLevel(FSM):
 		self.mapping.mapButton("Courir", GamepadButton.face_a())
 		self.mapping.mapButton("Interagir", GamepadButton.face_b())
 		self.mapping.mapButton("Inventaire", GamepadButton.face_y())
-
-        # The geometry for our basic buttons
+        #On charge la géométrie des boutons
 		maps = loader.loadModel("gui/button_map")
 		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
-
-        # Change the default dialog skin.
+        #On charge la forme de notre nouvelle boîte de dilogue.
 		DGG.setDefaultDialogGeom("gui/dialog.png")
-
-        # create a sample title
+        #Ici, on crée un titre
 		self.textscale = 0.1
 		self.title = DirectLabel(
 		scale=self.textscale,
@@ -520,9 +568,7 @@ class SetLevel(FSM):
 		text_shadow=VBase4(0, 0, 0, 0.75),
 		text_shadowOffset=Vec2(0.05, 0.05))
 		self.title.setTransparency(1)
-		# Set up the list of actions that we can map keys to
-        # create a frame that will create the scrollbars for us
-        # Load the models for the scrollbar elements
+		#---------------------------------------------------
 		thumbMaps = loader.loadModel("gui/thumb_map")
 		thumbGeom = (
 		thumbMaps.find("**/thumb_ready"),
@@ -541,36 +587,30 @@ class SetLevel(FSM):
 		decMaps.find("**/dec_click"),
 		decMaps.find("**/dec_hover"),
 		decMaps.find("**/dec_disabled"))
-
-        # create the scrolled frame that will hold our list
+        #On crée le menu qui contiendra notre liste
 		self.lstActionMap = DirectScrolledFrame(
-		# make the frame occupy the whole window
+		#On lui fait prendre toute la taille de la fenêtre
 		frameSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 1.55),
-		# make the canvas as big as the frame
+		#On fait en sorte que le canevas soit aussi grand que le menu
 		canvasSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 0.0),
-		# set the frames color to white
+		#Et on change la couleur du menu en blanc.
 		frameColor=VBase4(0, 0, 0.25, 0.75),
 		pos=(0, 0, -0.8),
-
 		verticalScroll_scrollSize=0.2,
 		verticalScroll_frameColor=VBase4(0.02, 0.02, 0.02, 1),
-
 		verticalScroll_thumb_relief=1,
 		verticalScroll_thumb_geom=thumbGeom,
 		verticalScroll_thumb_pressEffect=False,
 		verticalScroll_thumb_frameColor=VBase4(0, 0, 0, 0),
-
 		verticalScroll_incButton_relief=1,
 		verticalScroll_incButton_geom=incGeom,
 		verticalScroll_incButton_pressEffect=False,
 		verticalScroll_incButton_frameColor=VBase4(0, 0, 0, 0),
-
 		verticalScroll_decButton_relief=1,
 		verticalScroll_decButton_geom=decGeom,
 		verticalScroll_decButton_pressEffect=False,
 		verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
-
-        # creat the list items
+		#On crée notre liste
 		idx = 0
 		self.listBGEven = base.loader.loadModel("gui/list_item_even")
 		self.listBGOdd = base.loader.loadModel("gui/list_item_odd")
@@ -580,26 +620,28 @@ class SetLevel(FSM):
 			item = self.__makeListItem(action, mapped, idx)
 			item.reparentTo(self.lstActionMap.getCanvas())
 			idx += 1
-
-		# recalculate the canvas size to set scrollbars if necesary
+		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
 		self.lstActionMap.setCanvasSize()		
 		self.button_retour = DirectButton(text="Retour", pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
         
 	def closeDialog(self, action, newInputType, newInput):
+		"""
+		Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue 
+		qui s'affiche quand on change les touches.
+		-------------------------------------------------------------
+		return -> None
+		"""
 		self.dlgInput = None
-
 		if newInputType is not None:
-            # map the event to the given action
+            #On change l'évènement pour l'action donnée.
 			if newInputType == "axis":
 				self.mapping.mapAxis(action, newInput)
 			else:
 				self.mapping.mapButton(action, newInput)
-            # actualize the label in the list that shows the current
-            # event for the action
+            #On met à jour la taille du texte dns la liste.
 			self.actionLabels[action]["text"] = self.mapping.formatMapping(action)
-
-        # cleanup
+        #On efface ce qui n'est pas nécessaire.
 		for bt in base.buttonThrowers:
 			bt.node().setSpecificFlag(True)
 			bt.node().setButtonDownEvent("")
@@ -607,22 +649,25 @@ class SetLevel(FSM):
 			bt.node().setSpecificFlag(True)
 			bt.node().setButtonDownEvent("")
 		taskMgr.remove("checkControls")
-
-        # Now detach all the input devices.
+        #On désactive les périphériques d'entrée.
 		for device in self.attachedDevices:
 			base.detachInputDevice(device)
 		self.attachedDevices.clear()
 
 	def changeMapping(self, action):
-        # Create the dialog window
+		"""
+		Fonction qui permet d'afficher le dialogue pour changer les touches.
+		----------------------------------------------------------------------
+		action -> str
+		return -> None
+		"""
+        #On crée notre fenêtre de dialogue.
 		self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
-
-        # Attach all input devices.
+        #On attache les périphériques d'entrée
 		devices = base.devices.getDevices()
 		for device in devices:
 			base.attachInputDevice(device)
-		self.attachedDevices = devices
-
+			self.attachedDevices = devices
         # Disable regular button events on all button event throwers, and
         # instead broadcast a generic event.
 		for bt in base.buttonThrowers:
@@ -671,6 +716,14 @@ class SetLevel(FSM):
 		return task.cont
 
 	def __makeListItem(self, action, event, index):
+		"""
+		Fonction appelée pour créer un contenu.
+		------------------------------------------
+		action -> str
+		event -> str
+		index -> int
+		return -> DrectFrame
+		"""
 		def dummy(): pass
 		if index % 2 == 0:
 			bg = self.listBGEven
@@ -723,6 +776,11 @@ class SetLevel(FSM):
 		return item    
 	
 	def exitMapping(self):
+		"""
+		Fonction qui s'active lorsque l'on quitte le mappage de touches.
+		---------------------------------------------------------------
+		return -> None
+		"""
 		self.listBGEven.removeNode()
 		self.listBGOdd.removeNode()
 		del self.listBGEven
@@ -733,6 +791,7 @@ class SetLevel(FSM):
 		del self.title
 		self.button_retour.removeNode()
 		del self.button_retour	
+		
 	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
 		"""
