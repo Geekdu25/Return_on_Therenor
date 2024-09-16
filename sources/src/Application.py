@@ -1223,7 +1223,7 @@ class SetLevel(FSM):
 		self.music = loader.loadSfx("../sounds/Thème_de_Therenor.ogg")
 		self.music.setLoop(True)
 		self.music.play()
-		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémi Martinot     Noé Mora", False), ("Etienne Pacault", False),
+		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémy Martinot     Noé Mora", False), ("Etienne Pacault", False),
 		("Music :", True),  ("Etienne Pacault", False),
 		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False),
 		("And thank you to everyone we probably forgot ! :-)", False)]
