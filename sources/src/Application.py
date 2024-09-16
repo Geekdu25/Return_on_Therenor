@@ -99,6 +99,7 @@ class SetLevel(FSM):
 		self.text_index = 0
 		self.letter_index = 0
 		self.objects = []
+		self.keys_data = {}
 		self.current_point = 1		
 		self.actual_statue = None
 		self.actual_file = 1
@@ -207,37 +208,15 @@ class SetLevel(FSM):
 			self.player.reverse = False
 			self.player.left = False
 			self.player.right = False
-			if not self.manette:
-				self.ignore("escape")
-				self.ignore("arrow_up")
-				self.ignore("arrow_up-up")
-				self.ignore("arrow_down")
-				self.ignore("arrow_down-up")
-				self.ignore("arrow_left")
-				self.ignore("arrow_left-up")
-				self.ignore("arrow_right")
-				self.ignore("arrow_right-up")
-				self.ignore("a")
-				self.ignore("b")
-				self.ignore("b-up")
-				self.ignore("e")
-			else:
-				self.ignore("manette-back")
-				self.ignore("manette-lshoulder")
-				self.ignore("manette-rshoulder")
-				self.ignore("manette-face_a")
-				self.ignore("manette-face_a-up")
-				self.ignore("manette-face_y")	
+			for event in self.keys_data:
+				self.ignore(self.keys_data[event])	
 			self.ignore("into")
 			self.ignore("out")
 			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
-			if not self.manette:
-				self.ignore("escape")
-			else:
-				self.ignore("manette-back")	
+			self.ignore("escape")	
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
 
 	def check_interact_dial(self):
@@ -384,8 +363,6 @@ class SetLevel(FSM):
 		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
 		self.textObject1.setFont(self.font)
 		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
-		if self.manette:
-			self.textObject2.setText("Appuyez sur B pour commencer")
 		self.textObject2.setFont(self.font)
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(base.cam)
@@ -399,12 +376,8 @@ class SetLevel(FSM):
 		interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
 		s = Sequence(interval, interval2, interval3, interval4)
 		s.loop()
-		if not self.manette:
-			self.accept("escape", self.all_close)
-			self.accept("f1", self.fade_out, extraArgs=["Trois_fichiers"])
-		else:
-			self.accept("manette-back", sys.exit)
-			self.accept("manette-face_b", self.fade_out, extraArgs=["Trois_fichiers"])
+		self.accept("escape", self.all_close)
+		self.acceptOnce("f1", self.fade_out, extraArgs=["Trois_fichiers"])
 
 
 
@@ -430,11 +403,6 @@ class SetLevel(FSM):
 		self.music.setLoop(True)
 		self.music.play()
 		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		if not self.manette:
-			self.ignore("f1")
-		else:
-			self.ignore("manette-face_b")
-			self.accept("manette-face_b", self.check_interact)	
 		self.skybox = loader.loadModel("skybox.bam")
 		self.skybox.setScale(10000)
 		self.skybox.setBin('background', 1)
@@ -452,7 +420,7 @@ class SetLevel(FSM):
 				file.close()
 		if not os.path.exists(path+"/keys.json"):		
 			file = open(path+"/keys.json", "wt")
-			file.writelines(['[{"Avancer":"arrow_up", "Reculer":"arrow_down", "Aller à droite":"arrow_right", "Aller à gauche":"arrow_left", "Monter la caméra":"i", "Descendre la caméra":"k", "Caméra à droite":"l", "Caméra à gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+			file.writelines(['[{"Avancer":"arrow_up", "Reculer":"arrow_down", "Aller a droite":"arrow_right", "Aller a gauche":"arrow_left", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
 			file.close()	
 		noms = []
 		for loop in range(3):
@@ -463,7 +431,7 @@ class SetLevel(FSM):
 				noms.append("Fichier vide")
 		self.player.nom = "Link"
 		file = open(path+"/keys.json", "rt")
-		keys_data = json.load(file)
+		self.keys_data = json.load(file)[0]
 		file.close()
 		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
 		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
@@ -1042,27 +1010,23 @@ class SetLevel(FSM):
 		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
 		render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
-		if not self.manette:
-			self.accept("escape", self.confirm_quit)
-			self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
-			self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
-			self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
-			self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
-			self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
-			self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
-			self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
-			self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
-			self.accept("a", self.player.followcam.change_vue)
-			self.accept("b", self.change_vitesse, extraArgs=["b"])
-			self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
-			self.accept("e", self.inventaire)
-		else:
-			self.accept("manette-back", self.confirm_quit)
-			self.accept("manette-lshoulder", self.player.followcam.change_vue)
-			self.accept("manette-rshoulder", self.player.followcam.recenter)
-			self.accept("manette-face_a", self.change_vitesse, extraArgs=["b"])
-			self.accept("manette-face_a-up", self.change_vitesse, extraArgs=["b-up"])
-			self.accept("manette-face_y", self.inventaire)	
+		self.accept("escape", self.confirm_quit)
+		self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+		self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
+		self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
+		self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
+		self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
+		self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
+		self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
+		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
+		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
+		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
+		self.accept(self.keys_data["Inventaire"], self.inventaire)
+		self.accept("time-"+self.keys_data["Monter la camera"], self.player.followcam.move)
+		self.accept("time-"+self.keys_data["Descendre la camera"], self.player.followcam.move, extraArgs=["down"])
+		self.accept("time-"+self.keys_data["Camera a gauche"], self.player.followcam.move, extraArgs=["left"])
+		self.accept("time-"+self.keys_data["Camera a droite"], self.player.followcam.move, extraArgs=["right"])
 		self.accept("into", self.into)
 		self.accept("out", self.out)	
 		taskMgr.add(self.update, "update")
@@ -1328,6 +1292,7 @@ class SetLevel(FSM):
 			self.ignore("manette-back")	
 			self.ignore("manette-lshoulder")			
 		self.player.stop()
+		base.cam.reparentTo(render)
 
 	def confirm_quit(self):
 		taskMgr.remove("update")

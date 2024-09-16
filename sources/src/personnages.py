@@ -17,7 +17,6 @@ class Player(Actor):
 		self.vies = 3
 		self.maxvies = 3
 		self.inventaire = ["epee"]
-		self.manette = False
 		#--------------------Quelques paramètres simples-----------------------------------
 		self.vitesse = 2.5
 		self.walk = False
@@ -37,12 +36,7 @@ class Player(Actor):
 	
 	
 	def create_camera(self):
-		#----------------Notre caméra-------------------
-		if self.manette:
-			self.followcam = ManetteCam(base.cam, self)
-		else:
-			self.followcam = FollowCam(base.cam, self)
-		#self.followcam = FollowCam(base.cam, self)	
+		self.followcam = ManetteCam(base.cam, self)
 		
 		
 class PNJ(Actor):
