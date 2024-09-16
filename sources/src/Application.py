@@ -15,6 +15,7 @@ from direct.actor.Actor import Actor
 from personnages import *
 from monsters import *
 from objects import *
+from mappingGUI import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
 import os, sys, json, platform
 
@@ -101,10 +102,7 @@ class SetLevel(FSM):
 		self.current_point = 1		
 		self.actual_statue = None
 		self.actual_file = 1
-		self.manette = base.devices.getDevices(InputDevice.DeviceClass.gamepad)
-		if self.manette:
-			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
-			self.player.manette = True
+		self.manette = False
 		self.quitDlg = None		
 		self.load_gui()
 		self.transition = Transitions(loader)
@@ -114,6 +112,8 @@ class SetLevel(FSM):
 				self.augustins = True
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
+		self.accept("escape", self.all_close)
+		base.win.setCloseRequestEvent("escape")
 		if not self.manette:
 			self.accept("space", self.check_interact)	
 
@@ -341,7 +341,29 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.request(state)
+	
+	def all_close(self):
+		"""
+		Fonction pour fermer la fenêtre et quitter le programme.
+		----------------------------------------------------------
+		return -> None
+		"""
+		base.destroy()
+		os._exit(0)	
 		
+	def get_path(self):
+		"""
+		Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
+		--------------------------------------------------------------------------
+		return -> str
+		"""
+		if platform.system() == "Windows":
+			if self.augustins:
+				return f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
+			else:
+				return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
+		else:
+			return f"/home/{os.getlogin()}/.Therenor"				
 	#---------------------------Ecran titre--------------------------------
 	def enterMenu(self):
 		"""
@@ -378,7 +400,7 @@ class SetLevel(FSM):
 		s = Sequence(interval, interval2, interval3, interval4)
 		s.loop()
 		if not self.manette:
-			self.accept("escape", sys.exit)
+			self.accept("escape", self.all_close)
 			self.accept("f1", self.fade_out, extraArgs=["Trois_fichiers"])
 		else:
 			self.accept("manette-back", sys.exit)
@@ -397,6 +419,7 @@ class SetLevel(FSM):
 		self.epee.removeNode()
 		del self.epee
 
+	#-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
 	def enterTrois_fichiers(self):
 		"""
 		Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
@@ -419,19 +442,18 @@ class SetLevel(FSM):
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
 		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
-		if platform.system() == "Windows":
-			if self.augustins:
-				path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
-			else:
-				path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
-		elif platform.system() == "Linux":
-            		path = f"/home/{os.getlogin()}/.Therenor"
+		path = self.get_path()
 		if not os.path.exists(path):
 			os.mkdir(path)
-			for loop in range(3):
+		for loop in range(3):
+			if not os.path.exists(path+f"/save_{loop+1}.txt"):
 				file = open(path+f"/save_{loop+1}.txt", "wt")
 				file.writelines(["_|0|1|3|3"])
 				file.close()
+		if not os.path.exists(path+"/keys.json"):		
+			file = open(path+"/keys.json", "wt")
+			file.writelines(['[{"Avancer":"arrow_up", "Reculer":"arrow_down", "Aller à droite":"arrow_right", "Aller à gauche":"arrow_left", "Monter la caméra":"i", "Descendre la caméra":"k", "Caméra à droite":"l", "Caméra à gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+			file.close()	
 		noms = []
 		for loop in range(3):
 			self.read(file=loop+1)
@@ -440,9 +462,13 @@ class SetLevel(FSM):
 			else:
 				noms.append("Fichier vide")
 		self.player.nom = "Link"
+		file = open(path+"/keys.json", "rt")
+		keys_data = json.load(file)
+		file.close()
 		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
 		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
+		self.button_mapping = DirectButton(text="Mappage de touches", scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
@@ -465,14 +491,7 @@ class SetLevel(FSM):
 		"""
 		self.eraseDlg.cleanup()
 		if clickedYes:
-			if platform.system() == "Windows":
-				if self.augustins:
-				    path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-				else:
-				    path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
-			elif platform.system() == "Linux":
-				path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-			fichier = open(path, "wt")
+			fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
 			fichier.writelines(["_|0|1|3|3"])
 			fichier.close()
 			for button in self.buttons_erase:
@@ -502,6 +521,8 @@ class SetLevel(FSM):
 		for name in self.names:
 			name.removeNode()
 		del self.names	
+		self.button_mapping.removeNode()
+		del self.button_mapping	
 		
 	def verify(self, file):
 		"""
@@ -527,7 +548,265 @@ class SetLevel(FSM):
 		else:
 			self.request("Generique")
 			
+	#-------------------------------Gestion du mappage de touches--------------------------------------------------
+	def enterMapping(self):
+		"""
+		Fonction inspirée du script mappingGUI des samples de panda3d.
+		----------------------------------------------------------------
+		Elle se déclenche lorsque l'on entre dans l'état Mapping.
+		-------------------------------------------------------------
+		return -> None
+		"""		
+		file = open(self.get_path()+"/keys.json", "rt")
+		keys_data = json.load(file)
+		file.close()
+		keys_data = keys_data[0]
+		self.mapping = InputMapping(keys_data) #On crée une instnce de la classe InputMapping.
+		for key in keys_data:
+			self.mapping.mapButton(key, keys_data[key])
+        #On charge la géométrie des boutons
+		maps = loader.loadModel("gui/button_map")
+		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
+        #Ici, on crée un titre
+		self.textscale = 0.1
+		self.title = DirectLabel(
+		scale=self.textscale,
+		pos=(base.a2dLeft + 0.05, 0.0, base.a2dTop - (self.textscale + 0.05)),
+		frameColor=VBase4(0, 0, 0, 0),
+		text="Paramétrage des touches",
+		text_align=TextNode.ALeft,
+		text_fg=VBase4(1, 1, 1, 1),
+		text_shadow=VBase4(0, 0, 0, 0.75),
+		text_shadowOffset=Vec2(0.05, 0.05))
+		self.title.setTransparency(1)
+		#---------------------------------------------------
+		thumbMaps = loader.loadModel("gui/thumb_map")
+		thumbGeom = (
+		thumbMaps.find("**/thumb_ready"),
+		thumbMaps.find("**/thumb_click"),
+		thumbMaps.find("**/thumb_hover"),
+		thumbMaps.find("**/thumb_disabled"))
+		incMaps = loader.loadModel("gui/inc_map")
+		incGeom = (
+		incMaps.find("**/inc_ready"),
+		incMaps.find("**/inc_click"),
+		incMaps.find("**/inc_hover"),
+		incMaps.find("**/inc_disabled"))
+		decMaps = loader.loadModel("gui/dec_map")
+		decGeom = (
+		decMaps.find("**/dec_ready"),
+		decMaps.find("**/dec_click"),
+		decMaps.find("**/dec_hover"),
+		decMaps.find("**/dec_disabled"))
+        #On crée le menu qui contiendra notre liste
+		self.lstActionMap = DirectScrolledFrame(
+		#On lui fait prendre toute la taille de la fenêtre
+		frameSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 1.55),
+		#On fait en sorte que le canevas soit aussi grand que le menu
+		canvasSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 0.0),
+		#Et on change la couleur du menu en blanc.
+		frameColor=VBase4(0, 0, 0.25, 0.75),
+		pos=(0, 0, -0.8),
+		verticalScroll_scrollSize=0.2,
+		verticalScroll_frameColor=VBase4(0.02, 0.02, 0.02, 1),
+		verticalScroll_thumb_relief=1,
+		verticalScroll_thumb_geom=thumbGeom,
+		verticalScroll_thumb_pressEffect=False,
+		verticalScroll_thumb_frameColor=VBase4(0, 0, 0, 0),
+		verticalScroll_incButton_relief=1,
+		verticalScroll_incButton_geom=incGeom,
+		verticalScroll_incButton_pressEffect=False,
+		verticalScroll_incButton_frameColor=VBase4(0, 0, 0, 0),
+		verticalScroll_decButton_relief=1,
+		verticalScroll_decButton_geom=decGeom,
+		verticalScroll_decButton_pressEffect=False,
+		verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
+		#On crée notre liste
+		idx = 0
+		self.listBGEven = base.loader.loadModel("gui/list_item_even")
+		self.listBGOdd = base.loader.loadModel("gui/list_item_odd")
+		self.actionLabels = {}
+		for action in self.mapping.actions:
+			mapped = self.mapping.formatMapping(action)
+			item = self.__makeListItem(action, mapped, idx)
+			item.reparentTo(self.lstActionMap.getCanvas())
+			idx += 1		
+		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
+		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
+		self.lstActionMap.setCanvasSize()		
+		self.button_retour = DirectButton(text="Retour", pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
+		#Petit fade in (sinon on n'y voit rien)
+		self.transition.fadeIn(2)
+        
+	def closeDialog(self, action, newInputType, newInput):
+		"""
+		Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue 
+		qui s'affiche quand on change les touches.
+		-------------------------------------------------------------
+		return -> None
+		"""
+		self.dlgInput = None
+		if newInputType is not None:
+            #On change l'évènement pour l'action donnée.
+			if newInputType == "axis":
+				self.mapping.mapAxis(action, newInput)
+			else:
+				self.mapping.mapButton(action, newInput)
+            #On met à jour la taille du texte dns la liste.
+			self.actionLabels[action]["text"] = self.mapping.formatMapping(action)
+        #On efface ce qui n'est pas nécessaire.
+		for bt in base.buttonThrowers:
+			bt.node().setSpecificFlag(True)
+			bt.node().setButtonDownEvent("")
+		for bt in base.deviceButtonThrowers:
+			bt.node().setSpecificFlag(True)
+			bt.node().setButtonDownEvent("")
+		taskMgr.remove("checkControls")
+        #On désactive les périphériques d'entrée.
+		for device in self.attachedDevices:
+			base.detachInputDevice(device)
+		self.attachedDevices.clear()
 
+	def changeMapping(self, action):
+		"""
+		Fonction qui permet d'afficher le dialogue pour changer les touches.
+		----------------------------------------------------------------------
+		action -> str
+		return -> None
+		"""
+        #On crée notre fenêtre de dialogue.
+		self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
+        #On attache les périphériques d'entrée
+		devices = base.devices.getDevices()
+		for device in devices:
+			base.attachInputDevice(device)
+		self.attachedDevices = devices
+        # Disable regular button events on all button event throwers, and
+        # instead broadcast a generic event.
+		for bt in base.buttonThrowers:
+			bt.node().setSpecificFlag(False)
+			bt.node().setButtonDownEvent("keyListenEvent")
+		for bt in base.deviceButtonThrowers:
+			bt.node().setSpecificFlag(False)
+			bt.node().setButtonDownEvent("deviceListenEvent")
+
+		self.accept("keyListenEvent", self.dlgInput.buttonPressed)
+		self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
+
+        # As there are no events thrown for control changes, we set up a task
+        # to check if the controls were moved
+        # This list will help us for checking which controls were moved
+		self.axisStates = {None: {}}
+        # fill it with all available controls
+		for device in devices:
+			for axis in device.axes:
+				if device not in self.axisStates.keys():
+					self.axisStates.update({device: {axis.axis: axis.value}})
+				else:
+					self.axisStates[device].update({axis.axis: axis.value})
+        # start the task
+		taskMgr.add(self.watchControls, "checkControls")
+
+	def watchControls(self, task):
+        # move through all devices and all it's controls
+		for device in self.attachedDevices:
+			if device.device_class == InputDevice.DeviceClass.mouse:
+                # Ignore mouse axis movement, or the user can't even navigate
+                # to the OK/Cancel buttons!
+				continue
+
+			for axis in device.axes:
+                # if a control got changed more than the given dead zone
+				if self.axisStates[device][axis.axis] + DEAD_ZONE < axis.value or \
+					self.axisStates[device][axis.axis] - DEAD_ZONE > axis.value:
+                    # set the current state in the dict
+					self.axisStates[device][axis.axis] = axis.value
+                    # Format the axis for being displayed.
+					if axis.axis != InputDevice.Axis.none:
+                        #label = axis.axis.name.replace('_', ' ').title()
+						self.dlgInput.axisMoved(axis.axis)
+
+		return task.cont
+
+	def __makeListItem(self, action, event, index):
+		"""
+		Fonction appelée pour créer un contenu.
+		------------------------------------------
+		action -> str
+		event -> str
+		index -> int
+		return -> DrectFrame
+		"""
+		def dummy(): pass
+		if index % 2 == 0:
+			bg = self.listBGEven
+		else:
+			bg = self.listBGOdd
+		item = DirectFrame(
+		text=action,
+		geom=bg,
+		geom_scale=(base.a2dRight-0.05, 1, 0.1),
+		frameSize=VBase4(base.a2dLeft+0.05, base.a2dRight-0.05, -0.05, 0.05),
+		frameColor=VBase4(1,0,0,0),
+		text_align=TextNode.ALeft,
+		text_scale=0.05,
+		text_fg=VBase4(1,1,1,1),
+		text_pos=(base.a2dLeft + 0.3, -0.015),
+		text_shadow=VBase4(0, 0, 0, 0.35),
+		text_shadowOffset=Vec2(-0.05, -0.05),
+		pos=(0.05, 0, -(0.10 * index)))
+		item.setTransparency(True)
+		lbl = DirectLabel(
+		text=event,
+		text_fg=VBase4(1, 1, 1, 1),
+		text_scale=0.05,
+		text_pos=Vec2(0, -0.015),
+		frameColor=VBase4(0, 0, 0, 0),
+		)
+		lbl.reparentTo(item)
+		lbl.setTransparency(True)
+		self.actionLabels[action] = lbl
+
+		buttonScale = 0.15
+		btn = DirectButton(
+		text="Change",
+		geom=self.buttonGeom,
+		scale=buttonScale,
+		text_scale=0.25,
+		text_align=TextNode.ALeft,
+		text_fg=VBase4(0.898, 0.839, 0.730, 1.0),
+		text_pos=Vec2(-0.9, -0.085),
+		relief=1,
+		pad=Vec2(0.01, 0.01),
+		frameColor=VBase4(0, 0, 0, 0),
+		frameSize=VBase4(-1.0, 1.0, -0.25, 0.25),
+		pos=(base.a2dRight-(0.898*buttonScale+0.3), 0, 0),
+		pressEffect=False,
+		command=self.changeMapping,
+		extraArgs=[action])
+		btn.setTransparency(True)
+		btn.reparentTo(item)
+		return item    
+	
+	def exitMapping(self):
+		"""
+		Fonction qui s'active lorsque l'on quitte le mappage de touches.
+		---------------------------------------------------------------
+		return -> None
+		"""
+		file = open(self.get_path()+"/keys.json", "wt")
+		file.writelines([json.dumps([self.mapping.get_map()])])
+		file.close()
+		self.listBGEven.removeNode()
+		self.listBGOdd.removeNode()
+		del self.listBGEven
+		del self.listBGOdd
+		self.title.removeNode()
+		self.lstActionMap.removeNode()
+		del self.lstActionMap
+		del self.title
+		self.button_retour.removeNode()
+		del self.button_retour	
 		
 	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
@@ -1343,14 +1622,7 @@ class SetLevel(FSM):
 			self.chapitre = 0
 			self.player.nom = "Link"
 			self.current_map = "maison_terenor.bam"
-		if platform.system() == "Windows":
-			if self.augustins:
-               			path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-			else:
-                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
-		else:
-            		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-		file = open(path, "wt")
+		file = open(self.get_path()+f"/save_{file}.txt", "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
@@ -1382,14 +1654,7 @@ class SetLevel(FSM):
 		-------------------------------------------------------------------
 		return -> None
 		"""
-		if platform.system() == "Windows":
-            		if self.augustins:
-                		path = f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor/save_{file}.txt"
-            		else:
-                		path = f"C://users/{os.getlogin()}/AppData/Roaming/Therenor/save_{file}.txt"
-		else:
-            		path = f"/home/{os.getlogin()}/.Therenor/save_{file}.txt"
-		fichier = open(path, "rt")
+		fichier = open(self.get_path()+f"/save_{file}.txt", "rt")
 		i = 0
 		for truc in fichier.read().split("|"):
 			i += 1
