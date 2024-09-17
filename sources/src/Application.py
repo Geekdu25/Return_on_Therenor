@@ -128,10 +128,7 @@ class SetLevel(FSM):
 		"""
 		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
 		self.text_game_over.hide()
-		if self.manette:
-			self.text_game_over_2 = OnscreenText("Appuyez sur A pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
-		else:
-			self.text_game_over_2 = OnscreenText("Appuyez sur B pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))	
+		self.text_game_over_2 = OnscreenText("Appuyez sur F1 pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
 		self.text_game_over_2.hide()
 		self.myOkDialog = None
 		self.coeurs_vides = []
@@ -1023,10 +1020,6 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
 		self.accept(self.keys_data["Inventaire"], self.inventaire)
-		self.accept("time-"+self.keys_data["Monter la camera"], self.player.followcam.move)
-		self.accept("time-"+self.keys_data["Descendre la camera"], self.player.followcam.move, extraArgs=["down"])
-		self.accept("time-"+self.keys_data["Camera a gauche"], self.player.followcam.move, extraArgs=["left"])
-		self.accept("time-"+self.keys_data["Camera a droite"], self.player.followcam.move, extraArgs=["right"])
 		self.accept("into", self.into)
 		self.accept("out", self.out)	
 		taskMgr.add(self.update, "update")
@@ -1266,42 +1259,15 @@ class SetLevel(FSM):
 		self.player.reverse = False
 		self.player.walk = False
 		taskMgr.remove("update")
-		if not self.manette:
-			self.ignore("arrow_up")
-			self.ignore("arrow_up-up")
-			self.ignore("arrow_down")
-			self.ignore("arrow_down-up")
-			self.ignore("arrow_left")
-			self.ignore("arrow_left-up")
-			self.ignore("arrow_right")
-			self.ignore("arrow_right-up")
-			self.ignore("a")
-			self.ignore("b")
-			self.ignore("b-up")
-			self.ignore("into")
-			self.ignore("out")
-			self.ignore("e")
-			self.ignore("escape")
-		else:
-			self.ignore("manette-face_b")
-			self.ignore("manette-face_a")
-			self.ignore("manette-face_a-up")
-			self.ignore("into")
-			self.ignore("out")
-			self.ignore("manette-face_y")
-			self.ignore("manette-back")	
-			self.ignore("manette-lshoulder")			
+		self.ignoreAll()
+		self.accept("escape", self.all_close)		
 		self.player.stop()
 		base.cam.reparentTo(render)
 
 	def confirm_quit(self):
 		taskMgr.remove("update")
-		if self.manette:
-			self.ignore("manette-back")
-			self.ignore("manette-face_y")
-		else:
-			self.ignore("e")
-			self.ignore("escape")	
+		self.ignore(self.keys_data["Inventaire"])
+		self.ignore("escape")	
 		if self.quitDlg is None:
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
@@ -1315,12 +1281,8 @@ class SetLevel(FSM):
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
 		else:
-			if not self.manette:
-				self.accept("escape", self.confirm_quit)
-				self.accept("e", self.inventaire)
-			else:
-				self.accept("manette-back", self.confirm_quit)
-				self.accept("manette-face_y", self.inventaire)	
+			self.accept("escape", self.confirm_quit)
+			self.accept(self.keys_data["Inventaire"], self.inventaire)	
 
 
 	def return_to_menu(self, task):
@@ -1337,34 +1299,25 @@ class SetLevel(FSM):
 		taskMgr.remove("update")
 		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
 		self.index_invent = 0
-		if not self.manette:
-			self.ignore("arrow_up")
-			self.ignore("arrow_up-up")
-			self.ignore("arrow_down")
-			self.ignore("arrow_down-up")
-			self.ignore("arrow_left-up")
-			self.ignore("arrow_right-up")
-			self.ignore("a")
-			self.ignore("b")
-			self.ignore("b-up")
-			self.ignore("into")
-			self.ignore("out")
-			self.ignore("e")
-			self.accept("arrow_left", self.change_index_invent, extraArgs=["left"])
-			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
-			self.accept("escape", self.exit_inventaire)
-		else:
-			self.ignore("manette-face_b")
-			self.ignore("manette-face_a")
-			self.ignore("manette-face_a-up")
-			self.ignore("into")
-			self.ignore("out")
-			self.accept("manette-face_y")
-			self.accept("manette-rshoulder")
-			self.accept("manette-lshoulder")
-			self.accept("manette-dpad_left")
-			self.accept("manette-dpad_right")
-			self.accept("manette-back")	
+		self.ignore("out")
+		self.ignore("into")
+		self.ignore("escape")
+		self.accept("escape", self.exit_inventaire)
+		self.ignore(self.keys_data["Avancer"])
+		self.ignore(self.keys_data["Avancer"]+"-up")
+		self.ignore(self.keys_data["Reculer"])
+		self.ignore(self.keys_data["Reculer"]+"-up")
+		self.ignore(self.keys_data["Aller a gauche"])
+		self.accept(self.keys_data["Aller a gauche"], self.change_index_invent, extraArgs=["left"])
+		self.ignore(self.keys_data["Aller a gauche"]+"-up")
+		self.ignore(self.keys_data["Aller a droite"])
+		self.accept(self.keys_data["Aller a droite"], self.change_index_invent, extraArgs=["right"])
+		self.ignore(self.keys_data["Aller a droite"]+"-up")
+		self.ignore(self.keys_data["Changer le point de vue"])
+		self.ignore(self.keys_data["Courir"])
+		self.ignore(self.keys_data["Courir"]+"-up")
+		self.ignore(self.keys_data["Inventaire"])	
+		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)	
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
 		self.croix_image.setPos(self.get_pos_croix()[0])
@@ -1434,27 +1387,19 @@ class SetLevel(FSM):
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
-		if not self.manette:
-			self.accept("escape", self.confirm_quit)
-			self.accept("arrow_up", self.touche_pave, extraArgs=["arrow_up"])
-			self.accept("arrow_up-up", self.touche_pave, extraArgs=["arrow_up-up"])
-			self.accept("arrow_down", self.touche_pave, extraArgs=["arrow_down"])
-			self.accept("arrow_down-up", self.touche_pave, extraArgs=["arrow_down-up"])
-			self.accept("arrow_left", self.touche_pave, extraArgs=["arrow_left"])
-			self.accept("arrow_left-up", self.touche_pave, extraArgs=["arrow_left-up"])
-			self.accept("arrow_right", self.touche_pave, extraArgs=["arrow_right"])
-			self.accept("arrow_right-up", self.touche_pave, extraArgs=["arrow_right-up"])
-			self.accept("a", self.player.followcam.change_vue)
-			self.accept("b", self.change_vitesse, extraArgs=["b"])
-			self.accept("b-up", self.change_vitesse, extraArgs=["b-up"])
-			self.accept("e", self.inventaire)
-		else:
-			self.accept("manette-back", self.confirm_quit)
-			self.accept("manette-lshoulder", self.player.followcam.change_vue)
-			self.accept("manette-rshoulder", self.player.followcam.recenter)
-			self.accept("manette-face_a", self.change_vitesse, extraArgs=["b"])
-			self.accept("manette-face_a-up", self.change_vitesse, extraArgs=["b-up"])
-			self.accept("manette-face_y", self.inventaire)
+		self.accept("escape", self.confirm_quit)
+		self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+		self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
+		self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
+		self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
+		self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
+		self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
+		self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
+		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
+		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
+		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
+		self.accept(self.keys_data["Inventaire"], self.inventaire)
 		self.accept("into", self.into)
 		self.accept("out", self.out)		
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
@@ -1607,10 +1552,7 @@ class SetLevel(FSM):
 		Fonction pour remettre la fonction de mise à jour en éxécution.
 		"""
 		self.myOkDialog.cleanup()
-		if not self.manette:
-			self.accept("escape", self.confirm_quit)
-		else:
-			self.accept("manette-back", self.confirm_quit)	
+		self.accept("escape", self.confirm_quit)	
 		taskMgr.add(self.update, "update")
 
 	def read(self, file=1):
