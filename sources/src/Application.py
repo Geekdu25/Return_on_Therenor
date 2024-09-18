@@ -104,6 +104,9 @@ class SetLevel(FSM):
 		self.actual_statue = None
 		self.actual_file = 1
 		self.manette = False
+		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+			self.manette = True
+			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
 		self.quitDlg = None		
 		self.load_gui()
 		self.transition = Transitions(loader)
@@ -114,9 +117,7 @@ class SetLevel(FSM):
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
-		base.win.setCloseRequestEvent("escape")
-		if not self.manette:
-			self.accept("space", self.check_interact)	
+		base.win.setCloseRequestEvent("escape")	
 
 
 	#---------------Fonctions de manipulation de la GUI------------------------------
@@ -396,6 +397,7 @@ class SetLevel(FSM):
 		------------------------------------------------------------------------------------
 		return -> None
 		"""
+		self.ignoreAll()
 		self.music = loader.loadSfx("../sounds/para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
@@ -473,6 +475,9 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------
 		return -> None
 		"""
+		self.accept(self.keys_data["Interagir"], self.check_interact)
+		self.accept("escape", self.all_close)
+		base.win.setCloseRequestEvent("escape")	
 		self.skybox.removeNode()
 		for file in self.files:
 			file.removeNode()
@@ -526,9 +531,18 @@ class SetLevel(FSM):
 		keys_data = json.load(file)
 		file.close()
 		keys_data = keys_data[0]
+		liste_axe = ["left y 1", "left y -1", "left x 1", "left x -1", "right y 1", "right y -1", "right x 1", "right x -1"]
 		self.mapping = InputMapping(keys_data) #On crée une instnce de la classe InputMapping.
+		i = 0
 		for key in keys_data:
-			self.mapping.mapButton(key, keys_data[key])
+			if not self.manette:
+				self.mapping.mapButton(key, keys_data[key])
+			else:
+				if i < 8:
+					self.mapping.mapAxis(key, liste_axe[i])
+				else:
+					self.mapping.mapButton(key, keys_data[key])					
+			i += 1		
         #On charge la géométrie des boutons
 		maps = loader.loadModel("gui/button_map")
 		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
@@ -627,10 +641,6 @@ class SetLevel(FSM):
 			bt.node().setSpecificFlag(True)
 			bt.node().setButtonDownEvent("")
 		taskMgr.remove("checkControls")
-        #On désactive les périphériques d'entrée.
-		for device in self.attachedDevices:
-			base.detachInputDevice(device)
-		self.attachedDevices.clear()
 
 	def changeMapping(self, action):
 		"""
@@ -639,38 +649,45 @@ class SetLevel(FSM):
 		action -> str
 		return -> None
 		"""
-        #On crée notre fenêtre de dialogue.
-		self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
-        #On attache les périphériques d'entrée
-		devices = base.devices.getDevices()
-		for device in devices:
-			base.attachInputDevice(device)
-		self.attachedDevices = devices
-        # Disable regular button events on all button event throwers, and
-        # instead broadcast a generic event.
-		for bt in base.buttonThrowers:
-			bt.node().setSpecificFlag(False)
-			bt.node().setButtonDownEvent("keyListenEvent")
-		for bt in base.deviceButtonThrowers:
-			bt.node().setSpecificFlag(False)
-			bt.node().setButtonDownEvent("deviceListenEvent")
+		liste_interdite = ["Avancer", "Reculer", "Aller a gauche", "Aller a droite", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
+		if self.manette and action in liste_interdite:
+			return None
+		else:	
+			#On crée notre fenêtre de dialogue.
+			self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
+			#On attache les périphériques d'entrée
+			devices = base.devices.getDevices()
+			for device in devices:
+				try:
+					base.attachInputDevice(device)
+				except:
+					continue	
+			self.attachedDevices = devices
+			# Disable regular button events on all button event throwers, and
+			# instead broadcast a generic event.
+			for bt in base.buttonThrowers:
+				bt.node().setSpecificFlag(False)
+				bt.node().setButtonDownEvent("keyListenEvent")
+			for bt in base.deviceButtonThrowers:
+				bt.node().setSpecificFlag(False)
+				bt.node().setButtonDownEvent("deviceListenEvent")
 
-		self.accept("keyListenEvent", self.dlgInput.buttonPressed)
-		self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
+			self.accept("keyListenEvent", self.dlgInput.buttonPressed)
+			self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
 
-        # As there are no events thrown for control changes, we set up a task
-        # to check if the controls were moved
-        # This list will help us for checking which controls were moved
-		self.axisStates = {None: {}}
-        # fill it with all available controls
-		for device in devices:
-			for axis in device.axes:
-				if device not in self.axisStates.keys():
-					self.axisStates.update({device: {axis.axis: axis.value}})
-				else:
-					self.axisStates[device].update({axis.axis: axis.value})
-        # start the task
-		taskMgr.add(self.watchControls, "checkControls")
+			# As there are no events thrown for control changes, we set up a task
+			# to check if the controls were moved
+			# This list will help us for checking which controls were moved
+			self.axisStates = {None: {}}
+			# fill it with all available controls
+			for device in devices:
+				for axis in device.axes:
+					if device not in self.axisStates.keys():
+						self.axisStates.update({device: {axis.axis: axis.value}})
+					else:
+						self.axisStates[device].update({axis.axis: axis.value})
+			# start the task
+			taskMgr.add(self.watchControls, "checkControls")
 
 	def watchControls(self, task):
         # move through all devices and all it's controls
@@ -690,7 +707,7 @@ class SetLevel(FSM):
 					if axis.axis != InputDevice.Axis.none:
                         #label = axis.axis.name.replace('_', ' ').title()
 						self.dlgInput.axisMoved(axis.axis)
-
+						
 		return task.cont
 
 	def __makeListItem(self, action, event, index):
@@ -734,7 +751,7 @@ class SetLevel(FSM):
 
 		buttonScale = 0.15
 		btn = DirectButton(
-		text="Change",
+		text="Modifier",
 		geom=self.buttonGeom,
 		scale=buttonScale,
 		text_scale=0.25,
@@ -1008,14 +1025,15 @@ class SetLevel(FSM):
 		render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
-		self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
-		self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
-		self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
-		self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
-		self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
-		self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
-		self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
+		if not self.manette:
+			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+			self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
+			self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
+			self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
+			self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
+			self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
+			self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
@@ -1167,7 +1185,7 @@ class SetLevel(FSM):
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
 		#-----------------------Section gestion de la manette-----------------
-		if self.manette:		
+		if self.manette:	
 			base.devices.update()
 			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 				self.music.setVolume(0)
@@ -1185,26 +1203,19 @@ class SetLevel(FSM):
 			right_x = gamepad.findAxis(InputDevice.Axis.right_x)
 			right_y = gamepad.findAxis(InputDevice.Axis.right_y)
 			if left_x.value > 0.5:
-				self.player.left = False
-				self.player.right = True
+				self.touche_pave(message="arrow_right")
 			elif left_x.value < -0.5:
-				self.player.right = False
-				self.player.left = True	
+				self.touche_pave(message="arrow_left")
 			else:
-				self.player.right = False
-				self.player.left = False
+				self.touche_pave(message="arrow_right-up")
+				self.touche_pave(message="arrow_left-up")
 			if left_y.value > 0.5:
-				self.player.reverse = False
-				self.player.walk = True
-				self.player.loop("walk")
+				self.touche_pave(message="arrow_up")	
 			elif left_y.value < -0.5:
-				self.player.walk = False
-				self.player.reverse = True
-				self.player.loop("walk")	
+				self.touche_pave(message="arrow_down")	
 			else:
-				self.player.walk = False
-				self.player.reverse = False
-				self.player.stop()	
+				self.touche_pave(message="arrow_up-up")
+				self.touche_pave(message="arrow_down-up")
 			if right_y.value > 0.5:
 				self.player.followcam.move("up", globalClock.getDt())
 			elif right_y.value < -0.5:
@@ -1262,7 +1273,7 @@ class SetLevel(FSM):
 		self.ignoreAll()
 		self.accept("escape", self.all_close)		
 		self.player.stop()
-		base.cam.reparentTo(render)
+		self.player.followcam.set_active(False)
 
 	def confirm_quit(self):
 		taskMgr.remove("update")
@@ -1388,14 +1399,15 @@ class SetLevel(FSM):
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")
 		self.accept("escape", self.confirm_quit)
-		self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
-		self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
-		self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
-		self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
-		self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
-		self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
-		self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
+		if not self.manette:
+			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+			self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
+			self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
+			self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
+			self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
+			self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
+			self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])

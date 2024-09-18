@@ -29,8 +29,11 @@ class ManetteCam():
 		self.active = active
 		if self.active:
 			taskMgr.add(self.update_camera, "updateCamera")	
+			self.camera.reparentTo(self.dummy)
+			self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		else:
-			taskMgr.remove("updateCamera")		
+			taskMgr.remove("updateCamera")
+			self.camera.reparentTo(render)		
 			
 	def	update_camera(self, task):
 		"""

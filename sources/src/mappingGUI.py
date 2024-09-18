@@ -27,7 +27,7 @@ class InputMapping(object):
 		self.__map[action] = ("Bouton", str(button))
 
 	def mapAxis(self, action, axis):
-		self.__map[action] = ("Axe", axis.name)
+		self.__map[action] = ("Axe", axis)
 
 	def unmap(self):
 		self.__map[action] = None
@@ -47,7 +47,7 @@ class InputMapping(object):
 		# Format the symbolic string from Panda nicely.  In a real-world game,
 		# you might want to look these up in a translation table, or so.
 		label = mapping[1].replace('_', ' ').title()
-		if mapping[0] == "axe":
+		if mapping[0] == "Axe":
 			return "Axe: " + label
 		else:
 			return "Bouton: " + label
