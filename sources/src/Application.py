@@ -776,9 +776,19 @@ class SetLevel(FSM):
 		---------------------------------------------------------------
 		return -> None
 		"""
-		file = open(self.get_path()+"/keys.json", "wt")
-		file.writelines([json.dumps([self.mapping.get_map()])])
-		file.close()
+		if self.manette:
+			file = open(self.get_path()+"/keys.json", "rt")
+			data = json.load(file)[0]
+			file.close()
+			dico = self.mapping.get_map()
+			dico["Avancer"], dico["Reculer"], dico["Aller a gauche"], dico["Aller a droite"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Reculer"], data["Aller a gauche"], data["Aller a droite"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
+			file = open(self.get_path()+"/keys.json", "wt")
+			file.writelines([json.dumps([dico])])
+			file.close()
+		else:
+			file = open(self.get_path()+"/keys.json", "wt")
+			file.writelines([json.dumps([self.mapping.get_map()])])
+			file.close()
 		self.listBGEven.removeNode()
 		self.listBGOdd.removeNode()
 		del self.listBGEven
