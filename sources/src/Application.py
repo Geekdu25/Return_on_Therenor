@@ -90,7 +90,7 @@ class SetLevel(FSM):
 			base.cTrav.showCollisions(render)
 		self.skybox = None
 		self.portails = {}
-		self.triggers = []
+		self.triggers = {}
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		#-----------------Autres variables-----------------------
@@ -939,10 +939,15 @@ class SetLevel(FSM):
 			del pnj
 		for objet in self.objects:
 			objet.object.removeNode()
+		for statue in self.save_statues:
+			statue.removeNode()
+		for trigger in self.triggers:
+			trigger.removeNode()			
 		self.objects = []
 		self.current_pnj = None
 		self.current_porte = None
 		self.pnjs = []
+		self.triggers = {}
 		self.portails = {}
 		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
@@ -1026,9 +1031,9 @@ class SetLevel(FSM):
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
 			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
-			self.save_statues[save] = noeud
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
+			self.save_statues[noeud_np] = noeud
 		self.load_triggers(map)
 		del data
 		#------------Mode debug------------------------
@@ -1068,15 +1073,15 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
-		self.triggers = []
+		self.triggers = {}
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
 			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
 			solid.setTangible(False)
 			noeud.addSolid(solid)
 			noeud.setIntoCollideMask(BitMask32.bit(0))
-			self.triggers.append(noeud)
 			chemin_de_noeud = render.attachNewNode(noeud)
+			self.triggers[chemin_de_noeud] = noeud
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1278,7 +1283,7 @@ class SetLevel(FSM):
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
-			self.save_statues[statue].removeSolid(0)
+			self.save_statues[statue].remove()
 		self.save_statues = {}
 		self.antimur.clearInPatterns()
 		self.antimur.clearOutPatterns()
@@ -1452,7 +1457,7 @@ class SetLevel(FSM):
 		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémy Martinot     Noé Mora", False), ("Etienne Pacault", False),
 		("Music :", True),  ("Etienne Pacault", False),
 		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False),
-		("And thank you to everyone we probably forgot ! :-)", False)]
+		("And thanks to you !", False)]
 		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
 		i_color = 0
 		y = -0.9
