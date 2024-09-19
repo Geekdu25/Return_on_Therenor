@@ -2,16 +2,12 @@
 '''
 Demonstrate how a simple button mapping gui can be written
 '''
-
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import *
 from panda3d.core import *
 
-# Make sure the textures look crisp on every device that supports
-# non-power-2 textures
 loadPrcFileData("", "textures-auto-power-2 #t")
 loadPrcFile("config.prc")
-# How much an axis should have moved for it to register as a movement.
 DEAD_ZONE = 0.33
 
 

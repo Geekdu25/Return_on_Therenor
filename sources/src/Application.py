@@ -61,6 +61,11 @@ class SetLevel(FSM):
 	Tout le script principal s'y trouvera.
 	"""
 	def __init__(self):
+		"""
+		Fonction d'initialisation de la classe.
+		-----------------------------------------
+		return -> None
+		"""
 		FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
 		#-----------------Variables nécessaires au fonctinnement de la boîte de dialogue----------------
 		self.ok = False
@@ -170,8 +175,8 @@ class SetLevel(FSM):
 	def hide_gui(self):
 		"""
   		Fonction permettant de cacher la GUI (utile lors des cinématiques).
-    		---------------------------------------------------------------------
-      		return -> None
+    	---------------------------------------------------------------------
+      	return -> None
   		"""
 		for a in self.coeurs_pleins:
 			a.hide()
@@ -883,7 +888,7 @@ class SetLevel(FSM):
 	def on_change(self, task):
 		"""
 		Fonction appelée deux secondes après la fin de la légende ou lors de la vérification qui charge la map.
-		----------------------------------------------------
+		--------------------------------------------------------------------------------------------------------
 		task -> task
 		return -> task.done
 		"""
@@ -926,7 +931,7 @@ class SetLevel(FSM):
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
 		map -> str
-		return -> None
+		return -> None ou task.done
 		"""
 		for pnj in self.pnjs:
 			pnj.cleanup()
@@ -1147,6 +1152,9 @@ class SetLevel(FSM):
 	def touche_pave(self, message="arrow_up"):
 		"""
   		Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
+  		------------------------------------------------------------------------------------
+  		message -> str
+  		return -> None
   		"""
 		if message == "arrow_up":
 			self.player.walk = True
@@ -1256,7 +1264,9 @@ class SetLevel(FSM):
 
 	def exitMap(self):
 		"""
-		Fonction appelée quand on quitte la map
+		Fonction appelée quand on quitte la map.
+		------------------------------------------
+		return -> None
 		"""
 		self.music.stop()
 		self.map.removeNode()
@@ -1286,6 +1296,11 @@ class SetLevel(FSM):
 		self.player.followcam.set_active(False)
 
 	def confirm_quit(self):
+		"""
+		Fonction qui faît apparaître la boîte de dialogue pour quitter le jeu.
+		-----------------------------------------------------------------------
+		return -> None  
+		"""
 		taskMgr.remove("update")
 		self.ignore(self.keys_data["Inventaire"])
 		self.ignore("escape")	
@@ -1293,22 +1308,22 @@ class SetLevel(FSM):
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
 	def quit_confirm(self, clickedYes):
+		"""
+		Fonction qui s'active lorsque le joueur a répondu au dialogue pour quitter le jeu.
+		--------------------------------------------------------------------------------
+		clickedYes -> bool
+		return -> None
+		"""
 		self.quitDlg.cleanup()
 		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
 			self.read(file=self.actual_file)
-			self.transition.fadeOut(0.5)
+			self.fade_out()
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
-			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
 		else:
 			self.accept("escape", self.confirm_quit)
 			self.accept(self.keys_data["Inventaire"], self.inventaire)	
-
-
-	def return_to_menu(self, task):
-		self.request("Menu")
-		return task.done
 	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
 	def inventaire(self):
 		"""
@@ -1502,10 +1517,21 @@ class SetLevel(FSM):
 
 	#-------------------------Fonctions gérant le game over---------------------------------------
 	def launch_game_over(self, task):
+		"""
+		Fonction pour lancer le game over.
+		---------------------------------
+		task -> task
+		return -> task.done
+		"""
 		self.request("Game_over")
 		return task.done
 
 	def enterGame_over(self):
+		"""
+		Fonction qui s'active lorsque l'on rentre dans le sate game over.
+		------------------------------------------------------------------
+		return -> None
+		"""
 		render.hide()
 		self.noai_text.hide()
 		self.noai_image.hide()
@@ -1522,9 +1548,14 @@ class SetLevel(FSM):
 		self.transition.fadeIn(0.5)
 		self.text_game_over.show()
 		self.text_game_over_2.show()
-		self.accept("a", self.change_to_map)
+		self.accept("f1", self.change_to_map)
 
 	def change_to_map(self):
+		"""
+		Fonction pour revenir à la map après le game over.
+		---------------------------------------------------
+		return -> None
+		"""
 		self.transition.fadeOut(0.5)
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 		base.taskMgr.doMethodLater(0.5, self.apparaitre_render, "render_appearing")
@@ -1532,12 +1563,23 @@ class SetLevel(FSM):
 		self.request("Map")
 
 	def exitGame_over(self):
+		"""
+		Fonction qui s'active quand on quitte le sate game over.
+		---------------------------------------------------------
+		return -> None
+		"""
 		self.music.stop()
 		self.text_game_over.hide()
 		self.text_game_over_2.hide()
 		render.show()
 
 	def apparaitre_render(self, task):
+		"""
+		Fonction qui fait apparaître le render après un game over.
+		-----------------------------------------------------------
+		task -> task
+		return -> task.done
+		"""
 		render.show()
 		self.text_game_over.hide()
 		self.text_game_over_2.hide()
@@ -1562,6 +1604,9 @@ class SetLevel(FSM):
 	def will_save(self, clickedYes):
 		"""
 		Fonction qui s'active si on touche une statue de sauvegarde.
+		-------------------------------------------------------------
+		clickedYes -> bool
+		return -> None
 		"""
 		self.saveDlg.cleanup()
 		taskMgr.add(self.update, "update")
@@ -1572,6 +1617,8 @@ class SetLevel(FSM):
 	def reupdate(self, inutile):
 		"""
 		Fonction pour remettre la fonction de mise à jour en éxécution.
+		-------------------------------------------------------------
+		return -> None
 		"""
 		self.myOkDialog.cleanup()
 		self.accept("escape", self.confirm_quit)	
@@ -1602,6 +1649,12 @@ class SetLevel(FSM):
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
+		"""
+		Fonction éxécutée en continu si la manette est détachée.
+		-----------------------------------------------------------
+		task -> task
+		return -> task.cont
+		"""
 		base.devices.update()
 		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
