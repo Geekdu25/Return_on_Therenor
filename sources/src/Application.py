@@ -92,6 +92,7 @@ class SetLevel(FSM):
 		self.portails = {}
 		self.triggers = {}
 		self.save_statues = {}
+		self.aNode = None
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		#-----------------Autres variables-----------------------
 		self.chapitre = 0
@@ -1042,7 +1043,11 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
-		render.setLight(render.attachNewNode(AmbientLight("a")))
+		if self.aNode:
+			self.aNode.removeNode()
+		self.aLight = AmbientLight("a")
+		self.aNode = render.attachNewNode(self.aLight)
+		render.setLight(self.aNode)
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
 		if not self.manette:
@@ -1277,19 +1282,26 @@ class SetLevel(FSM):
 		self.map.removeNode()
 		self.skybox.removeNode()
 		self.player.hide()
+		self.antimur.clearInPatterns()
+		self.antimur.clearOutPatterns()
 		for pnj in self.pnjs:
 			pnj.cleanup()
 			pnj.removeNode()
+			del pnj
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
-			self.save_statues[statue].remove()
-		self.save_statues = {}
-		self.antimur.clearInPatterns()
-		self.antimur.clearOutPatterns()
+			statue.removeNode()
+		for trigger in self.triggers:
+			trigger.removeNode()			
 		self.objects = []
+		self.current_pnj = None
+		self.current_porte = None
 		self.pnjs = []
-		self.map = None
+		self.triggers = {}
+		self.portails = {}
+		self.save_statues = {}
+		self.aNode.removeNode()
 		self.player.left = False
 		self.player.right = False
 		self.player.reverse = False
