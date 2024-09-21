@@ -61,11 +61,6 @@ class SetLevel(FSM):
 	Tout le script principal s'y trouvera.
 	"""
 	def __init__(self):
-		"""
-		Fonction d'initialisation de la classe.
-		-----------------------------------------
-		return -> None
-		"""
 		FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
 		#-----------------Variables nécessaires au fonctinnement de la boîte de dialogue----------------
 		self.ok = False
@@ -90,9 +85,8 @@ class SetLevel(FSM):
 			base.cTrav.showCollisions(render)
 		self.skybox = None
 		self.portails = {}
-		self.triggers = {}
+		self.triggers = []
 		self.save_statues = {}
-		self.aNode = None
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		#-----------------Autres variables-----------------------
 		self.chapitre = 0
@@ -176,8 +170,8 @@ class SetLevel(FSM):
 	def hide_gui(self):
 		"""
   		Fonction permettant de cacher la GUI (utile lors des cinématiques).
-    	---------------------------------------------------------------------
-      	return -> None
+    		---------------------------------------------------------------------
+      		return -> None
   		"""
 		for a in self.coeurs_pleins:
 			a.hide()
@@ -787,6 +781,10 @@ class SetLevel(FSM):
 			data = json.load(file)[0]
 			file.close()
 			dico = self.mapping.get_map()
+			for action in dico:
+				if "face" in dico[action] or "shoulder" in dico[action]:
+					if not dico[action].startswith("manette"):
+						dico[action] = "manette-" + dico[action]
 			dico["Avancer"], dico["Reculer"], dico["Aller a gauche"], dico["Aller a droite"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Reculer"], data["Aller a gauche"], data["Aller a droite"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
 			file = open(self.get_path()+"/keys.json", "wt")
 			file.writelines([json.dumps([dico])])
@@ -889,7 +887,7 @@ class SetLevel(FSM):
 	def on_change(self, task):
 		"""
 		Fonction appelée deux secondes après la fin de la légende ou lors de la vérification qui charge la map.
-		--------------------------------------------------------------------------------------------------------
+		----------------------------------------------------
 		task -> task
 		return -> task.done
 		"""
@@ -932,7 +930,7 @@ class SetLevel(FSM):
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
 		map -> str
-		return -> None ou task.done
+		return -> None
 		"""
 		for pnj in self.pnjs:
 			pnj.cleanup()
@@ -940,15 +938,10 @@ class SetLevel(FSM):
 			del pnj
 		for objet in self.objects:
 			objet.object.removeNode()
-		for statue in self.save_statues:
-			statue.removeNode()
-		for trigger in self.triggers:
-			trigger.removeNode()			
 		self.objects = []
 		self.current_pnj = None
 		self.current_porte = None
 		self.pnjs = []
-		self.triggers = {}
 		self.portails = {}
 		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
@@ -1032,9 +1025,9 @@ class SetLevel(FSM):
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
 			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
+			self.save_statues[save] = noeud
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			self.save_statues[noeud_np] = noeud
 		self.load_triggers(map)
 		del data
 		#------------Mode debug------------------------
@@ -1043,11 +1036,7 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
-		if self.aNode:
-			self.aNode.removeNode()
-		self.aLight = AmbientLight("a")
-		self.aNode = render.attachNewNode(self.aLight)
-		render.setLight(self.aNode)
+		render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
 		if not self.manette:
@@ -1078,15 +1067,15 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
-		self.triggers = {}
+		self.triggers = []
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
 			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
 			solid.setTangible(False)
 			noeud.addSolid(solid)
 			noeud.setIntoCollideMask(BitMask32.bit(0))
+			self.triggers.append(noeud)
 			chemin_de_noeud = render.attachNewNode(noeud)
-			self.triggers[chemin_de_noeud] = noeud
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1162,9 +1151,6 @@ class SetLevel(FSM):
 	def touche_pave(self, message="arrow_up"):
 		"""
   		Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
-  		------------------------------------------------------------------------------------
-  		message -> str
-  		return -> None
   		"""
 		if message == "arrow_up":
 			self.player.walk = True
@@ -1274,34 +1260,25 @@ class SetLevel(FSM):
 
 	def exitMap(self):
 		"""
-		Fonction appelée quand on quitte la map.
-		------------------------------------------
-		return -> None
+		Fonction appelée quand on quitte la map
 		"""
 		self.music.stop()
 		self.map.removeNode()
 		self.skybox.removeNode()
 		self.player.hide()
-		self.antimur.clearInPatterns()
-		self.antimur.clearOutPatterns()
 		for pnj in self.pnjs:
 			pnj.cleanup()
 			pnj.removeNode()
-			del pnj
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
-			statue.removeNode()
-		for trigger in self.triggers:
-			trigger.removeNode()			
-		self.objects = []
-		self.current_pnj = None
-		self.current_porte = None
-		self.pnjs = []
-		self.triggers = {}
-		self.portails = {}
+			self.save_statues[statue].removeSolid(0)
 		self.save_statues = {}
-		self.aNode.removeNode()
+		self.antimur.clearInPatterns()
+		self.antimur.clearOutPatterns()
+		self.objects = []
+		self.pnjs = []
+		self.map = None
 		self.player.left = False
 		self.player.right = False
 		self.player.reverse = False
@@ -1313,11 +1290,6 @@ class SetLevel(FSM):
 		self.player.followcam.set_active(False)
 
 	def confirm_quit(self):
-		"""
-		Fonction qui faît apparaître la boîte de dialogue pour quitter le jeu.
-		-----------------------------------------------------------------------
-		return -> None  
-		"""
 		taskMgr.remove("update")
 		self.ignore(self.keys_data["Inventaire"])
 		self.ignore("escape")	
@@ -1325,22 +1297,22 @@ class SetLevel(FSM):
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
 	def quit_confirm(self, clickedYes):
-		"""
-		Fonction qui s'active lorsque le joueur a répondu au dialogue pour quitter le jeu.
-		--------------------------------------------------------------------------------
-		clickedYes -> bool
-		return -> None
-		"""
 		self.quitDlg.cleanup()
 		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
 			self.read(file=self.actual_file)
-			self.fade_out()
+			self.transition.fadeOut(0.5)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
+			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
 		else:
 			self.accept("escape", self.confirm_quit)
 			self.accept(self.keys_data["Inventaire"], self.inventaire)	
+
+
+	def return_to_menu(self, task):
+		self.request("Menu")
+		return task.done
 	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
 	def inventaire(self):
 		"""
@@ -1469,7 +1441,7 @@ class SetLevel(FSM):
 		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémy Martinot     Noé Mora", False), ("Etienne Pacault", False),
 		("Music :", True),  ("Etienne Pacault", False),
 		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False),
-		("And thanks to you !", False)]
+		("And thank you to everyone we probably forgot ! :-)", False)]
 		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
 		i_color = 0
 		y = -0.9
@@ -1534,21 +1506,10 @@ class SetLevel(FSM):
 
 	#-------------------------Fonctions gérant le game over---------------------------------------
 	def launch_game_over(self, task):
-		"""
-		Fonction pour lancer le game over.
-		---------------------------------
-		task -> task
-		return -> task.done
-		"""
 		self.request("Game_over")
 		return task.done
 
 	def enterGame_over(self):
-		"""
-		Fonction qui s'active lorsque l'on rentre dans le sate game over.
-		------------------------------------------------------------------
-		return -> None
-		"""
 		render.hide()
 		self.noai_text.hide()
 		self.noai_image.hide()
@@ -1565,14 +1526,9 @@ class SetLevel(FSM):
 		self.transition.fadeIn(0.5)
 		self.text_game_over.show()
 		self.text_game_over_2.show()
-		self.accept("f1", self.change_to_map)
+		self.accept("a", self.change_to_map)
 
 	def change_to_map(self):
-		"""
-		Fonction pour revenir à la map après le game over.
-		---------------------------------------------------
-		return -> None
-		"""
 		self.transition.fadeOut(0.5)
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 		base.taskMgr.doMethodLater(0.5, self.apparaitre_render, "render_appearing")
@@ -1580,23 +1536,12 @@ class SetLevel(FSM):
 		self.request("Map")
 
 	def exitGame_over(self):
-		"""
-		Fonction qui s'active quand on quitte le sate game over.
-		---------------------------------------------------------
-		return -> None
-		"""
 		self.music.stop()
 		self.text_game_over.hide()
 		self.text_game_over_2.hide()
 		render.show()
 
 	def apparaitre_render(self, task):
-		"""
-		Fonction qui fait apparaître le render après un game over.
-		-----------------------------------------------------------
-		task -> task
-		return -> task.done
-		"""
 		render.show()
 		self.text_game_over.hide()
 		self.text_game_over_2.hide()
@@ -1621,9 +1566,6 @@ class SetLevel(FSM):
 	def will_save(self, clickedYes):
 		"""
 		Fonction qui s'active si on touche une statue de sauvegarde.
-		-------------------------------------------------------------
-		clickedYes -> bool
-		return -> None
 		"""
 		self.saveDlg.cleanup()
 		taskMgr.add(self.update, "update")
@@ -1634,8 +1576,6 @@ class SetLevel(FSM):
 	def reupdate(self, inutile):
 		"""
 		Fonction pour remettre la fonction de mise à jour en éxécution.
-		-------------------------------------------------------------
-		return -> None
 		"""
 		self.myOkDialog.cleanup()
 		self.accept("escape", self.confirm_quit)	
@@ -1666,12 +1606,6 @@ class SetLevel(FSM):
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
-		"""
-		Fonction éxécutée en continu si la manette est détachée.
-		-----------------------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
 		base.devices.update()
 		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
