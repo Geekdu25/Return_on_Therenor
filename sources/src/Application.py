@@ -656,12 +656,7 @@ class SetLevel(FSM):
 			#On crée notre fenêtre de dialogue.
 			self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
 			#On attache les périphériques d'entrée
-			devices = base.devices.getDevices()
-			for device in devices:
-				try:
-					base.attachInputDevice(device)
-				except:
-					continue	
+			devices = base.devices.getDevices()	
 			self.attachedDevices = devices
 			# Disable regular button events on all button event throwers, and
 			# instead broadcast a generic event.
