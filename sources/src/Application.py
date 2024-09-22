@@ -892,7 +892,7 @@ class SetLevel(FSM):
 		"""
 		if self.current_point == "1":
 			self.current_map = "maison_terenor.bam"
-			self.player.setPos(200, -110, 6)
+			self.player.setPos(200, -110, 0)
 		self.request("Map")
 		return task.done
 
@@ -1111,7 +1111,7 @@ class SetLevel(FSM):
 				if not "epee" in self.player.inventaire:
 					taskMgr.remove("update")
 					self.player.stop()
-					s = Sequence(Func(self.player.loop, "walk"), self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(self.player.stop), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
+					s = Sequence(self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
 					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])
 					self.accept("finito", s.start)
 		#--------------Si on touche une statue de sauvegarde----------------------------------
@@ -1151,16 +1151,13 @@ class SetLevel(FSM):
   		"""
 		if message == "arrow_up":
 			self.player.walk = True
-			self.player.loop("walk")
 		elif message == "arrow_up-up":
 			self.player.walk = False
 			self.player.stop()
 		elif message == "arrow_down":
 			self.player.reverse = True
-			self.player.loop("walk")
 		elif message == "arrow_down-up":
 			self.player.reverse = False
-			self.player.stop()
 		elif message == "arrow_left":
 			self.player.left = True
 		elif message == "arrow_right":

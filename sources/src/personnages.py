@@ -10,7 +10,7 @@ class Player(Actor):
 	"""
 	def __init__(self):
 		#-------------Initialisation--------------------------------------
-		Actor.__init__(self, "../models/error.bam", {"walk": "../models/error-marche.bam"})
+		Actor.__init__(self, "../models/error.bam")
 		#----------------------Noais et autres infos de jeu--------------------------------
 		self.noais = 0
 		self.nom = "Link"
