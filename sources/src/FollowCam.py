@@ -6,7 +6,7 @@ class ManetteCam():
 		self.camera = camera
 		self.target = target
 		self.dummy = self.target.attachNewNode("cam" + target.getName())
-		self.dummy.setZ(self.dummy, 0.25)
+		self.dummy.setZ(self.dummy, 1)
 		self.dummy.setH(270)
 		self.camera.reparentTo(self.dummy)
 		self.camera.setPos(self.camera, Vec3(-2, 0, 0))

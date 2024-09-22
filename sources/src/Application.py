@@ -195,6 +195,7 @@ class SetLevel(FSM):
 		"""
 		self.check_interact_dial()
 		if self.current_pnj is not None:
+			if not self.reading:
 				self.text_index = 0
 				self.letter_index = 0
 				self.set_text(self.pnjs[self.current_pnj].texts)
@@ -892,7 +893,7 @@ class SetLevel(FSM):
 		"""
 		if self.current_point == "1":
 			self.current_map = "maison_terenor.bam"
-			self.player.setPos(200, -110, 0)
+			self.player.setPos(200, -110, 6)
 		self.request("Map")
 		return task.done
 
@@ -1032,7 +1033,7 @@ class SetLevel(FSM):
 			base.enableMouse()
 		else:
 			base.disableMouse()
-		#-------------Lumière (suite à une disparition du joueur lors de son activation, il n'y a pas de lumière pour le moment)----------------------------
+		#-------------Lumière----------------------------
 		render.setLight(render.attachNewNode(AmbientLight("a")))
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
@@ -1049,6 +1050,7 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
 		self.accept(self.keys_data["Inventaire"], self.inventaire)
+		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.accept("into", self.into)
 		self.accept("out", self.out)	
 		taskMgr.add(self.update, "update")
@@ -1233,10 +1235,10 @@ class SetLevel(FSM):
 			elif right_x.value < -0.5:
 				self.player.followcam.move("left", globalClock.getDt())				
 		#-----------------------Section mouvements du joueur------------------------
-		if self.player.getZ() > 60:
+		if self.player.getZ() > 6:
 		  self.player.setZ(self.player, -0.25)
 		else:
-		  self.player.setZ(60)
+		  self.player.setZ(6)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:
