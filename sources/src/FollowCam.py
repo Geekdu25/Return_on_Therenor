@@ -18,11 +18,11 @@ class ManetteCam():
 	def change_vue(self):
 		if self.vue:
 			self.vue = False
-			self.dummy.setH(270)
+			self.dummy.setHpr(180, 0, 0)
 			self.camera.setPos(self.dummy, Vec3(0, 0, 0))
 		else:
 			self.vue = True	
-			self.dummy.setH(180)
+			self.dummy.setHpr(270, 0, 0)
 			self.camera.setPos(self.camera, Vec3(-2, 0, 0))	
 			
 	def set_active(self, active=True):

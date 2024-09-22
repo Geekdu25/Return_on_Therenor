@@ -78,7 +78,7 @@ class SetLevel(FSM):
 		self.son = None
 		#-----------------------Varibles de collisions (pnj touché, liste de pnjs, porte touchée...)-------------------
 		self.current_pnj = None
-		self.pnjs = []
+		self.pnjs = {}
 		self.current_porte = None
 		base.cTrav = CollisionTraverser()
 		if self.debug:
@@ -195,10 +195,9 @@ class SetLevel(FSM):
 		"""
 		self.check_interact_dial()
 		if self.current_pnj is not None:
-			if self.current_pnj in self.dialogues_pnj:
-				self.set_text(self.dialogues_pnj[self.current_pnj])
 				self.text_index = 0
 				self.letter_index = 0
+				self.set_text(self.pnjs[self.current_pnj].texts)
 		if self.current_porte is not None:
 			self.transition.fadeOut(0.5)
 			taskMgr.remove("update")
@@ -933,15 +932,14 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		for pnj in self.pnjs:
-			pnj.cleanup()
-			pnj.removeNode()
-			del pnj
+			self.pnjs[pnj].cleanup()
+			self.pnjs[pnj].removeNode()
 		for objet in self.objects:
 			objet.object.removeNode()
 		self.objects = []
 		self.current_pnj = None
 		self.current_porte = None
-		self.pnjs = []
+		self.pnjs = {}
 		self.portails = {}
 		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
@@ -1014,13 +1012,12 @@ class SetLevel(FSM):
 			if pnj == "Taya":
 				a = Taya()
 				a.setPos(info[0], info[1], info[2])
-				self.pnjs.append(a)
 			else:
 				a = PNJ(pnj)
 				a.setPos(info[0], info[1], info[2])
-				self.pnjs.append(a)
+			self.pnjs[pnj] = a
 		for pnj in self.pnjs:
-			pnj.reparentTo(render)
+			self.pnjs[pnj].reparentTo(render)
         #-------------Les sauvegardes------------------------
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
@@ -1099,7 +1096,7 @@ class SetLevel(FSM):
 		#-----------Si on touche un pnj--------------------------
 		if b in self.pnjs:
 			self.current_pnj = b
-			b.node().s.stop()
+			self.pnjs[b].s.pause()
 		elif b in self.portails:
 			if type(self.portails[b]) is Portail:
 				self.transition.fadeOut(0.5)
@@ -1141,9 +1138,9 @@ class SetLevel(FSM):
 		a -> entry (info sur la collision)
 		return -> None
 		"""
-		if self.current_pnj is not None:
-			if self.current_pnj.node().s is not None:
-				s.loop()
+		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
+		if b in self.pnjs:
+			self.pnjs[b].s.resume()
 			self.current_pnj = None
 		self.current_porte = None
 		self.actual_statue = None
@@ -1267,8 +1264,8 @@ class SetLevel(FSM):
 		self.skybox.removeNode()
 		self.player.hide()
 		for pnj in self.pnjs:
-			pnj.cleanup()
-			pnj.removeNode()
+			self.pnjs[pnj].cleanup()
+			self.pnjs[pnj].removeNode()
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
@@ -1277,7 +1274,7 @@ class SetLevel(FSM):
 		self.antimur.clearInPatterns()
 		self.antimur.clearOutPatterns()
 		self.objects = []
-		self.pnjs = []
+		self.pnjs = {}
 		self.map = None
 		self.player.left = False
 		self.player.right = False
