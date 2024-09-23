@@ -12,7 +12,7 @@ class ManetteCam():
 		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		self.active = True
 		self.vue = True
-		camera.node().getLens().setFov(120)
+		camera.node().getLens().setFov(80)
 		taskMgr.add(self.update_camera, "updateCamera")
 		
 	def change_vue(self):

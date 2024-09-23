@@ -16,7 +16,7 @@ class Player(Actor):
 		self.nom = "Link"
 		self.vies = 3
 		self.maxvies = 3
-		self.inventaire = ["epee"]
+		self.inventaire = []
 		#--------------------Quelques paramètres simples-----------------------------------
 		self.vitesse = 2.5
 		self.walk = False

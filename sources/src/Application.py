@@ -193,9 +193,9 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------------------------------
 		return -> None
 		"""
-		self.check_interact_dial()
+		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
-			if not self.reading:
+			if not self.reading and not reussi:
 				self.text_index = 0
 				self.letter_index = 0
 				self.set_text(self.pnjs[self.current_pnj].texts)
@@ -221,10 +221,11 @@ class SetLevel(FSM):
 		"""
 		"Petite" fonction qui permet de passer les dialogues.
 		------------------------------------------------------
-		return -> None
+		return -> bool
 		"""
 		if not self.reading and not self.termine:
 			self.reading = True
+			return False
 		elif self.reading:
 			if self.letter_index >= len(self.texts[self.text_index]):
 				self.text_index += 1
@@ -247,10 +248,13 @@ class SetLevel(FSM):
 					del self.dialog_box
 					for message in self.messages:
 						base.messenger.send(message)
+					return True	
 				else:
 					self.letter_index = 0
+					return False
 			else:
 				self.letter_index = len(self.texts[self.text_index])
+				return False
 
 	def set_text(self, text=["Navi, where are thou ?"], messages=[], sons=[]):
 		"""
@@ -398,6 +402,7 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.ignoreAll()
+		self.accept("escape", self.all_close)
 		self.music = loader.loadSfx("../sounds/para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
