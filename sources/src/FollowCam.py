@@ -12,7 +12,7 @@ class ManetteCam():
 		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		self.active = True
 		self.vue = True
-		camera.node().getLens().setFov(80)
+		camera.node().getLens().setFov(120)
 		taskMgr.add(self.update_camera, "updateCamera")
 		
 	def change_vue(self):
@@ -30,6 +30,7 @@ class ManetteCam():
 		if self.active:
 			taskMgr.add(self.update_camera, "updateCamera")	
 			self.camera.reparentTo(self.dummy)
+			camera.node().getLens().setFov(120)
 			self.camera.setPos(self.camera, Vec3(-2, 0, 0))
 		else:
 			taskMgr.remove("updateCamera")
