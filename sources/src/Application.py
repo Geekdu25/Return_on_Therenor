@@ -513,16 +513,15 @@ class SetLevel(FSM):
 			self.request("Init")
 		#----------------La légende------------------------	
 		elif self.chapitre == 1:
-			self.request("Legende")
+			self.request("Cinematique")
 		#-----------------On charge la map-----------------------------------	
 		elif self.chapitre == 2:
-			self.transition.fadeOut(2)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
-			taskMgr.doMethodLater(2, self.on_change, "on change")
+			self.fade_out("Map")
 		#------------Générique---------------------------	
 		else:
 			self.request("Generique")
-			
+	
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
 		"""
@@ -848,81 +847,50 @@ class SetLevel(FSM):
 			del self.helloBtn
 			self.nameEnt.removeNode()
 			del self.nameEnt
-			self.request("Legende")
+			self.request("Cinematique")
 	#-------------------------------Introduction avec la légende--------------------------------------
-	def enterLegende(self):
+	def enterCinematique(self):
 		"""
 		Fonction au début de l'histoire lorsqu'on raconte la légende.
 		-----------------------------------------------------------------
 		return -> None
 		"""
-		self.music = base.loader.loadSfx("../sounds/legende.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
-		"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"])
-		self.accept("Bz", self.change_legende)
-		base.taskMgr.add(self.change_legende_image, "change_legende_image")
+		if self.chapitre == 1:
+			self.music = base.loader.loadSfx("../sounds/legende.ogg")
+			self.music.setLoop(True)
+			self.music.play()
+			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
+			"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"])
+			self.accept("Bz", self.fade_out, extraArgs=["Map"])
+		base.taskMgr.add(self.update_cinematique, "update_cinematique")
 
-	def exitLegende(self):
+	def exitCinematique(self):
 		"""
 		Fonction lorsque la légende est finie.
 		-------------------------------------
 		return -> None
 		"""
-		self.music.stop()
-		self.chapitre = 2
+		if self.chapitre == 1:
+			self.music.stop()
+			self.chapitre = 2
 
-	def change_legende(self):
-		"""
-		Fonction s'acivant quand la légende est finie.
-		-----------------------------------------------
-		return -> None
-		"""
-		self.transition.setFadeColor(0, 0, 0)
-		self.transition.fadeOut(2)
-		taskMgr.doMethodLater(2, self.on_change, "on change")
-		self.chapitre = 2
-
-	def on_change(self, task):
-		"""
-		Fonction appelée deux secondes après la fin de la légende ou lors de la vérification qui charge la map.
-		----------------------------------------------------
-		task -> task
-		return -> task.done
-		"""
-		if self.current_point == "1":
-			self.current_map = "maison_terenor.bam"
-			self.player.setPos(200, -110, 6)
-		self.request("Map")
-		return task.done
-
-	def fade_in(self, task):
-		"""
-		Fonction qui permet de faire des fade in plus tard.
-		----------------------------------------------------
-		task -> task
-		return -> task.done
-		"""
-		self.transition.fadeIn(2)
-		return task.done
-
-	def change_legende_image(self, task):
+	def update_cinematique(self, task):
 		"""
 		Fonction qui en fonction de l'avancement dans la légende change l'image en background.
 		-----------------------------------------------------------------------------------
 		task -> task
 		return -> task.cont ou task.done
 		"""
-		if self.text_index == 8:
-			if not self.image:
-				self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
-		if self.text_index == 11:
-			if self.image != None:
-				self.image.removeNode()
-				self.image = None
-		if self.text_index > 11:
-			return task.done
+		if self.chapitre == 1:
+			if self.text_index == 8:
+				if not self.image:
+					self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
+			if self.text_index == 11:
+				if self.image != None:
+					self.image.removeNode()
+					self.image = None
+			if self.text_index > 11:
+				return task.done
 		return task.cont
 	#-------------Fonction de chargement de map--------------------------------
 	def load_map(self, map="maison_terenor.bam", task=None):
@@ -1085,7 +1053,25 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.player.show()
+		self.load_save()
+		self.transition.fadeIn(1)
 		self.load_map(self.current_map)
+
+	def load_save(self, task=None):
+		"""
+		Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
+		--------------------------------------------------------------------------------------
+		task -> task
+		return -> None
+		"""
+		if self.current_point == "1":
+			self.current_map = "maison_terenor.bam"
+			self.player.setPos(200, -110, 6)
+		else:
+			self.current_map = "maison_terenor.bam"
+			self.player.setPos(200, -110, 6)	
+		if task != None:
+			return task.done		
 
 	def into(self, a):
 		"""
