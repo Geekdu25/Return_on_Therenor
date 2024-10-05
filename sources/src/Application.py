@@ -88,6 +88,9 @@ class SetLevel(FSM):
 		self.triggers = []
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
+		#------------------Position de la souris--------------------
+		self.lastMouseX = 0
+		self.lastMouseY = 0
 		#-----------------Autres variables-----------------------
 		self.chapitre = 0
 		self.player = Player()
@@ -214,6 +217,9 @@ class SetLevel(FSM):
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
+			properties = WindowProperties()
+			properties.setCursorHidden(False)
+			base.win.requestProperties(properties)
 			self.ignore("escape")	
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
 
@@ -424,7 +430,7 @@ class SetLevel(FSM):
 				file.close()
 		if not os.path.exists(path+"/keys.json"):		
 			file = open(path+"/keys.json", "wt")
-			file.writelines(['[{"Avancer":"arrow_up", "Reculer":"arrow_down", "Aller a droite":"arrow_right", "Aller a gauche":"arrow_left", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
 			file.close()	
 		noms = []
 		for loop in range(3):
@@ -535,14 +541,14 @@ class SetLevel(FSM):
 		keys_data = json.load(file)
 		file.close()
 		keys_data = keys_data[0]
-		liste_axe = ["left y 1", "left y -1", "left x 1", "left x -1", "right y 1", "right y -1", "right x 1", "right x -1"]
+		liste_axe = ["left y 1", "right y 1", "right y -1", "right x 1", "right x -1"]
 		self.mapping = InputMapping(keys_data) #On crée une instnce de la classe InputMapping.
 		i = 0
 		for key in keys_data:
 			if not self.manette:
 				self.mapping.mapButton(key, keys_data[key])
 			else:
-				if i < 8:
+				if i < 5:
 					self.mapping.mapAxis(key, liste_axe[i])
 				else:
 					self.mapping.mapButton(key, keys_data[key])					
@@ -653,7 +659,7 @@ class SetLevel(FSM):
 		action -> str
 		return -> None
 		"""
-		liste_interdite = ["Avancer", "Reculer", "Aller a gauche", "Aller a droite", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
+		liste_interdite = ["Avancer", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
 		if self.manette and action in liste_interdite:
 			return None
 		else:	
@@ -784,7 +790,7 @@ class SetLevel(FSM):
 				if "face" in dico[action] or "shoulder" in dico[action]:
 					if not dico[action].startswith("manette"):
 						dico[action] = "manette-" + dico[action]
-			dico["Avancer"], dico["Reculer"], dico["Aller a gauche"], dico["Aller a droite"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Reculer"], data["Aller a gauche"], data["Aller a droite"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
+			dico["Avancer"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Reculer"], data["Aller a gauche"], data["Aller a droite"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
 			file = open(self.get_path()+"/keys.json", "wt")
 			file.writelines([json.dumps([dico])])
 			file.close()
@@ -1008,12 +1014,6 @@ class SetLevel(FSM):
 		if not self.manette:
 			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
 			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-			self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
-			self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
-			self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
-			self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
-			self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
-			self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
@@ -1053,6 +1053,9 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.player.show()
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
 		self.load_save()
 		self.transition.fadeIn(1)
 		self.load_map(self.current_map)
@@ -1219,7 +1222,18 @@ class SetLevel(FSM):
 			if right_x.value > 0.5:
 				self.player.followcam.move("right", globalClock.getDt())
 			elif right_x.value < -0.5:
-				self.player.followcam.move("left", globalClock.getDt())				
+				self.player.followcam.move("left", globalClock.getDt())			
+		#-----------------------Section souris---------------------------------------
+		md = base.win.getPointer(0)
+		mouseX = md.getX()
+		mouseY = md.getY()
+		mouseChangeX = mouseX - self.lastMouseX
+		mouseChangeY = mouseY - self.lastMouseY
+		self.cameraSwingFactor = 4
+		currentH = self.player.getH()
+		self.player.setH(currentH - mouseChangeX * globalClock.getDt() * self.cameraSwingFactor)
+		self.lastMouseX = mouseX
+		self.lastMouseY = mouseY		
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 6:
 		  self.player.setZ(self.player, -0.25)
@@ -1273,6 +1287,9 @@ class SetLevel(FSM):
 
 	def confirm_quit(self):
 		taskMgr.remove("update")
+		properties = WindowProperties()
+		properties.setCursorHidden(False)
+		base.win.requestProperties(properties)
 		self.ignore(self.keys_data["Inventaire"])
 		self.ignore("escape")	
 		if self.quitDlg is None:
@@ -1283,6 +1300,9 @@ class SetLevel(FSM):
 		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
+			properties = WindowProperties()
+			properties.setCursorHidden(True)
+			base.win.requestProperties(properties)
 			self.read(file=self.actual_file)
 			self.transition.fadeOut(0.5)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
@@ -1312,14 +1332,6 @@ class SetLevel(FSM):
 		self.accept("escape", self.exit_inventaire)
 		self.ignore(self.keys_data["Avancer"])
 		self.ignore(self.keys_data["Avancer"]+"-up")
-		self.ignore(self.keys_data["Reculer"])
-		self.ignore(self.keys_data["Reculer"]+"-up")
-		self.ignore(self.keys_data["Aller a gauche"])
-		self.accept(self.keys_data["Aller a gauche"], self.change_index_invent, extraArgs=["left"])
-		self.ignore(self.keys_data["Aller a gauche"]+"-up")
-		self.ignore(self.keys_data["Aller a droite"])
-		self.accept(self.keys_data["Aller a droite"], self.change_index_invent, extraArgs=["right"])
-		self.ignore(self.keys_data["Aller a droite"]+"-up")
 		self.ignore(self.keys_data["Changer le point de vue"])
 		self.ignore(self.keys_data["Courir"])
 		self.ignore(self.keys_data["Courir"]+"-up")
@@ -1398,12 +1410,6 @@ class SetLevel(FSM):
 		if not self.manette:
 			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
 			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-			self.accept(self.keys_data["Reculer"], self.touche_pave, extraArgs=["arrow_down"])
-			self.accept(self.keys_data["Reculer"]+"-up", self.touche_pave, extraArgs=["arrow_down-up"])
-			self.accept(self.keys_data["Aller a gauche"], self.touche_pave, extraArgs=["arrow_left"])
-			self.accept(self.keys_data["Aller a gauche"]+"-up", self.touche_pave, extraArgs=["arrow_left-up"])
-			self.accept(self.keys_data["Aller a droite"], self.touche_pave, extraArgs=["arrow_right"])
-			self.accept(self.keys_data["Aller a droite"]+"-up", self.touche_pave, extraArgs=["arrow_right-up"])
 		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
 		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
