@@ -117,6 +117,7 @@ class SetLevel(FSM):
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
+		self.clavier_rep = base.win.get_keyboard_map()		
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
@@ -1223,17 +1224,25 @@ class SetLevel(FSM):
 				self.player.followcam.move("right", globalClock.getDt())
 			elif right_x.value < -0.5:
 				self.player.followcam.move("left", globalClock.getDt())			
+		#----------------------Section de gestion de la caméra si pas de manette----------------------
+		else:
+			haut_button = self.clavier_rep.get_mapped_button(self.keys_data["Monter la camera"])
+			if base.mouseWatcherNode.is_button_down(haut_button):
+				self.player.followcam.move("up", globalClock.getDt())
+			bas_button = self.clavier_rep.get_mapped_button(self.keys_data["Descendre la camera"])
+			if base.mouseWatcherNode.is_button_down(bas_button):
+				self.player.followcam.move("down", globalClock.getDt())
+			gauche_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a gauche"])
+			if base.mouseWatcherNode.is_button_down(gauche_button):
+				self.player.followcam.move("left", globalClock.getDt())
+			droite_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a droite"])
+			if base.mouseWatcherNode.is_button_down(droite_button):
+				self.player.followcam.move("right", globalClock.getDt())			
 		#-----------------------Section souris---------------------------------------
-		md = base.win.getPointer(0)
-		mouseX = md.getX()
-		mouseY = md.getY()
-		mouseChangeX = mouseX - self.lastMouseX
-		mouseChangeY = mouseY - self.lastMouseY
-		self.cameraSwingFactor = 4
-		currentH = self.player.getH()
-		self.player.setH(currentH - mouseChangeX * globalClock.getDt() * self.cameraSwingFactor)
-		self.lastMouseX = mouseX
-		self.lastMouseY = mouseY		
+		if not self.manette:
+			if base.mouseWatcherNode.hasMouse():
+				self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
+		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))		
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 6:
 		  self.player.setZ(self.player, -0.25)
@@ -1300,14 +1309,14 @@ class SetLevel(FSM):
 		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
-			properties = WindowProperties()
-			properties.setCursorHidden(True)
-			base.win.requestProperties(properties)
 			self.read(file=self.actual_file)
 			self.transition.fadeOut(0.5)
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 			taskMgr.doMethodLater(0.5, self.return_to_menu, "back_to_menu")
 		else:
+			properties = WindowProperties()
+			properties.setCursorHidden(True)
+			base.win.requestProperties(properties)
 			self.accept("escape", self.confirm_quit)
 			self.accept(self.keys_data["Inventaire"], self.inventaire)	
 
@@ -1395,6 +1404,7 @@ class SetLevel(FSM):
 		elif self.index_invent == 1:
 			self.noai_image.show()
 			self.noai_text.show()
+		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))		
 		return task.cont
 
 	def exit_inventaire(self):
