@@ -873,11 +873,15 @@ class SetLevel(FSM):
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		#---------------------------Cinématique du magicien----------------------------------
 		elif self.chapitre == 3:
-			if hasattr(self, "player"):
-				if hasattr(self.player, "followcam"):
-					self.player.followcam.set_active(False)
+			if hasattr(self.player, "followcam"):
+				self.player.followcam.set_active(False)
+			self.player.show()
+			self.player.setPos(200, -400, 0)
+			self.player.setH(180)
+			self.player.setScale(110)
 			if hasattr(self, "map"):
 				self.map.removeNode()
+			self.move_camera = 0	
 			self.map = loader.loadModel("salle_du_sacrifice.bam")
 			self.map.reparentTo(render)
 			self.map.setPos(500, 500, 0)
@@ -886,34 +890,16 @@ class SetLevel(FSM):
 			self.magicien.setPos(200, 200, 0)
 			self.magicien.reparentTo(render)
 			self.magicien.loop("Immobile")
-			base.cam.setPos(200, -350, 50)
+			base.cam.setPos(200, -550, 250)
 			self.music.stop()
 			self.music = base.loader.loadSfx("../sounds/Le_magicien_démoniaque.ogg")
 			self.music.setLoop(True)
 			self.music.play()
 			self.transition.fadeIn(2)
-			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre."], ["Fini"])	
+			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])	
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		base.taskMgr.add(self.update_cinematique, "update_cinematique")
-
-	def exitCinematique(self):
-		"""
-		Fonction lorsque la légende est finie.
-		-------------------------------------
-		return -> None
-		"""
-		self.ignore("Fini")
-		if self.chapitre == 1:
-			self.music.stop()
-			self.chapitre = 2
-		if self.chapitre == 3:
-			self.magicien.cleanup()
-			self.magicien.removeNode()
-			del self.magicien
-			base.cam.setPos(0, 0, 0)
-			self.music.stop()
-			self.chaptre = 2	
-
+		taskMgr.add(self.update_cinematique, "update_cinematique")
+		
 	def update_cinematique(self, task):
 		"""
 		Fonction qui en fonction de l'avancement dans la légende change l'image en background.
@@ -921,6 +907,7 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont ou task.done
 		"""
+		dt = globalClock.getDt()
 		if self.chapitre == 1:
 			if self.text_index == 8:
 				if not hasattr(self, "image"):
@@ -931,7 +918,37 @@ class SetLevel(FSM):
 					del self.image
 			if self.text_index > 11:
 				return task.done
-		return task.cont
+		elif self.chapitre == 3:
+			if self.text_index	<= 4:
+				if base.cam.getY() < 200:
+					base.cam.setY(base.cam, dt*25)
+			elif self.text_index <= 6:
+				if self.move_camera == 0:
+					self.move_camera = 1
+					base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
+				if base.cam.getY() > -100:
+					base.cam.setY(base.cam, dt*25)				
+		return task.cont	
+
+	def exitCinematique(self):
+		"""
+		Fonction lorsque la légende est finie.
+		-------------------------------------
+		return -> None
+		"""
+		taskMgr.remove("update_cinematique")
+		self.ignore("Fini")
+		if self.chapitre == 1:
+			self.music.stop()
+			self.chapitre = 2
+		if self.chapitre == 3:
+			self.magicien.cleanup()
+			self.magicien.removeNode()
+			del self.magicien
+			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
+			self.player.setScale(70)
+			self.music.stop()
+			self.chaptre = 2	
 	#-------------Fonction de chargement de map--------------------------------
 	def load_map(self, map="maison_terenor.bam", task=None):
 		"""
