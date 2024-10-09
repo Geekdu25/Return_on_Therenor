@@ -25,14 +25,12 @@ class Player(Actor):
 		self.left = False
 		self.setHpr(90, 0, 0)
 		self.setScale(70)
-		self.followcam = None
 		#---------------Section de gestion des collisions------------------
 		self.col = CollisionNode('player_sphere')
 		self.col.addSolid(CollisionSphere((0, 0, 0.5), 0.65)) 
 		self.col.setFromCollideMask(BitMask32.bit(0))
 		self.col.setIntoCollideMask(BitMask32.allOff()) 
 		self.col_np = self.attachNewNode(self.col)
-		self.followcam = None
 	
 	
 	def create_camera(self):

@@ -360,8 +360,9 @@ class SetLevel(FSM):
 		self.transition.fadeIn(1)
 		if self.music is not None:
 			Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		if self.player.followcam is not None:
-			self.player.followcam.set_active(False)
+		if hasattr(self, "player"):	
+			if hasattr(self.player, "followcam"):
+				self.player.followcam.set_active(False)
 		self.hide_gui()
 		self.music = base.loader.loadSfx("../sounds/menu.ogg")
 		self.music.setLoop(True)
@@ -868,8 +869,8 @@ class SetLevel(FSM):
 			self.music.setLoop(True)
 			self.music.play()
 			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
-			"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"])
-			self.accept("Bz", self.fade_out, extraArgs=["Map"])
+			"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Fini"])
+			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		#---------------------------Cinématique du magicien----------------------------------
 		elif self.chapitre == 3:
 			if hasattr(self, "player"):
@@ -879,12 +880,13 @@ class SetLevel(FSM):
 				self.map.removeNode()
 			self.map = loader.loadModel("salle_du_sacrifice.bam")
 			self.map.reparentTo(render)
-			self.map.setPos(500, 500, -100)
+			self.map.setPos(500, 500, 0)
 			self.map.setHpr(270, 0, 0)
-			magicien = Magicien()
-			magicien.setPos(200, 200, -100)
-			magicien.reparentTo(render)
-			magicien.loop("Immobile")
+			self.magicien = Magicien()
+			self.magicien.setPos(200, 200, 0)
+			self.magicien.reparentTo(render)
+			self.magicien.loop("Immobile")
+			base.cam.setPos(200, -350, 50)
 			self.music.stop()
 			self.music = base.loader.loadSfx("../sounds/Le_magicien_démoniaque.ogg")
 			self.music.setLoop(True)
@@ -900,9 +902,17 @@ class SetLevel(FSM):
 		-------------------------------------
 		return -> None
 		"""
+		self.ignore("Fini")
 		if self.chapitre == 1:
 			self.music.stop()
 			self.chapitre = 2
+		if self.chapitre == 3:
+			self.magicien.cleanup()
+			self.magicien.removeNode()
+			del self.magicien
+			base.cam.setPos(0, 0, 0)
+			self.music.stop()
+			self.chaptre = 2	
 
 	def update_cinematique(self, task):
 		"""
@@ -949,12 +959,19 @@ class SetLevel(FSM):
 		self.map = loader.loadModel(map)
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
+		if not hasattr(self, "cam_col_np"):
+			self.cam_col = CollisionNode('camera_sphere')
+			self.cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5)) 
+			self.cam_col.setFromCollideMask(BitMask32.bit(0))
+			self.cam_col.setIntoCollideMask(BitMask32.allOff()) 
+			self.cam_col_np = base.cam.attachNewNode(self.cam_col)
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.map.setCollideMask(BitMask32.bit(0))
 		if self.debug:
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
+		self.antimur.addCollider(self.cam_col_np, base.cam)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -988,9 +1005,9 @@ class SetLevel(FSM):
 		self.music = base.loader.loadSfx(data[self.current_map][0])
 		self.music.setLoop(True)
 		self.music.play()
-		#---------------------Gestion de la caméra du joueur-------------------------------------
-		if self.player.followcam is None:
-			self.player.create_camera()
+		#---------------------Gestion de la caméra du joueur----------------
+		if not hasattr(self.player, "followcam"): 
+				self.player.create_camera()
 		if not self.player.followcam.active:
 			self.player.followcam.set_active(True)
 		#----------Les portes-----------------------
