@@ -68,9 +68,7 @@ class SetLevel(FSM):
 		self.termine = True
 		self.messages = []
 		self.sons_messages = []
-		self.image = None #On utilise cette variable lors de la légende
 		#---------------Modèles 3d non initialisés-------------------
-		self.map = None
 		self.epee = None
 		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
 		#------------Section sons (musique, dialogues...)--------------------
@@ -525,6 +523,8 @@ class SetLevel(FSM):
 		elif self.chapitre == 2:
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 			self.fade_out("Map")
+		elif self.chapitre == 3:
+			self.fade_out("Cinematique")	
 		#------------Générique---------------------------	
 		else:
 			self.request("Generique")
@@ -862,6 +862,7 @@ class SetLevel(FSM):
 		-----------------------------------------------------------------
 		return -> None
 		"""
+		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
 			self.music = base.loader.loadSfx("../sounds/legende.ogg")
 			self.music.setLoop(True)
@@ -869,6 +870,28 @@ class SetLevel(FSM):
 			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
 			"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Bz"])
 			self.accept("Bz", self.fade_out, extraArgs=["Map"])
+		#---------------------------Cinématique du magicien----------------------------------
+		elif self.chapitre == 3:
+			if hasattr(self, "player"):
+				if hasattr(self.player, "followcam"):
+					self.player.followcam.set_active(False)
+			if hasattr(self, "map"):
+				self.map.removeNode()
+			self.map = loader.loadModel("salle_du_sacrifice.bam")
+			self.map.reparentTo(render)
+			self.map.setPos(500, 500, -100)
+			self.map.setHpr(270, 0, 0)
+			magicien = Magicien()
+			magicien.setPos(200, 200, -100)
+			magicien.reparentTo(render)
+			magicien.loop("Immobile")
+			self.music.stop()
+			self.music = base.loader.loadSfx("../sounds/Le_magicien_démoniaque.ogg")
+			self.music.setLoop(True)
+			self.music.play()
+			self.transition.fadeIn(2)
+			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre."], ["Fini"])	
+			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		base.taskMgr.add(self.update_cinematique, "update_cinematique")
 
 	def exitCinematique(self):
@@ -890,12 +913,12 @@ class SetLevel(FSM):
 		"""
 		if self.chapitre == 1:
 			if self.text_index == 8:
-				if not self.image:
+				if not hasattr(self, "image"):
 					self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
 			if self.text_index == 11:
-				if self.image != None:
+				if hasattr(self, "image"):
 					self.image.removeNode()
-					self.image = None
+					del self.image
 			if self.text_index > 11:
 				return task.done
 		return task.cont
@@ -920,7 +943,7 @@ class SetLevel(FSM):
 		self.save_statues = {}
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
-		if self.map:
+		if hasattr(self, "map"):
 			self.map.removeNode()
 			del self.map
 		self.map = loader.loadModel(map)
@@ -1566,7 +1589,6 @@ class SetLevel(FSM):
 		Fonction qui s'active si on touche une statue de sauvegarde.
 		"""
 		self.saveDlg.cleanup()
-		taskMgr.add(self.update, "update")
 		if clickedYes:
 			self.save(file=self.actual_file)
 			self.myOkDialog = OkDialog(text="Sauvegarde effectuée !", command = self.reupdate)
@@ -1575,6 +1597,9 @@ class SetLevel(FSM):
 		"""
 		Fonction pour remettre la fonction de mise à jour en éxécution.
 		"""
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
 		self.myOkDialog.cleanup()
 		self.accept("escape", self.confirm_quit)	
 		taskMgr.add(self.update, "update")

@@ -44,15 +44,13 @@ class PNJ(Actor):
 	Classe nous servant de base pour tous les pnjs du jeu.
 	On peut bien sûr créer de nouvelles classes qui en héritent.
 	"""
-	def __init__(self, name="error"):
+	def __init__(self, name="error", anims=[]):
 		#On cherche l'existence des modèles 3D de notre personnage.
-		if os.path.exists(f"../models/{name}.bam"):
-			if os.path.exists(f"../models/{name}-marche.bam"):
-				Actor.__init__(self, f"../models/{name}.bam", {"marche" : f"../models/{name}-marche.bam"})
-			else:
-				Actor.__init__(self, f"../models/{name}.bam")
-		else:
-			Actor.__init__(self, name)	
+		dico = {}
+		for anim in anims:
+			if os.path.exists(f"../models/{name}-{anim}.bam"):
+				dico[anim] = f"../models/{name}-{anim}.bam"
+		Actor.__init__(self, f"../models/{name}.bam", dico)
 		self.name = name		
 		self.s = None
 		self.texts = [f"Je suis un PNJ du nom de {self.name}."]
@@ -73,3 +71,8 @@ class Taya(PNJ):
 		self.col.addSolid(CollisionSphere((0, 0, 35), 100)) 
 		self.col.setIntoCollideMask(BitMask32.bit(0)) 
 		self.col_np = self.attachNewNode(self.col)
+
+class Magicien(PNJ):
+	def __init__(self):
+		PNJ.__init__(self, name="magicien", anims=["Immobile"])
+		self.setScale(60)
