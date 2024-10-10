@@ -17,7 +17,7 @@ from monsters import *
 from objects import *
 from mappingGUI import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
-import os, sys, json, platform
+import os, sys, json, platform, random
 
 class YesNoDialog(DirectDialog):
 	"""
@@ -863,6 +863,7 @@ class SetLevel(FSM):
 		-----------------------------------------------------------------
 		return -> None
 		"""
+		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
 			self.music = base.loader.loadSfx("../sounds/legende.ogg")
@@ -881,7 +882,16 @@ class SetLevel(FSM):
 			self.player.setScale(110)
 			if hasattr(self, "map"):
 				self.map.removeNode()
-			self.move_camera = 0	
+			self.move_camera = 0
+			#-------------------Lumières-------------------------------------------	
+			point_light = PointLight("point_light")
+			point_light.setColor((0.85, 0.8, 0.5, 1))
+			point_light_np = render.attachNewNode(point_light)
+			point_light_np.setPos(200, 0, 50)
+			self.actuals_light.append(point_light_np)
+			render.setLight(point_light_np)
+			point_light.setShadowCaster(True, 512, 512)
+			#-----------------Modèles------------------------------------------
 			self.map = loader.loadModel("salle_du_sacrifice.bam")
 			self.map.reparentTo(render)
 			self.map.setPos(500, 500, 0)
@@ -891,13 +901,16 @@ class SetLevel(FSM):
 			self.magicien.reparentTo(render)
 			self.magicien.loop("Immobile")
 			base.cam.setPos(200, -550, 250)
+			#-----------------------Musique-------------------------------
 			self.music.stop()
 			self.music = base.loader.loadSfx("../sounds/Le_magicien_démoniaque.ogg")
 			self.music.setLoop(True)
 			self.music.play()
+			#------------Petit fade in---------------------------------------------
 			self.transition.fadeIn(2)
 			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])	
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
+		render.setShaderAuto()	
 		taskMgr.add(self.update_cinematique, "update_cinematique")
 		
 	def update_cinematique(self, task):
@@ -921,7 +934,7 @@ class SetLevel(FSM):
 		elif self.chapitre == 3:
 			if self.text_index	<= 4:
 				if base.cam.getY() < 200:
-					base.cam.setY(base.cam, dt*25)
+					base.cam.setY(base.cam, dt*60)
 			elif self.text_index <= 6:
 				if self.move_camera == 0:
 					self.move_camera = 1
@@ -936,6 +949,9 @@ class SetLevel(FSM):
 		-------------------------------------
 		return -> None
 		"""
+		for light in self.actuals_light:
+			render.clearLight(light)
+		del self.actuals_light	
 		taskMgr.remove("update_cinematique")
 		self.ignore("Fini")
 		if self.chapitre == 1:
@@ -977,18 +993,17 @@ class SetLevel(FSM):
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
 		if not hasattr(self, "cam_col_np"):
-			self.cam_col = CollisionNode('camera_sphere')
-			self.cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5)) 
-			self.cam_col.setFromCollideMask(BitMask32.bit(0))
-			self.cam_col.setIntoCollideMask(BitMask32.allOff()) 
-			self.cam_col_np = base.cam.attachNewNode(self.cam_col)
+			cam_col = CollisionNode('camera_sphere')
+			cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5)) 
+			cam_col.setFromCollideMask(BitMask32.bit(0))
+			cam_col.setIntoCollideMask(BitMask32.allOff()) 
+			self.cam_col_np = base.cam.attachNewNode(cam_col)
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.map.setCollideMask(BitMask32.bit(0))
 		if self.debug:
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
-		self.antimur.addCollider(self.cam_col_np, base.cam)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
