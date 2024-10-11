@@ -991,7 +991,7 @@ class SetLevel(FSM):
 		#---------------------------Collisions de la map------------------
 		if not hasattr(self, "cam_col_np"):
 			cam_col = CollisionNode('camera_sphere')
-			cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5))
+			cam_col.addSolid(CollisionSphere((0, 0, 0), 0.4))
 			cam_col.setFromCollideMask(BitMask32.bit(0))
 			cam_col.setIntoCollideMask(BitMask32.allOff())
 			self.cam_col_np = base.cam.attachNewNode(cam_col)
@@ -1185,7 +1185,9 @@ class SetLevel(FSM):
 			elif b in self.save_statues:
 				self.actual_statue = b
 		elif c == "camera_sphere":
-			self.camera_colliding = True		
+			base.cam.setPos(0, 0, 3)
+			base.cam.lookAt(self.player)
+			#self.camera_colliding = True		
 
 
 	def change_vitesse(self, touche="b"):
@@ -1218,8 +1220,10 @@ class SetLevel(FSM):
 			elif b in self.save_statues:
 				self.actual_statue = None
 		elif c == "camera_sphere":
+			base.cam.setPos(0, -2, 0)
+			"""
 			if hasattr(self, "camera_colliding"):
-				del self.camera_colliding		
+				del self.camera_colliding"""		
 
 	def touche_pave(self, message="arrow_up"):
 		"""
@@ -1269,13 +1273,6 @@ class SetLevel(FSM):
 			self.coeurs_moitie[int(self.player.vies)].show()
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
-		#-----------------------Section rapprochement de la caméra----------
-		if hasattr(self, "camera_colliding"):
-			if base.cam.getY() < 0:
-				base.cam.setY(base.cam, -10*dt)
-		else:
-			if base.cam.getY() > -2:
-				base.cam.setY(base.cam, 10*dt)
 		#-----------------------Section gestion de la manette-----------------
 		if self.manette:
 			base.devices.update()

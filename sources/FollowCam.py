@@ -7,9 +7,9 @@ class ManetteCam():
 		self.target = target
 		self.dummy = self.target.attachNewNode("cam" + target.getName())
 		self.dummy.setZ(self.dummy, 1)
-		self.dummy.setH(270)
+		self.dummy.setH(180)
 		self.camera.reparentTo(self.dummy)
-		self.camera.setPos(self.camera, Vec3(-2, 0, 0))
+		self.camera.setPos(self.camera, Vec3(0, -2, 0))
 		self.active = True
 		self.vue = True
 		camera.node().getLens().setFov(120)
@@ -22,8 +22,8 @@ class ManetteCam():
 			self.camera.setPos(self.dummy, Vec3(0, 0, 0))
 		else:
 			self.vue = True	
-			self.dummy.setHpr(270, 0, 0)
-			self.camera.setPos(self.camera, Vec3(-2, 0, 0))	
+			self.dummy.setHpr(180, 0, 0)
+			self.camera.setPos(self.camera, Vec3(0, -2, 0))	
 			
 	def set_active(self, active=True):
 		self.active = active
@@ -31,7 +31,7 @@ class ManetteCam():
 			taskMgr.add(self.update_camera, "updateCamera")	
 			self.camera.reparentTo(self.dummy)
 			self.camera.node().getLens().setFov(120)
-			self.camera.setPos(self.camera, Vec3(-2, 0, 0))
+			self.camera.setPos(self.camera, Vec3(0, -2, 0))
 		else:
 			taskMgr.remove("updateCamera")
 			self.camera.reparentTo(render)		
@@ -46,8 +46,8 @@ class ManetteCam():
 	def recenter(self):
 		if self.vue:
 			self.dummy.setPos((0, 0, 0.25))
-			self.dummy.setHpr((270, 0, 0))
-			self.camera.setPos((-2, 0, 0))	
+			self.dummy.setHpr((180, 0, 0))
+			self.camera.setPos((0, -2, 0))	
 			self.camera.setHpr((0, 0, 0))
 		else:
 			self.dummy.setPos((0, 0, 0.25))
@@ -58,11 +58,11 @@ class ManetteCam():
 	def move(self, direction="up", time=0.1):
 		if self.vue:
 			if direction == "up":
-				if self.dummy.getR() < 30:
-					self.dummy.setR(self.dummy, time*50)
+				if self.dummy.getP() > -25:
+					self.dummy.setP(self.dummy, -time*50)
 			elif direction == "down":
-				if self.dummy.getR() > -30:
-					self.dummy.setR(self.dummy, -time*50)
+				if self.dummy.getP() < 15:
+					self.dummy.setP(self.dummy, time*50)
 			elif direction == "left":
 				save_r = self.dummy.getR()
 				self.dummy.setR(0)
