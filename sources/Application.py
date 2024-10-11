@@ -86,9 +86,6 @@ class SetLevel(FSM):
 		self.triggers = []
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
-		#------------------Position de la souris--------------------
-		self.lastMouseX = 0
-		self.lastMouseY = 0
 		#-----------------Autres variables-----------------------
 		self.chapitre = 0
 		self.player = Player()
@@ -486,6 +483,7 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------
 		return -> None
 		"""
+		self.music.stop()
 		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.accept("escape", self.all_close)
 		base.win.setCloseRequestEvent("escape")
@@ -985,7 +983,8 @@ class SetLevel(FSM):
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
 		if hasattr(self, "map"):
-			self.map.removeNode()
+			if self.map is not None:
+				self.map.removeNode()
 			del self.map
 		self.map = loader.loadModel(map)
 		self.map.reparentTo(render)
@@ -996,6 +995,9 @@ class SetLevel(FSM):
 			cam_col.setFromCollideMask(BitMask32.bit(0))
 			cam_col.setIntoCollideMask(BitMask32.allOff())
 			self.cam_col_np = base.cam.attachNewNode(cam_col)
+			self.cam_col_handler = CollisionHandlerEvent()
+			self.cam_col_handler.addInPattern("into")
+			self.cam_col_handler.addOutPattern("out")
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.map.setCollideMask(BitMask32.bit(0))
@@ -1003,6 +1005,7 @@ class SetLevel(FSM):
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
+		base.cTrav.addCollider(self.cam_col_np, self.cam_col_handler)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
@@ -1155,30 +1158,34 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
-		#-----------Si on touche un pnj--------------------------
-		if b in self.pnjs:
-			self.current_pnj = b
-			self.pnjs[b].s.pause()
-		elif b in self.portails:
-			if type(self.portails[b]) is Portail:
-				self.transition.fadeOut(0.5)
-				self.player.setPos(self.portails[b].newpos)
-				taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
-			elif type(self.portails[b]) is Porte:
-				self.current_porte = b
-		#--------------Si on touche un trigger------------------------------
-		elif b.isdigit():
-			b = int(b)
-			if b == 1:
-				if not "epee" in self.player.inventaire:
-					taskMgr.remove("update")
-					self.player.stop()
-					s = Sequence(self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
-					self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])
-					self.accept("finito", s.start)
-		#--------------Si on touche une statue de sauvegarde----------------------------------
-		elif b in self.save_statues:
-			self.actual_statue = b
+		c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1]
+		if c == "player_sphere":
+			#-----------Si on touche un pnj--------------------------
+			if b in self.pnjs:
+				self.current_pnj = b
+				self.pnjs[b].s.pause()
+			elif b in self.portails:
+				if type(self.portails[b]) is Portail:
+					self.transition.fadeOut(0.5)
+					self.player.setPos(self.portails[b].newpos)
+					taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
+				elif type(self.portails[b]) is Porte:
+					self.current_porte = b
+			#--------------Si on touche un trigger------------------------------
+			elif b.isdigit():
+				b = int(b)
+				if b == 1:
+					if not "epee" in self.player.inventaire:
+						taskMgr.remove("update")
+						self.player.stop()
+						s = Sequence(self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
+						self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])
+						self.accept("finito", s.start)
+			#--------------Si on touche une statue de sauvegarde----------------------------------
+			elif b in self.save_statues:
+				self.actual_statue = b
+		elif c == "camera_sphere":
+			self.camera_colliding = True		
 
 
 	def change_vitesse(self, touche="b"):
@@ -1201,13 +1208,18 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
-		if b in self.pnjs:
-			self.pnjs[b].s.resume()
-			self.current_pnj = None
-		elif b in self.portails:
-			self.current_porte = None
-		elif b in self.save_statues:
-			self.actual_statue = None
+		c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1]
+		if c == "player_sphere":
+			if b in self.pnjs:
+				self.pnjs[b].s.resume()
+				self.current_pnj = None
+			elif b in self.portails:
+				self.current_porte = None
+			elif b in self.save_statues:
+				self.actual_statue = None
+		elif c == "camera_sphere":
+			if hasattr(self, "camera_colliding"):
+				del self.camera_colliding		
 
 	def touche_pave(self, message="arrow_up"):
 		"""
@@ -1238,6 +1250,7 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
+		dt = globalClock.getDt()
 		#---------------Section éléments 2D-------------------------------------------
 		self.noai_text.show()
 		self.noai_image.show()
@@ -1256,6 +1269,13 @@ class SetLevel(FSM):
 			self.coeurs_moitie[int(self.player.vies)].show()
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
+		#-----------------------Section rapprochement de la caméra----------
+		if hasattr(self, "camera_colliding"):
+			if base.cam.getY() < 0:
+				base.cam.setY(base.cam, -10*dt)
+		else:
+			if base.cam.getY() > -2:
+				base.cam.setY(base.cam, 10*dt)
 		#-----------------------Section gestion de la manette-----------------
 		if self.manette:
 			base.devices.update()
@@ -1596,13 +1616,12 @@ class SetLevel(FSM):
 		self.transition.fadeIn(0.5)
 		self.text_game_over.show()
 		self.text_game_over_2.show()
-		self.accept("a", self.change_to_map)
+		self.accept("f1", self.change_to_map)
 
 	def change_to_map(self):
 		self.transition.fadeOut(0.5)
 		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 0.5)).start()
 		base.taskMgr.doMethodLater(0.5, self.apparaitre_render, "render_appearing")
-		#base.taskMgr.doMethodLater(1, self.load_map, "request", extraArgs=[self.current_map])
 		self.request("Map")
 
 	def exitGame_over(self):
