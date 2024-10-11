@@ -1,5 +1,5 @@
 window-title The legend of Therenor 2
-model-path $MAIN_DIR/../models
+model-path $MAIN_DIR/../data/models
 fullscreen #t
 cursor-hidden #f
 want-directtools #f
