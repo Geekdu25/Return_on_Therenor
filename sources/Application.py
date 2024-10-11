@@ -1185,7 +1185,7 @@ class SetLevel(FSM):
 			elif b in self.save_statues:
 				self.actual_statue = b
 		elif c == "camera_sphere":
-			base.cam.setPos(0, 0, 3)
+			base.cam.setPos(0, 0, 0)
 			base.cam.lookAt(self.player)
 			#self.camera_colliding = True		
 
@@ -1643,9 +1643,10 @@ class SetLevel(FSM):
 		if reset:
 			self.chapitre = 0
 			self.player.nom = "Link"
+			self.player.noais = 0
 			self.current_map = "maison_terenor.bam"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
-		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies)]
+		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 
@@ -1691,6 +1692,8 @@ class SetLevel(FSM):
 					self.player.vies = 3
 			elif i == 5:
 				self.player.maxvies = int(truc)
+			elif i == 6:
+				self.player.noais = int(truc)	
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
