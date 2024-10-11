@@ -890,7 +890,6 @@ class SetLevel(FSM):
 			point_light_np.setPos(200, 0, 50)
 			self.actuals_light.append(point_light_np)
 			render.setLight(point_light_np)
-			point_light.setShadowCaster(True, 512, 512)
 			#-----------------Modèles------------------------------------------
 			self.map = loader.loadModel("salle_du_sacrifice.bam")
 			self.map.reparentTo(render)
@@ -910,7 +909,6 @@ class SetLevel(FSM):
 			self.transition.fadeIn(2)
 			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		render.setShaderAuto()
 		taskMgr.add(self.update_cinematique, "update_cinematique")
 
 	def update_cinematique(self, task):
@@ -1206,8 +1204,10 @@ class SetLevel(FSM):
 		if b in self.pnjs:
 			self.pnjs[b].s.resume()
 			self.current_pnj = None
-		self.current_porte = None
-		self.actual_statue = None
+		elif b in self.portails:
+			self.current_porte = None
+		elif b in self.save_statues:
+			self.actual_statue = None
 
 	def touche_pave(self, message="arrow_up"):
 		"""
