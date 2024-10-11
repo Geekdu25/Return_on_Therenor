@@ -136,19 +136,19 @@ class SetLevel(FSM):
 		self.coeurs_pleins = []
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../data/pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_vides.append(a)
 			x += 0.12
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../data/pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_pleins.append(a)
 			x += 0.12
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../data/pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_moitie.append(a)
 			x+= 0.12
@@ -158,10 +158,10 @@ class SetLevel(FSM):
 			self.transition.fadeOut(0.5)
 			taskMgr.doMethodLater(1, self.launch_game_over, "request")
 		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))
-		self.noai_image = OnscreenImage("../data/pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
+		self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.map_image = OnscreenImage("../data/pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.croix_image = OnscreenImage("../data/pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
+		self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		self.croix_image = OnscreenImage("croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
 		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
 		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
 		self.hide_gui()
@@ -235,7 +235,7 @@ class SetLevel(FSM):
 					self.son.stop()
 					if len(self.sons_messages) > self.text_index:
 						try:
-							self.son = loader.loadSfx(f"../data/sounds/dialogues/{self.sons_messages[self.text_index]}.ogg")
+							self.son = loader.loadSfx(f"dialogues/{self.sons_messages[self.text_index]}.ogg")
 							self.son.play()
 						except:
 							print("Pas de fichier son valide.")
@@ -277,7 +277,7 @@ class SetLevel(FSM):
 			self.messages = messages
 			if len(sons) > 0:
 				try:
-					self.son = loader.loadSfx(f"../data/sounds/dialogues/{self.sons_messages[0]}.ogg")
+					self.son = loader.loadSfx(f"dialogues/{self.sons_messages[0]}.ogg")
 					self.son.play()
 				except:
 					print("Pas de fichier son valide.")
@@ -297,7 +297,7 @@ class SetLevel(FSM):
 				del self.dialog_box
 			else:
 				self.ok = True
-			self.dialog_box = OnscreenImage("../data/pictures/dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
+			self.dialog_box = OnscreenImage("dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
 			self.dialog_box.setTransparency(TransparencyAttrib.MAlpha)
 			self.textObject = OnscreenText(text=self.texts[self.text_index][0:self.letter_index], pos=(0, -0.75), scale=0.07)
 			if self.letter_index < len(self.texts[self.text_index]):
@@ -361,7 +361,7 @@ class SetLevel(FSM):
 			if hasattr(self.player, "followcam"):
 				self.player.followcam.set_active(False)
 		self.hide_gui()
-		self.music = base.loader.loadSfx("../data/sounds/menu.ogg")
+		self.music = base.loader.loadSfx("menu.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.menu = True
@@ -406,7 +406,7 @@ class SetLevel(FSM):
 		"""
 		self.ignoreAll()
 		self.accept("escape", self.all_close)
-		self.music = loader.loadSfx("../data/sounds/para.ogg")
+		self.music = loader.loadSfx("para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
@@ -416,7 +416,7 @@ class SetLevel(FSM):
 		self.skybox.setDepthWrite(0)
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
-		self.files = [OnscreenImage("../data/pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
+		self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
 		path = self.get_path()
 		if not os.path.exists(path):
 			os.mkdir(path)
@@ -864,7 +864,7 @@ class SetLevel(FSM):
 		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
-			self.music = base.loader.loadSfx("../data/sounds/legende.ogg")
+			self.music = base.loader.loadSfx("legende.ogg")
 			self.music.setLoop(True)
 			self.music.play()
 			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
@@ -900,7 +900,7 @@ class SetLevel(FSM):
 			base.cam.setPos(200, -550, 250)
 			#-----------------------Musique-------------------------------
 			self.music.stop()
-			self.music = base.loader.loadSfx("../data/sounds/Le_magicien_démoniaque.ogg")
+			self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
 			self.music.setLoop(True)
 			self.music.play()
 			#------------Petit fade in---------------------------------------------
@@ -920,7 +920,7 @@ class SetLevel(FSM):
 		if self.chapitre == 1:
 			if self.text_index == 8:
 				if not hasattr(self, "image"):
-					self.image = OnscreenImage("../data/pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
+					self.image = OnscreenImage("la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
 			if self.text_index == 11:
 				if hasattr(self, "image"):
 					self.image.removeNode()
@@ -1522,7 +1522,7 @@ class SetLevel(FSM):
 		-------------------------------------------------
 		return -> None
 		"""
-		self.music = loader.loadSfx("../data/sounds/Thème_de_Therenor.ogg")
+		self.music = loader.loadSfx("Thème_de_Therenor.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémy Martinot     Noé Mora", False), ("Etienne Pacault", False),
@@ -1607,7 +1607,7 @@ class SetLevel(FSM):
 		for coeur in self.coeurs_vides:
 			coeur.hide()
 		self.music.stop()
-		self.music = loader.loadSfx("../data/sounds/game_over.ogg")
+		self.music = loader.loadSfx("game_over.ogg")
 		self.music.play()
 		self.player.vies = 3
 		self.transition.fadeIn(0.5)

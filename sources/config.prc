@@ -1,5 +1,7 @@
 window-title The legend of Therenor 2
-model-path $MAIN_DIR/../data/models
+model-path $MAIN_DIR/../data/models 
+model-path $MAIN_DIR/../data/pictures
+model-path $MAIN_DIR/../data/sounds
 win-size 1024 768
 fullscreen #f
 cursor-hidden #f
