@@ -28,7 +28,7 @@ class YesNoDialog(DirectDialog):
 		self.defineoptions(kw, optiondefs)
 		DirectDialog.__init__(self, parent)
 		self.initialiseoptions(YesNoDialog)
-		
+
 class Portail(CollisionBox):
 	"""
 	Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
@@ -101,25 +101,25 @@ class SetLevel(FSM):
 		self.letter_index = 0
 		self.objects = []
 		self.keys_data = {}
-		self.current_point = 1		
+		self.current_point = 1
 		self.actual_statue = None
 		self.actual_file = 1
 		self.manette = False
 		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 			self.manette = True
 			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
-		self.quitDlg = None		
+		self.quitDlg = None
 		self.load_gui()
 		self.transition = Transitions(loader)
 		self.augustins = False
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
-		self.clavier_rep = base.win.get_keyboard_map()		
+		self.clavier_rep = base.win.get_keyboard_map()
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
-		base.win.setCloseRequestEvent("escape")	
+		base.win.setCloseRequestEvent("escape")
 
 
 	#---------------Fonctions de manipulation de la GUI------------------------------
@@ -139,19 +139,19 @@ class SetLevel(FSM):
 		self.coeurs_pleins = []
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("../data/pictures/vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_vides.append(a)
 			x += 0.12
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("../data/pictures/vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_pleins.append(a)
 			x += 0.12
 		x = -1.2
 		for loop in range(10):
-			a = OnscreenImage("../pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+			a = OnscreenImage("../data/pictures/vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_moitie.append(a)
 			x+= 0.12
@@ -161,10 +161,10 @@ class SetLevel(FSM):
 			self.transition.fadeOut(0.5)
 			taskMgr.doMethodLater(1, self.launch_game_over, "request")
 		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))
-		self.noai_image = OnscreenImage("../pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
+		self.noai_image = OnscreenImage("../data/pictures/noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.map_image = OnscreenImage("../pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.croix_image = OnscreenImage("../pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
+		self.map_image = OnscreenImage("../data/pictures/carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+		self.croix_image = OnscreenImage("../data/pictures/croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
 		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
 		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
 		self.hide_gui()
@@ -209,7 +209,7 @@ class SetLevel(FSM):
 			self.player.left = False
 			self.player.right = False
 			for event in self.keys_data:
-				self.ignore(self.keys_data[event])	
+				self.ignore(self.keys_data[event])
 			self.ignore("into")
 			self.ignore("out")
 			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
@@ -219,7 +219,7 @@ class SetLevel(FSM):
 			properties = WindowProperties()
 			properties.setCursorHidden(False)
 			base.win.requestProperties(properties)
-			self.ignore("escape")	
+			self.ignore("escape")
 			self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
 
 	def check_interact_dial(self):
@@ -238,7 +238,7 @@ class SetLevel(FSM):
 					self.son.stop()
 					if len(self.sons_messages) > self.text_index:
 						try:
-							self.son = loader.loadSfx(f"../sounds/dialogues/{self.sons_messages[self.text_index]}.ogg")
+							self.son = loader.loadSfx(f"../data/sounds/dialogues/{self.sons_messages[self.text_index]}.ogg")
 							self.son.play()
 						except:
 							print("Pas de fichier son valide.")
@@ -253,7 +253,7 @@ class SetLevel(FSM):
 					del self.dialog_box
 					for message in self.messages:
 						base.messenger.send(message)
-					return True	
+					return True
 				else:
 					self.letter_index = 0
 					return False
@@ -280,7 +280,7 @@ class SetLevel(FSM):
 			self.messages = messages
 			if len(sons) > 0:
 				try:
-					self.son = loader.loadSfx(f"../sounds/dialogues/{self.sons_messages[0]}.ogg")
+					self.son = loader.loadSfx(f"../data/sounds/dialogues/{self.sons_messages[0]}.ogg")
 					self.son.play()
 				except:
 					print("Pas de fichier son valide.")
@@ -300,7 +300,7 @@ class SetLevel(FSM):
 				del self.dialog_box
 			else:
 				self.ok = True
-			self.dialog_box = OnscreenImage("../pictures/dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
+			self.dialog_box = OnscreenImage("../data/pictures/dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
 			self.dialog_box.setTransparency(TransparencyAttrib.MAlpha)
 			self.textObject = OnscreenText(text=self.texts[self.text_index][0:self.letter_index], pos=(0, -0.75), scale=0.07)
 			if self.letter_index < len(self.texts[self.text_index]):
@@ -327,7 +327,7 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.request(state)
-	
+
 	def all_close(self):
 		"""
 		Fonction pour fermer la fenêtre et quitter le programme.
@@ -335,8 +335,8 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		base.destroy()
-		os._exit(0)	
-		
+		os._exit(0)
+
 	def get_path(self):
 		"""
 		Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
@@ -349,7 +349,7 @@ class SetLevel(FSM):
 			else:
 				return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
 		else:
-			return f"/home/{os.getlogin()}/.Therenor"				
+			return f"/home/{os.getlogin()}/.Therenor"
 	#---------------------------Ecran titre--------------------------------
 	def enterMenu(self):
 		"""
@@ -360,11 +360,11 @@ class SetLevel(FSM):
 		self.transition.fadeIn(1)
 		if self.music is not None:
 			Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		if hasattr(self, "player"):	
+		if hasattr(self, "player"):
 			if hasattr(self.player, "followcam"):
 				self.player.followcam.set_active(False)
 		self.hide_gui()
-		self.music = base.loader.loadSfx("../sounds/menu.ogg")
+		self.music = base.loader.loadSfx("../data/sounds/menu.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.menu = True
@@ -409,7 +409,7 @@ class SetLevel(FSM):
 		"""
 		self.ignoreAll()
 		self.accept("escape", self.all_close)
-		self.music = loader.loadSfx("../sounds/para.ogg")
+		self.music = loader.loadSfx("../data/sounds/para.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
@@ -419,7 +419,7 @@ class SetLevel(FSM):
 		self.skybox.setDepthWrite(0)
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
-		self.files = [OnscreenImage("../pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
+		self.files = [OnscreenImage("../data/pictures/file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
 		path = self.get_path()
 		if not os.path.exists(path):
 			os.mkdir(path)
@@ -428,10 +428,10 @@ class SetLevel(FSM):
 				file = open(path+f"/save_{loop+1}.txt", "wt")
 				file.writelines(["_|0|1|3|3"])
 				file.close()
-		if not os.path.exists(path+"/keys.json"):		
+		if not os.path.exists(path+"/keys.json"):
 			file = open(path+"/keys.json", "wt")
 			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
-			file.close()	
+			file.close()
 		noms = []
 		for loop in range(3):
 			self.read(file=loop+1)
@@ -488,7 +488,7 @@ class SetLevel(FSM):
 		"""
 		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.accept("escape", self.all_close)
-		base.win.setCloseRequestEvent("escape")	
+		base.win.setCloseRequestEvent("escape")
 		self.skybox.removeNode()
 		for file in self.files:
 			file.removeNode()
@@ -501,10 +501,10 @@ class SetLevel(FSM):
 		del self.buttons_erase
 		for name in self.names:
 			name.removeNode()
-		del self.names	
+		del self.names
 		self.button_mapping.removeNode()
-		del self.button_mapping	
-		
+		del self.button_mapping
+
 	def verify(self, file):
 		"""
 		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
@@ -517,19 +517,19 @@ class SetLevel(FSM):
 		#--------------Initialisation-----------------
 		if self.chapitre == 0:
 			self.request("Init")
-		#----------------La légende------------------------	
+		#----------------La légende------------------------
 		elif self.chapitre == 1:
 			self.request("Cinematique")
-		#-----------------On charge la map-----------------------------------	
+		#-----------------On charge la map-----------------------------------
 		elif self.chapitre == 2:
 			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
 			self.fade_out("Map")
 		elif self.chapitre == 3:
-			self.fade_out("Cinematique")	
-		#------------Générique---------------------------	
+			self.fade_out("Cinematique")
+		#------------Générique---------------------------
 		else:
 			self.request("Generique")
-	
+
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
 		"""
@@ -538,7 +538,7 @@ class SetLevel(FSM):
 		Elle se déclenche lorsque l'on entre dans l'état Mapping.
 		-------------------------------------------------------------
 		return -> None
-		"""		
+		"""
 		file = open(self.get_path()+"/keys.json", "rt")
 		keys_data = json.load(file)
 		file.close()
@@ -553,8 +553,8 @@ class SetLevel(FSM):
 				if i < 5:
 					self.mapping.mapAxis(key, liste_axe[i])
 				else:
-					self.mapping.mapButton(key, keys_data[key])					
-			i += 1		
+					self.mapping.mapButton(key, keys_data[key])
+			i += 1
         #On charge la géométrie des boutons
 		maps = loader.loadModel("gui/button_map")
 		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
@@ -621,17 +621,17 @@ class SetLevel(FSM):
 			mapped = self.mapping.formatMapping(action)
 			item = self.__makeListItem(action, mapped, idx)
 			item.reparentTo(self.lstActionMap.getCanvas())
-			idx += 1		
+			idx += 1
 		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
-		self.lstActionMap.setCanvasSize()		
+		self.lstActionMap.setCanvasSize()
 		self.button_retour = DirectButton(text="Retour", pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
 		#Petit fade in (sinon on n'y voit rien)
 		self.transition.fadeIn(2)
-        
+
 	def closeDialog(self, action, newInputType, newInput):
 		"""
-		Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue 
+		Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue
 		qui s'affiche quand on change les touches.
 		-------------------------------------------------------------
 		return -> None
@@ -664,11 +664,11 @@ class SetLevel(FSM):
 		liste_interdite = ["Avancer", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
 		if self.manette and action in liste_interdite:
 			return None
-		else:	
+		else:
 			#On crée notre fenêtre de dialogue.
 			self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
 			#On attache les périphériques d'entrée
-			devices = base.devices.getDevices()	
+			devices = base.devices.getDevices()
 			self.attachedDevices = devices
 			# Disable regular button events on all button event throwers, and
 			# instead broadcast a generic event.
@@ -714,7 +714,7 @@ class SetLevel(FSM):
 					if axis.axis != InputDevice.Axis.none:
                         #label = axis.axis.name.replace('_', ' ').title()
 						self.dlgInput.axisMoved(axis.axis)
-						
+
 		return task.cont
 
 	def __makeListItem(self, action, event, index):
@@ -775,8 +775,8 @@ class SetLevel(FSM):
 		extraArgs=[action])
 		btn.setTransparency(True)
 		btn.reparentTo(item)
-		return item    
-	
+		return item
+
 	def exitMapping(self):
 		"""
 		Fonction qui s'active lorsque l'on quitte le mappage de touches.
@@ -809,8 +809,8 @@ class SetLevel(FSM):
 		del self.lstActionMap
 		del self.title
 		self.button_retour.removeNode()
-		del self.button_retour	
-		
+		del self.button_retour
+
 	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
 	def enterInit(self):
 		"""
@@ -866,7 +866,7 @@ class SetLevel(FSM):
 		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
-			self.music = base.loader.loadSfx("../sounds/legende.ogg")
+			self.music = base.loader.loadSfx("../data/sounds/legende.ogg")
 			self.music.setLoop(True)
 			self.music.play()
 			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
@@ -883,7 +883,7 @@ class SetLevel(FSM):
 			if hasattr(self, "map"):
 				self.map.removeNode()
 			self.move_camera = 0
-			#-------------------Lumières-------------------------------------------	
+			#-------------------Lumières-------------------------------------------
 			point_light = PointLight("point_light")
 			point_light.setColor((0.85, 0.8, 0.5, 1))
 			point_light_np = render.attachNewNode(point_light)
@@ -903,16 +903,16 @@ class SetLevel(FSM):
 			base.cam.setPos(200, -550, 250)
 			#-----------------------Musique-------------------------------
 			self.music.stop()
-			self.music = base.loader.loadSfx("../sounds/Le_magicien_démoniaque.ogg")
+			self.music = base.loader.loadSfx("../data/sounds/Le_magicien_démoniaque.ogg")
 			self.music.setLoop(True)
 			self.music.play()
 			#------------Petit fade in---------------------------------------------
 			self.transition.fadeIn(2)
-			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])	
+			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		render.setShaderAuto()	
+		render.setShaderAuto()
 		taskMgr.add(self.update_cinematique, "update_cinematique")
-		
+
 	def update_cinematique(self, task):
 		"""
 		Fonction qui en fonction de l'avancement dans la légende change l'image en background.
@@ -924,7 +924,7 @@ class SetLevel(FSM):
 		if self.chapitre == 1:
 			if self.text_index == 8:
 				if not hasattr(self, "image"):
-					self.image = OnscreenImage("../pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
+					self.image = OnscreenImage("../data/pictures/la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
 			if self.text_index == 11:
 				if hasattr(self, "image"):
 					self.image.removeNode()
@@ -940,8 +940,8 @@ class SetLevel(FSM):
 					self.move_camera = 1
 					base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
 				if base.cam.getY() > -100:
-					base.cam.setY(base.cam, dt*25)				
-		return task.cont	
+					base.cam.setY(base.cam, dt*25)
+		return task.cont
 
 	def exitCinematique(self):
 		"""
@@ -951,7 +951,7 @@ class SetLevel(FSM):
 		"""
 		for light in self.actuals_light:
 			render.clearLight(light)
-		del self.actuals_light	
+		del self.actuals_light
 		taskMgr.remove("update_cinematique")
 		self.ignore("Fini")
 		if self.chapitre == 1:
@@ -964,7 +964,7 @@ class SetLevel(FSM):
 			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
 			self.player.setScale(70)
 			self.music.stop()
-			self.chaptre = 2	
+			self.chaptre = 2
 	#-------------Fonction de chargement de map--------------------------------
 	def load_map(self, map="maison_terenor.bam", task=None):
 		"""
@@ -994,9 +994,9 @@ class SetLevel(FSM):
 		#---------------------------Collisions de la map------------------
 		if not hasattr(self, "cam_col_np"):
 			cam_col = CollisionNode('camera_sphere')
-			cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5)) 
+			cam_col.addSolid(CollisionSphere((0, 0, 0.5), 0.5))
 			cam_col.setFromCollideMask(BitMask32.bit(0))
-			cam_col.setIntoCollideMask(BitMask32.allOff()) 
+			cam_col.setIntoCollideMask(BitMask32.allOff())
 			self.cam_col_np = base.cam.attachNewNode(cam_col)
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
@@ -1015,7 +1015,7 @@ class SetLevel(FSM):
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
 		#--------------------Chargement du premier fichier json (objets)---------------
-		objects_file = open("../json/objects.json")
+		objects_file = open("../data/json/objects.json")
 		data = json.load(objects_file)
 		objects_file.close()
 		if self.current_map in data:
@@ -1027,7 +1027,7 @@ class SetLevel(FSM):
 				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
 				self.objects.append(objet)
 		#--------------------Chargement du deuxième fichier json-------------
-		pnj_file = open("../json/data.json")
+		pnj_file = open("../data/json/data.json")
 		data = json.load(pnj_file)
 		pnj_file.close()
 		#-----Section de gestion de la musique------
@@ -1038,7 +1038,7 @@ class SetLevel(FSM):
 		self.music.setLoop(True)
 		self.music.play()
 		#---------------------Gestion de la caméra du joueur----------------
-		if not hasattr(self.player, "followcam"): 
+		if not hasattr(self.player, "followcam"):
 				self.player.create_camera()
 		if not self.player.followcam.active:
 			self.player.followcam.set_active(True)
@@ -1093,7 +1093,7 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Inventaire"], self.inventaire)
 		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.accept("into", self.into)
-		self.accept("out", self.out)	
+		self.accept("out", self.out)
 		taskMgr.add(self.update, "update")
 		self.transition.fadeIn(2)
 		if task is not None:
@@ -1145,9 +1145,9 @@ class SetLevel(FSM):
 			self.player.setPos(200, -110, 6)
 		else:
 			self.current_map = "maison_terenor.bam"
-			self.player.setPos(200, -110, 6)	
+			self.player.setPos(200, -110, 6)
 		if task != None:
-			return task.done		
+			return task.done
 
 	def into(self, a):
 		"""
@@ -1257,7 +1257,7 @@ class SetLevel(FSM):
 		for loop in range(int(self.player.vies)):
 			self.coeurs_pleins[loop].show()
 		#-----------------------Section gestion de la manette-----------------
-		if self.manette:	
+		if self.manette:
 			base.devices.update()
 			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
 				self.music.setVolume(0)
@@ -1269,7 +1269,7 @@ class SetLevel(FSM):
 				taskMgr.remove("update")
 				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
 				return None
-			gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]	
+			gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]
 			left_x = gamepad.findAxis(InputDevice.Axis.left_x)
 			left_y = gamepad.findAxis(InputDevice.Axis.left_y)
 			right_x = gamepad.findAxis(InputDevice.Axis.right_x)
@@ -1282,20 +1282,20 @@ class SetLevel(FSM):
 				self.touche_pave(message="arrow_right-up")
 				self.touche_pave(message="arrow_left-up")
 			if left_y.value > 0.5:
-				self.touche_pave(message="arrow_up")	
+				self.touche_pave(message="arrow_up")
 			elif left_y.value < -0.5:
-				self.touche_pave(message="arrow_down")	
+				self.touche_pave(message="arrow_down")
 			else:
 				self.touche_pave(message="arrow_up-up")
 				self.touche_pave(message="arrow_down-up")
 			if right_y.value > 0.5:
 				self.player.followcam.move("up", globalClock.getDt())
 			elif right_y.value < -0.5:
-				self.player.followcam.move("down", globalClock.getDt())	
+				self.player.followcam.move("down", globalClock.getDt())
 			if right_x.value > 0.5:
 				self.player.followcam.move("right", globalClock.getDt())
 			elif right_x.value < -0.5:
-				self.player.followcam.move("left", globalClock.getDt())			
+				self.player.followcam.move("left", globalClock.getDt())
 		#----------------------Section de gestion de la caméra si pas de manette----------------------
 		else:
 			haut_button = self.clavier_rep.get_mapped_button(self.keys_data["Monter la camera"])
@@ -1309,12 +1309,12 @@ class SetLevel(FSM):
 				self.player.followcam.move("left", globalClock.getDt())
 			droite_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a droite"])
 			if base.mouseWatcherNode.is_button_down(droite_button):
-				self.player.followcam.move("right", globalClock.getDt())			
+				self.player.followcam.move("right", globalClock.getDt())
 		#-----------------------Section souris---------------------------------------
 		if not self.manette:
 			if base.mouseWatcherNode.hasMouse():
 				self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
-		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))		
+		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		#-----------------------Section mouvements du joueur------------------------
 		if self.player.getZ() > 6:
 		  self.player.setZ(self.player, -0.25)
@@ -1362,7 +1362,7 @@ class SetLevel(FSM):
 		self.player.walk = False
 		taskMgr.remove("update")
 		self.ignoreAll()
-		self.accept("escape", self.all_close)		
+		self.accept("escape", self.all_close)
 		self.player.stop()
 		self.player.followcam.set_active(False)
 
@@ -1372,7 +1372,7 @@ class SetLevel(FSM):
 		properties.setCursorHidden(False)
 		base.win.requestProperties(properties)
 		self.ignore(self.keys_data["Inventaire"])
-		self.ignore("escape")	
+		self.ignore("escape")
 		if self.quitDlg is None:
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 
@@ -1390,7 +1390,7 @@ class SetLevel(FSM):
 			properties.setCursorHidden(True)
 			base.win.requestProperties(properties)
 			self.accept("escape", self.confirm_quit)
-			self.accept(self.keys_data["Inventaire"], self.inventaire)	
+			self.accept(self.keys_data["Inventaire"], self.inventaire)
 
 
 	def return_to_menu(self, task):
@@ -1416,8 +1416,8 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Changer le point de vue"])
 		self.ignore(self.keys_data["Courir"])
 		self.ignore(self.keys_data["Courir"]+"-up")
-		self.ignore(self.keys_data["Inventaire"])	
-		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)	
+		self.ignore(self.keys_data["Inventaire"])
+		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
 		taskMgr.add(self.update_invent, "update_invent")
 		self.music.setVolume(0.6)
 		self.croix_image.setPos(self.get_pos_croix()[0])
@@ -1476,7 +1476,7 @@ class SetLevel(FSM):
 		elif self.index_invent == 1:
 			self.noai_image.show()
 			self.noai_text.show()
-		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))		
+		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		return task.cont
 
 	def exit_inventaire(self):
@@ -1497,7 +1497,7 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
 		self.accept(self.keys_data["Inventaire"], self.inventaire)
 		self.accept("into", self.into)
-		self.accept("out", self.out)		
+		self.accept("out", self.out)
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
 	def enterGenerique(self):
 		"""
@@ -1505,7 +1505,7 @@ class SetLevel(FSM):
 		-------------------------------------------------
 		return -> None
 		"""
-		self.music = loader.loadSfx("../sounds/Thème_de_Therenor.ogg")
+		self.music = loader.loadSfx("../data/sounds/Thème_de_Therenor.ogg")
 		self.music.setLoop(True)
 		self.music.play()
 		self.texts_gen_1 = [("Programming : ", True), ("Tyméo Bonvicini-Renaud     Alexandrine Charette", False), ("Rémy Martinot     Noé Mora", False), ("Etienne Pacault", False),
@@ -1590,7 +1590,7 @@ class SetLevel(FSM):
 		for coeur in self.coeurs_vides:
 			coeur.hide()
 		self.music.stop()
-		self.music = loader.loadSfx("../sounds/game_over.ogg")
+		self.music = loader.loadSfx("../data/sounds/game_over.ogg")
 		self.music.play()
 		self.player.vies = 3
 		self.transition.fadeIn(0.5)
@@ -1650,7 +1650,7 @@ class SetLevel(FSM):
 		properties.setCursorHidden(True)
 		base.win.requestProperties(properties)
 		self.myOkDialog.cleanup()
-		self.accept("escape", self.confirm_quit)	
+		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")
 
 	def read(self, file=1):
@@ -1689,7 +1689,7 @@ class SetLevel(FSM):
 			self.music.setVolume(1)
 			return task.done
 		return task.cont
-		
+
 class Application(ShowBase):
 	"""
 	Classe principale, celle du jeu
