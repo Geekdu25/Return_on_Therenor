@@ -1,1 +1,3 @@
 panda3d~=1.10.14
+json~=2.0.9
+platform~=1.0.8
