@@ -12,9 +12,9 @@ class ManetteCam():
 		self.camera.setPos(self.camera, Vec3(0, -2, 0))
 		self.active = True
 		self.vue = True
-		camera.node().getLens().setFov(120)
+		camera.node().getLens().setFov(100)
 		self.camera_col_node = CollisionNode("Camera_collision")
-		self.camera_col_node.addSolid(CollisionSphere((0, 0, 0), 0.75))
+		self.camera_col_node.addSolid(CollisionSphere((0, 0.2, 0), 0.75))
 		self.camera_col_node.setFromCollideMask(BitMask32.bit(0))
 		self.camera_col_node.setIntoCollideMask(BitMask32.allOff()) 
 		self.camera_col_np = self.camera.attachNewNode(self.camera_col_node)
@@ -50,13 +50,16 @@ class ManetteCam():
 		Fonction qui se déclenche lorsque la caméra continue de toucher quelque chose. 
 		"""		
 		dt = globalClock.getDt()
-		self.dummy.setP(self.dummy, -30*dt)
+		if self.vue:
+			if self.dummy.getP() > -30:
+				self.dummy.setP(self.dummy, -30*dt)
 	
 	def out(self, a):
 		"""
 		Fonction qui se déclenche quand la caméra arrête une collision
 		"""	
-		self.descend = True
+		if self.vue:
+			self.descend = True
 		
 		
 	def set_active(self, active=True):
@@ -76,13 +79,14 @@ class ManetteCam():
 		"""
 		dt = globalClock.getDt()
 		self.camera.lookAt(self.dummy)
-		if hasattr(self, "descend"):
-			if self.descend:
-				if self.dummy.getP() < 0:
-					self.dummy.setP(self.dummy, 30*dt)
-				if self.dummy.getP() > 0:
-					self.dummy.setP(self.dummy, 0)
-					self.descend = False	
+		if self.vue:
+			if hasattr(self, "descend"):
+				if self.descend:
+					if self.dummy.getP() < 0:
+						self.dummy.setP(self.dummy, 30*dt)
+					if self.dummy.getP() > 0:
+						self.dummy.setP(self.dummy, 0)
+						self.descend = False	
 		return task.cont
 		
 	def recenter(self):

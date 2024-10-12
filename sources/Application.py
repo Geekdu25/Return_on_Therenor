@@ -1033,6 +1033,10 @@ class SetLevel(FSM):
 				self.player.create_camera()
 		if not self.player.followcam.active:
 			self.player.followcam.set_active(True)
+		self.player.followcam.dummy.setHpr(180, 0, 0)
+		self.player.followcam.camera.setHpr(0, 0, 0)	
+		self.player.followcam.camera.setPos(0, 0, 0)	
+		self.player.followcam.camera.setPos(0, -2, 0)	
 		#----------Les portes-----------------------
 		for portail in data[self.current_map][2]:
 			noeud = CollisionNode(portail)
