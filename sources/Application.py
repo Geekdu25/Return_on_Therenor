@@ -989,15 +989,6 @@ class SetLevel(FSM):
 		self.map = loader.loadModel(map)
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
-		if not hasattr(self, "cam_col_np"):
-			cam_col = CollisionNode('camera_sphere')
-			cam_col.addSolid(CollisionSphere((0, 0, 0), 0.4))
-			cam_col.setFromCollideMask(BitMask32.bit(0))
-			cam_col.setIntoCollideMask(BitMask32.allOff())
-			self.cam_col_np = base.cam.attachNewNode(cam_col)
-			self.cam_col_handler = CollisionHandlerEvent()
-			self.cam_col_handler.addInPattern("into")
-			self.cam_col_handler.addOutPattern("out")
 		self.antimur.addInPattern("into")
 		self.antimur.addOutPattern("out")
 		self.map.setCollideMask(BitMask32.bit(0))
@@ -1005,7 +996,6 @@ class SetLevel(FSM):
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
-		base.cTrav.addCollider(self.cam_col_np, self.cam_col_handler)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
@@ -1183,11 +1173,7 @@ class SetLevel(FSM):
 						self.accept("finito", s.start)
 			#--------------Si on touche une statue de sauvegarde----------------------------------
 			elif b in self.save_statues:
-				self.actual_statue = b
-		elif c == "camera_sphere":
-			base.cam.setPos(0, 0, 0)
-			base.cam.lookAt(self.player)
-			#self.camera_colliding = True		
+				self.actual_statue = b		
 
 
 	def change_vitesse(self, touche="b"):
@@ -1219,11 +1205,6 @@ class SetLevel(FSM):
 				self.current_porte = None
 			elif b in self.save_statues:
 				self.actual_statue = None
-		elif c == "camera_sphere":
-			base.cam.setPos(0, -2, 0)
-			"""
-			if hasattr(self, "camera_colliding"):
-				del self.camera_colliding"""		
 
 	def touche_pave(self, message="arrow_up"):
 		"""
