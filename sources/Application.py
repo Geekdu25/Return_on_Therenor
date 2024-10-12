@@ -113,6 +113,7 @@ class SetLevel(FSM):
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
 		self.clavier_rep = base.win.get_keyboard_map()
+		self.langue = "francais"
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
@@ -258,7 +259,7 @@ class SetLevel(FSM):
 				self.letter_index = len(self.texts[self.text_index])
 				return False
 
-	def set_text(self, text=["Navi, where are thou ?"], messages=[], sons=[]):
+	def set_text(self, numero=0, messages=[]):
 		"""
 		Fonction qui permet d'afficher un texte.
 		--------------------------------------------------
@@ -267,15 +268,20 @@ class SetLevel(FSM):
 		sons -> list[str]
 		return -> None
 		"""
+		if not hasattr(self, "story"):
+			with open("../data/json/texts.json", encoding="utf-8") as texts:
+				self.story = json.load(texts)[self.langue]
 		if not self.reading:
 			self.reading = True
 			self.termine = False
-			self.texts = text
+			self.texts = self.story[str(numero)][0]
 			self.text_index = 0
 			self.letter_index = 0
-			self.sons_messages = sons
+			self.sons_messages = []
+			if len(self.story[str(numero)]) > 1:
+				self.sons_messages = self.story[str(numero)][1]
 			self.messages = messages
-			if len(sons) > 0:
+			if len(self.sons_messages) > 0:
 				try:
 					self.son = loader.loadSfx(f"dialogues/{self.sons_messages[0]}.ogg")
 					self.son.play()
@@ -512,6 +518,9 @@ class SetLevel(FSM):
 		"""
 		self.actual_file = file
 		self.read(file=file)
+		with open("../data/json/texts.json", encoding="utf-8") as texts:
+			self.story = json.load(texts)
+		self.story = self.story[self.langue]	
 		#--------------Initialisation-----------------
 		if self.chapitre == 0:
 			self.request("Init")
@@ -867,8 +876,7 @@ class SetLevel(FSM):
 			self.music = base.loader.loadSfx("legende.ogg")
 			self.music.setLoop(True)
 			self.music.play()
-			self.set_text(["Il existe une légende...", "Une légende racontant...", "...qu'il y a bien longtemps prospérait un royaume.", "Ce royaume légendaire vivait paisiblement.", "Jusqu'au jour où...", "...une hydre maléfique du nom de Zmeyevick arriva.",  "Elle terrorisa le bon peuple du royaume.", "Mais...alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.",
-			"Il la scella et repartit pour de lointaines contrées.", "Malgré le fait que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...",  "il se réincarnera et protégera le monde d'un nouveau fléau."], ["Fini"])
+			self.set_text(0, ["Fini"])
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		#---------------------------Cinématique du magicien----------------------------------
 		elif self.chapitre == 3:
@@ -905,7 +913,7 @@ class SetLevel(FSM):
 			self.music.play()
 			#------------Petit fade in---------------------------------------------
 			self.transition.fadeIn(2)
-			self.set_text(["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."], ["Fini"])
+			self.set_text(1, ["Fini"])
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		taskMgr.add(self.update_cinematique, "update_cinematique")
 
@@ -1173,7 +1181,7 @@ class SetLevel(FSM):
 						taskMgr.remove("update")
 						self.player.stop()
 						s = Sequence(self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
-						self.set_text(["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."], messages=["finito"])
+						self.set_text(2, messages=["finito"])
 						self.accept("finito", s.start)
 			#--------------Si on touche une statue de sauvegarde----------------------------------
 			elif b in self.save_statues:
@@ -1630,8 +1638,9 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.player.noais = 0
 			self.current_map = "maison_terenor.bam"
+			self.langue = "francais"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
-		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais)]
+		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.langue]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 
@@ -1679,6 +1688,8 @@ class SetLevel(FSM):
 				self.player.maxvies = int(truc)
 			elif i == 6:
 				self.player.noais = int(truc)	
+			elif i == 7:
+				self.langue = truc	
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
