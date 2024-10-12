@@ -1,27 +1,18 @@
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 
-SIMPLE_THIRD_PERSON_CAMERA_SIDE_LEFT = -1
-SIMPLE_THIRD_PERSON_CAMERA_SIDE_CENTRE = 0
-SIMPLE_THIRD_PERSON_CAMERA_SIDE_CENTER = 0
-SIMPLE_THIRD_PERSON_CAMERA_SIDE_RIGHT = 1
-
 class SimpleThirdPersonCamera():
 	"""
 	MIT License
-
 	Copyright (c) 2021 Ian Eborn (Thaumaturge)
-
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,100 +21,95 @@ class SimpleThirdPersonCamera():
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 	"""
-    def __init__(self, tilt, intendedDistance, shoulderSideDistance, height, adjustmentSpeed, sideSwitchSpeed, initialShoulderSide, ownerNodePath, camera):
-        self.camera = camera
-        self.ownerNodePath = ownerNodePath
-        self.shoulderSideDistance = shoulderSideDistance
-        self.intendedDistance = intendedDistance
-        self.height = height
-        self.tilt = tilt
-        self.sideSwitchSpeed = sideSwitchSpeed
-        self.adjustmentSpeed = adjustmentSpeed
-        self.cameraBase = ownerNodePath.attachNewNode(PandaNode("third-person camera-base"))
-        self.cameraHolder = self.cameraBase.attachNewNode(PandaNode("third-person camera-holder"))
-        self.colliderRadius = 0.5
-        self.cameraBase.setZ(height)
-        self.cameraBase.setP(tilt)
-        self.cameraHolder.setY(-intendedDistance)
-        self.setupCollision()
-        self.currentSide = SIMPLE_THIRD_PERSON_CAMERA_SIDE_CENTRE
-        self.setCurrentSide(initialShoulderSide)
+	def __init__(self, tilt, intendedDistance, shoulderSideDistance, height, adjustmentSpeed, sideSwitchSpeed, ownerNodePath, camera):
+		self.camera = camera
+		self.ownerNodePath = ownerNodePath
+		self.shoulderSideDistance = shoulderSideDistance
+		self.intendedDistance = intendedDistance
+		self.height = height
+		self.tilt = tilt
+		self.sideSwitchSpeed = sideSwitchSpeed
+		self.adjustmentSpeed = adjustmentSpeed
+		self.cameraBase = ownerNodePath.attachNewNode(PandaNode("third-person camera-base"))
+		self.cameraHolder = self.cameraBase.attachNewNode(PandaNode("third-person camera-holder"))
+		self.colliderRadius = 0.5
+		camera.reparentTo(self.cameraHolder)
+		self.cameraBase.setZ(height)
+		self.cameraBase.setP(tilt)
+		self.cameraHolder.setY(-intendedDistance)
+		self.setupCollision()
 
-    def setupCollision(self):
-        self.traverser = CollisionTraverser()
-        self.collisionQueue = CollisionHandlerQueue()
-        self.colliderNode = CollisionNode("camera collider")
-        self.colliderNode.addSolid(CollisionSegment(-self.colliderRadius, -self.colliderRadius, 0,
+	def setupCollision(self):
+		self.traverser = CollisionTraverser()
+		self.collisionQueue = CollisionHandlerQueue()
+		self.colliderNode = CollisionNode("camera collider")
+		self.colliderNode.addSolid(CollisionSegment(-self.colliderRadius, -self.colliderRadius, 0,
                                                     -self.colliderRadius, -self.intendedDistance, 0))
-        self.colliderNode.addSolid(CollisionSegment(self.colliderRadius, -self.colliderRadius, 0,
+		self.colliderNode.addSolid(CollisionSegment(self.colliderRadius, -self.colliderRadius, 0,
                                                     self.colliderRadius, -self.intendedDistance, 0))
-        self.colliderNode.addSolid(CollisionSegment(0, -self.colliderRadius, -self.colliderRadius,
+		self.colliderNode.addSolid(CollisionSegment(0, -self.colliderRadius, -self.colliderRadius,
                                                     0, -self.intendedDistance, -self.colliderRadius))
-        self.colliderNode.addSolid(CollisionSegment(0, -self.colliderRadius, self.colliderRadius,
+		self.colliderNode.addSolid(CollisionSegment(0, -self.colliderRadius, self.colliderRadius,
                                                     0, -self.intendedDistance, self.colliderRadius))
-        self.colliderNode.setIntoCollideMask(0)
-        self.colliderNode.setFromCollideMask(1)
-        self.collider = self.cameraBase.attachNewNode(self.colliderNode)
-        self.traverser.addCollider(self.collider, self.collisionQueue)
+		self.colliderNode.setIntoCollideMask(0)
+		self.colliderNode.setFromCollideMask(1)
+		self.collider = self.cameraBase.attachNewNode(self.colliderNode)
+		self.traverser.addCollider(self.collider, self.collisionQueue)
 
-    def getNearestCollision(self, sceneRoot):
-        self.traverser.traverse(sceneRoot)
-        if self.collisionQueue.getNumEntries() > 0:
-            self.collisionQueue.sortEntries()
-            entry = self.collisionQueue.getEntry(0)
-            pos = entry.getSurfacePoint(sceneRoot)
-            diff = self.cameraBase.getPos(sceneRoot) - pos
-            return diff.length()
-        return self.intendedDistance
+	def getNearestCollision(self, sceneRoot):
+		self.traverser.traverse(sceneRoot)
+		if self.collisionQueue.getNumEntries() > 0:
+			self.collisionQueue.sortEntries()
+			entry = self.collisionQueue.getEntry(0)
+			pos = entry.getSurfacePoint(sceneRoot)
+			diff = self.cameraBase.getPos(sceneRoot) - pos
+			return diff.length()
+		return self.intendedDistance
 
-    def setCurrentSide(self, side):
-        self.currentSide = side
 
-    def update(self, dt, sceneRoot):
-        currentDistance = abs(self.cameraHolder.getY())
-        targetY = self.intendedDistance
-        collisionDistance = self.getNearestCollision(sceneRoot)
-        if targetY > collisionDistance:
-            targetY = collisionDistance
-        yDiff = targetY - currentDistance
-        offsetVal = self.adjustmentSpeed*dt
-        if offsetVal > 1:
-            offsetVal = 1
-        offset = yDiff*offsetVal
-        self.cameraHolder.setY(-currentDistance -offset)
-        currentSideDistance = self.cameraBase.getX()
+	def update(self, dt, sceneRoot):
+		currentDistance = abs(self.cameraHolder.getY())
+		targetY = self.intendedDistance
+		collisionDistance = self.getNearestCollision(sceneRoot)
+		if targetY > collisionDistance:
+			targetY = collisionDistance
+		yDiff = targetY - currentDistance
+		offsetVal = self.adjustmentSpeed*dt
+		if offsetVal > 1:
+			offsetVal = 1
+		offset = yDiff*offsetVal
+		self.cameraHolder.setY(-currentDistance -offset)
+		currentSideDistance = self.cameraBase.getX()
+		sideDiff = self.shoulderSideDistance*0 - currentSideDistance
+		if abs(sideDiff) < 0.001:
+			currentSideDistance = 0
+		else:
+			offsetVal = self.sideSwitchSpeed*dt
+			if offsetVal > 1:
+				offsetVal = 1
+			offset = sideDiff*offsetVal
+			currentSideDistance += offset
+		self.cameraBase.setX(currentSideDistance)
 
-        sideDiff = self.shoulderSideDistance*self.currentSide - currentSideDistance
-        if abs(sideDiff) < 0.001:
-            currentSideDistance = self.shoulderSideDistance*self.currentSide
-        else:
-            offsetVal = self.sideSwitchSpeed*dt
-            if offsetVal > 1:
-                offsetVal = 1
-            offset = sideDiff*offsetVal
-            currentSideDistance += offset
-
-        self.cameraBase.setX(currentSideDistance)
-
-    def cleanup(self):
-        if self.camera is not None:
-            self.camera.detachNode()
-            self.camera = None
-        if self.ownerNodePath is not None:
-            self.ownerNodePath = None
-        self.cleanupCollision()
-        if self.cameraBase is not None:
-            self.cameraBase.removeNode()
-            self.cameraBase = None
+	def cleanup(self):
+		if self.camera is not None:
+			self.camera.detachNode()
+			self.camera = None
+		if self.ownerNodePath is not None:
+			self.ownerNodePath = None
+		self.cleanupCollision()
+		if self.cameraBase is not None:
+			self.cameraBase.removeNode()
+			self.cameraBase = None
             
-    def cleanupCollision(self):
-        if self.collider is not None:
-            self.traverser.removeCollider(self.collider)
-            self.collider.removeNode()
-            self.collider = None
-            self.colliderNode = None
-        self.traverser = None
-        self.collisionQueue = None
+	def cleanupCollision(self):
+		if self.collider is not None:
+			self.traverser.removeCollider(self.collider)
+			self.collider.removeNode()
+			self.collider = None
+			self.colliderNode = None
+		self.traverser = None
+		self.collisionQueue = None
 
 class ManetteCam(SimpleThirdPersonCamera):
 	def __init__(self, camera, target):
@@ -137,7 +123,7 @@ class ManetteCam(SimpleThirdPersonCamera):
 		self.active = True
 		self.vue = True
 		camera.node().getLens().setFov(120)
-		super().__init__(-5, 5, 0.5, 2, 7, 10, SIMPLE_THIRD_PERSON_CAMERA_SIDE_CENTRE, self.target.getParent(), self.camera)
+		#super().__init__(0, 0, 0.5, 2, 7, 10, self.dummy, self.camera)
 		taskMgr.add(self.update_camera, "updateCamera")
 		
 	def change_vue(self):
@@ -167,8 +153,7 @@ class ManetteCam(SimpleThirdPersonCamera):
 		"""
 		dt = globalClock.getDt()
 		self.camera.lookAt(self.dummy)
-		if self.vue:
-			self.update(dt, self.target.getParent())
+		#self.update(dt, render)
 		return task.cont
 		
 	def recenter(self):
