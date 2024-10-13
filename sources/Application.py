@@ -1076,6 +1076,11 @@ class SetLevel(FSM):
 		self.pnjs = {}
 		self.portails = {}
 		self.save_statues = {}
+		if hasattr(self, "actuals_light"):
+			for light in self.actuals_light:
+				render.clearLight()
+				light.removeNode()
+		self.actuals_light = []
 		#-------Section de gestion de la map en elle-même-----
 		self.current_map = map
 		if hasattr(self, "map"):
@@ -1198,6 +1203,9 @@ class SetLevel(FSM):
 		map -> str
 		return -> None
 		"""
+		if hasattr(self, "triggers"):
+			for trigger in self.triggers:
+				trigger.clearSolids()
 		self.triggers = []
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
@@ -1449,7 +1457,7 @@ class SetLevel(FSM):
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
-			self.save_statues[statue].removeSolid(0)
+			self.save_statues[statue].clearSolids()
 		self.save_statues = {}
 		self.antimur.clearInPatterns()
 		self.antimur.clearOutPatterns()
