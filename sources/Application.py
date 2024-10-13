@@ -108,12 +108,8 @@ class SetLevel(FSM):
 		self.quitDlg = None
 		self.load_gui()
 		self.transition = Transitions(loader)
-		self.augustins = False
-		if platform.system() == "Windows":
-			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
-				self.augustins = True
 		self.clavier_rep = base.win.get_keyboard_map()
-		self.langue = "francais"
+		self.init_fichiers()
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
@@ -185,7 +181,50 @@ class SetLevel(FSM):
 		self.croix_image.hide()
 		self.lieu_text.hide()
 
-	#-----------------------Fonction de mises à jour (nécessaires pour l'affichage des textes...)----------------------------------
+	#-----------------------Autres fonctions----------------------------------
+	def init_fichiers(self):
+		"""
+		Fonction qui permet de créer les fichiers de jeu.
+		"""
+		self.augustins = False
+		if platform.system() == "Windows":
+			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
+				self.augustins = True
+		self.langue = "francais"		
+		path = self.get_path()
+		if not os.path.exists(path):
+			os.mkdir(path)
+		for loop in range(3):
+			if not os.path.exists(path+f"/save_{loop+1}.txt"):
+				file = open(path+f"/save_{loop+1}.txt", "wt")
+				file.writelines(["_|0|1|3|3"])
+				file.close()
+		if not os.path.exists(path+"/keys.json"):
+			file = open(path+"/keys.json", "wt")
+			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+			file.close()
+		if not os.path.exists(path+"/global.txt"):
+			self.save_global(reset=True)
+		self.read_global()
+		
+	def read_global(self):
+		file = open(self.get_path()+"/global.txt", "rt")
+		i = 0
+		for machin in file.read().split("|"):
+			i += 1
+			if i == 1:
+				self.langue = machin
+		file.close()			
+		
+	def save_global(self, reset=False):
+		if reset:
+			self.langue = "francais"
+		file = open(self.get_path()+"/global.txt", "wt")
+		info = [self.langue]
+		file.writelines([donnee +"|" for donnee in info])
+		file.close()
+			
+		
 	def check_interact(self):
 		"""
 		Fonction appelée chaque fois que le joueur appuie sur espace.
@@ -423,19 +462,8 @@ class SetLevel(FSM):
 		self.skybox.setLightOff()
 		self.skybox.reparentTo(render)
 		self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
-		path = self.get_path()
-		if not os.path.exists(path):
-			os.mkdir(path)
-		for loop in range(3):
-			if not os.path.exists(path+f"/save_{loop+1}.txt"):
-				file = open(path+f"/save_{loop+1}.txt", "wt")
-				file.writelines(["_|0|1|3|3"])
-				file.close()
-		if not os.path.exists(path+"/keys.json"):
-			file = open(path+"/keys.json", "wt")
-			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
-			file.close()
 		noms = []
+		path = self.get_path()
 		for loop in range(3):
 			self.read(file=loop+1)
 			if self.player.nom != "_":
@@ -450,6 +478,7 @@ class SetLevel(FSM):
 		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
 		self.button_mapping = DirectButton(text="Mappage de touches", scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
+		self.button_langue = DirectButton(text="Changer la langue", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"])
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
@@ -508,6 +537,8 @@ class SetLevel(FSM):
 		del self.names
 		self.button_mapping.removeNode()
 		del self.button_mapping
+		self.button_langue.removeNode()
+		del self.button_langue
 
 	def verify(self, file):
 		"""
@@ -536,7 +567,38 @@ class SetLevel(FSM):
 		#------------Générique---------------------------
 		else:
 			self.request("Generique")
+	#--------------------------------Gestion du changement de langue-----------------------------------------------
+	def enterLanguage(self):
+		"""
+		Fonction qui s'active lorsque l'on entre dans l'état de changement de langue.
+		"""
+		self.transition.fadeIn(1)
+		self.skybox = loader.loadModel("skybox.bam")
+		self.skybox.setScale(10000)
+		self.skybox.setBin('background', 1)
+		self.skybox.setDepthWrite(0)
+		self.skybox.setLightOff()
+		self.skybox.reparentTo(render)
+		dico = {"francais":0, "allemand":1}
+		self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
+		self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "allemand"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
+		self.menu.set(0)
+		self.exit_button = DirectButton(text="Retour", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Trois_fichiers"])
 
+	def itemSel(self, arg):
+		self.langue = arg
+
+	
+	def exitLanguage(self):
+		self.save_global()
+		self.skybox.removeNode()
+		del self.skybox
+		self.textObject.removeNode()
+		del self.textObject
+		self.menu.removeNode()
+		del self.menu
+		self.exit_button.removeNode()
+		del self.exit_button
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
 		"""
@@ -1638,9 +1700,8 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.player.noais = 0
 			self.current_map = "maison_terenor.bam"
-			self.langue = "francais"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
-		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.langue]
+		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais)]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 
@@ -1687,9 +1748,7 @@ class SetLevel(FSM):
 			elif i == 5:
 				self.player.maxvies = int(truc)
 			elif i == 6:
-				self.player.noais = int(truc)	
-			elif i == 7:
-				self.langue = truc	
+				self.player.noais = int(truc)		
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
