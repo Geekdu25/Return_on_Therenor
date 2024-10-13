@@ -49,17 +49,20 @@ class ManetteCam():
 		"""
 		Fonction qui se déclenche lorsque la caméra continue de toucher quelque chose. 
 		"""		
-		dt = globalClock.getDt()
+		pass
+		"""dt = globalClock.getDt()
 		if self.vue:
 			if self.dummy.getP() > -30:
 				self.dummy.setP(self.dummy, -30*dt)
+				self.camera.setY(self.camera, 0.2*dt)"""
 	
 	def out(self, a):
 		"""
 		Fonction qui se déclenche quand la caméra arrête une collision
 		"""	
-		if self.vue:
-			self.descend = True
+		pass
+		"""if self.vue:
+			self.descend = True"""
 		
 		
 	def set_active(self, active=True):
@@ -79,14 +82,16 @@ class ManetteCam():
 		"""
 		dt = globalClock.getDt()
 		self.camera.lookAt(self.dummy)
-		if self.vue:
+		"""if self.vue:
 			if hasattr(self, "descend"):
 				if self.descend:
 					if self.dummy.getP() < 0:
 						self.dummy.setP(self.dummy, 30*dt)
+						self.camera.setY(self.camera, -2*dt)
 					if self.dummy.getP() > 0:
 						self.dummy.setP(self.dummy, 0)
-						self.descend = False	
+						self.camera.setY(-2)
+						self.descend = False"""	
 		return task.cont
 		
 	def recenter(self):

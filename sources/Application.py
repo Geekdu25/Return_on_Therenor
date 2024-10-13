@@ -1044,6 +1044,7 @@ class SetLevel(FSM):
 		"""
 		for light in self.actuals_light:
 			render.clearLight(light)
+			light.removeNode()	
 		del self.actuals_light
 		taskMgr.remove("update_cinematique")
 		self.ignore("Fini")
@@ -1177,7 +1178,10 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière----------------------------
-		render.setLight(render.attachNewNode(AmbientLight("a")))
+		light = AmbientLight("a")
+		light_np = render.attachNewNode(light)
+		self.actuals_light.append(light_np)
+		render.setLight(light_np)
 		#--------------Attribution des touches à des fonctions-------------------------------
 		self.accept("escape", self.confirm_quit)
 		if not self.manette:
@@ -1205,7 +1209,7 @@ class SetLevel(FSM):
 		"""
 		if hasattr(self, "triggers"):
 			for trigger in self.triggers:
-				trigger.clearSolids()
+				trigger.removeNode()
 		self.triggers = []
 		if map == "Village.bam":
 			noeud = CollisionNode("1")
@@ -1213,8 +1217,8 @@ class SetLevel(FSM):
 			solid.setTangible(False)
 			noeud.addSolid(solid)
 			noeud.setIntoCollideMask(BitMask32.bit(0))
-			self.triggers.append(noeud)
 			chemin_de_noeud = render.attachNewNode(noeud)
+			self.triggers.append(chemin_de_noeud)
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1484,7 +1488,7 @@ class SetLevel(FSM):
 		if self.quitDlg is None:
 		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
 		  if self.langue == "deutsch":
-			  self.quitDlg.setText("Sind Sie sicher, dass Sie beenden wollen? (Nicht gespeicherte Daten werden gelöscht)")
+			  self.quitDlg.setText("Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)")
 
 	def quit_confirm(self, clickedYes):
 		self.quitDlg.cleanup()
@@ -1639,6 +1643,7 @@ class SetLevel(FSM):
 				c = (1, 1, 1, 1)
 				y -= 0.25
 			self.texts_gen.append(OnscreenText(text[0], pos=(0, y), scale=s , fg=(c)))
+		self.texts_gen.append(OnscreenText("Fin", pos=(0, y-0.5), scale=(0.2, 0.2, 0.2), fg=(1, 1, 1, 1)))	
 		taskMgr.add(self.update_generique, "update generique")
 
 	def exitGenerique(self):
@@ -1677,7 +1682,7 @@ class SetLevel(FSM):
 			i += 1
 			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/20)
 			if i == len(self.texts_gen) -1:
-				if text.getTextPos()[1] > 2:
+				if text.getTextPos()[1] > 1.5:
 					taskMgr.doMethodLater(2, self.change_to_menu, "change to menu")
 					self.transition.fadeOut(2)
 					Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
