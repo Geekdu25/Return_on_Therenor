@@ -46,7 +46,6 @@ class PNJ(Actor):
 		#On cherche l'existence des modèles 3D de notre personnage.
 		dico = {}
 		for anim in anims:
-			if os.path.exists(f"../models/{name}-{anim}.bam"):
 				dico[anim] = f"../models/{name}-{anim}.bam"
 		Actor.__init__(self, f"../models/{name}.bam", dico)
 		self.name = name		

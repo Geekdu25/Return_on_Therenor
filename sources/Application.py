@@ -984,6 +984,7 @@ class SetLevel(FSM):
 			point_light_np.setPos(200, 0, 50)
 			self.actuals_light.append(point_light_np)
 			render.setLight(point_light_np)
+			render.setShaderAuto()
 			#-----------------Modèles------------------------------------------
 			self.map = loader.loadModel("salle_du_sacrifice.bam")
 			self.map.reparentTo(render)
@@ -991,8 +992,8 @@ class SetLevel(FSM):
 			self.map.setHpr(270, 0, 0)
 			self.magicien = Magicien()
 			self.magicien.setPos(200, 200, 0)
-			self.magicien.reparentTo(render)
 			self.magicien.loop("Immobile")
+			self.magicien.reparentTo(render)
 			base.cam.setPos(200, -550, 250)
 			#-----------------------Musique-------------------------------
 			self.music.stop()
@@ -1050,8 +1051,7 @@ class SetLevel(FSM):
 			self.music.stop()
 			self.chapitre = 2
 		if self.chapitre == 3:
-			self.magicien.cleanup()
-			self.magicien.removeNode()
+			self.magicien.delete()
 			del self.magicien
 			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
 			self.player.setScale(70)
