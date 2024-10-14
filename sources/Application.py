@@ -110,6 +110,8 @@ class SetLevel(FSM):
 		self.clavier_rep = base.win.get_keyboard_map()
 		self.init_fichiers()
 		self.read_global()
+		with open("../data/json/texts.json", encoding="utf-8") as texts:
+				self.story = json.load(texts)[self.langue]
 		#----------------Fonctions--------------------------
 		base.taskMgr.add(self.update_text, "update_text")
 		self.accept("escape", self.all_close)
@@ -253,10 +255,7 @@ class SetLevel(FSM):
 			properties.setCursorHidden(False)
 			base.win.requestProperties(properties)
 			self.ignore("escape")
-			if self.langue == "francais":
-				self.saveDlg = YesNoDialog(text = "Voulez-vous sauvegarder ?", command = self.will_save)
-			elif self.langue == "deutsch":
-				self.saveDlg = YesNoDialog(text = "Wollen Sie speichern ?", command = self.will_save)	
+			self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save)
 
 	def check_interact_dial(self):
 		"""
@@ -410,9 +409,7 @@ class SetLevel(FSM):
 		self.music.play()
 		self.menu = True
 		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
-		self.textObject2 = OnscreenText(text='Appuyez sur F1 pour commencer', pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
-		if self.langue == "deutsch":
-			self.textObject2.setText("Drücken Sie F1, um zu beginnen.")
+		self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(base.cam)
 		base.cam.setPos(0, 0, 0)
@@ -468,26 +465,16 @@ class SetLevel(FSM):
 			if self.player.nom != "_":
 				noms.append(self.player.nom)
 			else:
-				if self.langue == "francais":
-					noms.append("Fichier vide")
-				elif self.langue == "deutsch":
-					noms.append("Leere Datei")	
+				noms.append(self.story["gui"][2])	
 		self.player.nom = "Link"
 		file = open(path+"/keys.json", "rt")
 		self.keys_data = json.load(file)[0]
 		file.close()
-		self.buttons_continue = [DirectButton(text="Commencer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
-		self.buttons_erase = [DirectButton(text="Effacer", scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
+		self.buttons_continue = [DirectButton(text=self.story["gui"][3], scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
+		self.buttons_erase = [DirectButton(text=self.story["gui"][4], scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
-		self.button_mapping = DirectButton(text="Mappage de touches", scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
-		self.button_langue = DirectButton(text="Changer la langue", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"])
-		if self.langue == "deutsch":
-			for b in self.buttons_continue:
-				b.setText("Beginnen")
-			for b in self.buttons_erase:
-				b.setText("Löschen")
-			self.button_mapping.setText("Tastenzuordnung")
-			self.button_langue.setText("Sprache ändern")		
+		self.button_mapping = DirectButton(text=self.story["gui"][5], scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
+		self.button_langue = DirectButton(text=self.story["gui"][6], scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"])		
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
@@ -497,9 +484,7 @@ class SetLevel(FSM):
 		file -> int
 		return -> None
 		"""
-		self.eraseDlg = YesNoDialog(text="Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)", command=self.erase_file, extraArgs=[file])
-		if self.langue == "deutsch":
-			self.eraseDlg.setText("Sind Sie sicher, dass Sie die Daten löschen? (Gelöschte Daten können nicht wiederhergestellt werden)")
+		self.eraseDlg = YesNoDialog(text=self.story["gui"][7], command=self.erase_file, extraArgs=[file])
 
 
 	def erase_file(self, clickedYes, file):
@@ -610,6 +595,8 @@ class SetLevel(FSM):
 	
 	def exitLanguage(self):
 		self.save_global()
+		with open("../data/json/texts.json", encoding="utf-8") as texts:
+			self.story = json.load(texts)[self.langue]
 		self.skybox.removeNode()
 		del self.skybox
 		self.textObject.removeNode()
@@ -713,9 +700,7 @@ class SetLevel(FSM):
 		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
 		self.lstActionMap.setCanvasSize()
-		self.button_retour = DirectButton(text="Retour", pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
-		if self.langue == "deutsch":
-			self.button_retour.setText("Zurück")
+		self.button_retour = DirectButton(text=self.story["gui"][8], pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
 		#Petit fade in (sinon on n'y voit rien)
 		self.transition.fadeIn(2)
 
@@ -909,11 +894,8 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
-		self.nameLbl = DirectLabel(text = "Salutations jeune aventurier, quel est ton nom ?", pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1))
-		self.helloBtn = DirectButton(text = "Confirmer", scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
-		if self.langue == "deutsch":
-			self.helloBtn.setText("Bestätigen")
-			self.nameLbl.setText("Grüße junger Abenteurer, wie ist dein Name?")
+		self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1))
+		self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
 
 	def exitInit(self):
 		"""
@@ -930,9 +912,7 @@ class SetLevel(FSM):
 		--------------------------------
 		return -> None
 		"""
-		self.acceptDlg = YesNoDialog(text = "C'est tout bon ?", command = self.acceptName)
-		if self.langue == "deutsch":
-			self.acceptDlg.setText("Ist alles gut ?")
+		self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName)
 
 	def acceptName(self, clickedYes):
 		"""
@@ -1374,9 +1354,7 @@ class SetLevel(FSM):
 				self.hide_gui()
 				self.transition.fadeScreenColor((0, 0, 0, 0.6))
 				self.transition.letterboxOn()
-				self.gamepad_text = OnscreenText(text="Veuillez reconnecter votre manette.", pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1))
-				if self.langue == "deutsch":
-					self.gamepad_text.setText("Bitte schließen Sie Ihren Controller erneut an")
+				self.gamepad_text = OnscreenText(text=self.story["gui"][12], pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1))
 				self.gamepad_text.setBin("gui-popup", 80)
 				taskMgr.remove("update")
 				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
@@ -1486,9 +1464,7 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Inventaire"])
 		self.ignore("escape")
 		if self.quitDlg is None:
-		  self.quitDlg = YesNoDialog(text = "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)", command = self.quit_confirm)
-		  if self.langue == "deutsch":
-			  self.quitDlg.setText("Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)")
+		  self.quitDlg = YesNoDialog(text = self.story["gui"][13], command = self.quit_confirm)
 
 	def quit_confirm(self, clickedYes):
 		self.quitDlg.cleanup()
@@ -1710,9 +1686,7 @@ class SetLevel(FSM):
 		self.player.vies = 3
 		self.transition.fadeIn(0.5)
 		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
-		self.text_game_over_2 = OnscreenText("Appuyez sur F1 pour recommencer", pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
-		if self.langue == "deutsch":
-			self.text_game_over_2.setText("Drücken Sie F1 um neu zu beginnen.")
+		self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
 		self.accept("f1", self.change_to_map)
 
 	def change_to_map(self):
@@ -1759,9 +1733,7 @@ class SetLevel(FSM):
 		self.saveDlg.cleanup()
 		if clickedYes:
 			self.save(file=self.actual_file)
-			self.myOkDialog = OkDialog(text="Sauvegarde effectuée !", command = self.reupdate)
-			if self.langue == "deutsch":
-				self.myOkDialog.setText("Speichern durchgeführt !")
+			self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate)
 
 	def reupdate(self, inutile):
 		"""
