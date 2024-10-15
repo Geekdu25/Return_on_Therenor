@@ -24,7 +24,7 @@ class Monster(Actor):
 		
 class Slime(Monster):
 	def __init__(self):
-		Monster.__init__(self, name="slime")	
+		Monster.__init__(self)	
 		
 class Ours(Monster):
 	def __init__(self):
