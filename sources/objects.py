@@ -2,7 +2,15 @@ from panda3d.core import *
 from direct.showbase.ShowBase import ShowBase
 
 class Lit():
+	"""
+	Un lit.
+	"""
 	def __init__(self):
+		"""
+		Méthode constructeur.
+		----------------------
+		return -> Lit
+		"""
 		self.object = loader.loadModel("../models/lit.bam")
 		self.object.setScale(15)
 		self.col = CollisionNode("lit")

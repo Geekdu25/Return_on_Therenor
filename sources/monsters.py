@@ -6,14 +6,23 @@ Fichier qui va gérer toutes les stats des monstres
 """
 
 class Monster(Actor):
-	def __init__(self, name="slime", vies=3):
-		if os.path.exists(f"../models/{name}.bam"):
-			if os.path.exists(f"../models/{name}-attaque.bam"):
-				Actor.__init__(self, f"../models/{name}.bam", {"attaque" : f"../models/{name}-attaque.bam"})
-			else:
-				Actor.__init__(self, f"../models/{name}.bam")
-		else:
-			Actor.__init__(self, name)	
+	"""
+	Classe d'un monstre on ne peut plus basique.
+	"""
+	def __init__(self, name="slime", vies=3, actions=[]):
+		"""
+		Méthode constructeur.
+		------------------------
+		name -> str
+		vies -> int
+		actions -> list
+		return -> Monster
+		"""
+		dico = {}
+		for anim in actions:
+			if os.path.exists(f"../data/models/{name}-{anim}.bam"):
+				dico[anim] = f"../data/models/{name}-{anim}.bam"
+		Actor.__init__(self, name, dico)	
 		self.name = name		
 		self.setScale(6)
 		self.col = CollisionNode(name)
