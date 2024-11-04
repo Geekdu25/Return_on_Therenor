@@ -94,6 +94,7 @@ class SetLevel(FSM):
 		return -> SetLevel
 		"""
 		FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
+		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
 		#-----------------Variables nécessaires au fonctionnement de la boîte de dialogue----------------
 		self.ok = False
 		self.reading = False
@@ -116,7 +117,6 @@ class SetLevel(FSM):
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		#-----------------Autres variables-----------------------
-		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
 		self.chapitre = 0
 		self.player = Player()
 		self.player.reparentTo(render)
