@@ -1,5 +1,8 @@
 # The legend of Therenor 2
 Un jeu en 3 dimensions crée par Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora et Etienne Pacault pour les trophées NSI 2025.
+# Avertissements
+Le moteur de jeu Panda3D utilisé pour coder le jeu est à l'heure actuelle inutilisable avec la dernière version de python (3.13).
+En attendant une mise à jour, veuillez utiliser une version plus ancienne (ex : 3.12).
 # 1- Résumé
 Après avoir triomphé de Zmeyevick, notre héros s'en est allé pour de lointaines contrées.
 Ses actes n'étaient plus que légende, et une nouvelle menace, plus terrible encore menaça le monde.
