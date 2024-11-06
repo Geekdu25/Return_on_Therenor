@@ -11,7 +11,7 @@ class Lit():
 		----------------------
 		return -> Lit
 		"""
-		self.object = loader.loadModel("../models/lit.bam")
+		self.object = loader.loadModel("lit.bam")
 		self.object.setScale(15)
 		self.col = CollisionNode("lit")
 		self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
