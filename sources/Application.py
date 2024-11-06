@@ -320,7 +320,7 @@ class SetLevel(FSM):
 					self.son.stop()
 					if len(self.sons_messages) > self.text_index:
 						try:
-							self.son = loader.loadSfx(f"dialogues/{self.sons_messages[self.text_index]}.ogg")
+							self.son = loader.loadSfx(self.sons_messages[self.text_index])
 							self.son.play()
 						except:
 							print("Pas de fichier son valide.")
@@ -358,17 +358,27 @@ class SetLevel(FSM):
 			self.reading = True
 			self.termine = False
 			#On va chercher dans le fichier json, à la langue séléctionnée, le numéro de dialogue demandé
-			self.texts = self.story[str(numero)][0]
+			self.texts = self.story[str(numero)]
 			self.text_index = 0
 			self.letter_index = 0
 			self.sons_messages = []
-			if len(self.story[str(numero)]) > 1:
-				self.sons_messages = self.story[str(numero)][1]
+			if os.path.exists(f"../data/sounds/dialogues/{numero}"):
+				r = os.listdir(f"../data/sounds/dialogues/{numero}").copy()
+				r.sort()
+				for truc in r:
+					if truc.endswith(".ogg"):
+						self.sons_messages.append(f"../data/sounds/dialogues/{numero}/"+truc)
+					if len(self.sons_messages) == len(self.story[str(numero)]):
+						break	
+				if len(self.sons_messages) < len(self.story[str(numero)]):
+					while len(self.sons_messages) < len(self.story[str(numero)]):
+						self.sons_messages.append("../data/sounds/dialogues/blank.ogg")	
 			self.messages = messages
 			#-------------Partie de chargement des fichiers audios de dialogue------------
 			if len(self.sons_messages) > 0:
+				print(self.sons_messages)
 				try:
-					self.son = loader.loadSfx(f"dialogues/{self.sons_messages[0]}.ogg")
+					self.son = loader.loadSfx(self.sons_messages[0])
 					self.son.play()
 				except:
 					print("Pas de fichier son valide.")
