@@ -7,7 +7,7 @@ En attendant une mise à jour, veuillez utiliser une version plus ancienne (ex :
 
 # 1- Résumé
 Après avoir triomphé de Zmeyevick, notre héros a pris une retraite bien méritée.
-Mais un être mal intentionnée souhaite dominer le monde et est prêt à sacrifier le héros désormais bien faible pour ressusciter l'hydre.
+Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifier le héros désormais bien faible pour ressusciter l'hydre.
 Le petit-fils du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
 
 # 2- Jouabilité
