@@ -13,5 +13,5 @@ Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
 # 3- Bibliothèques utilisées
-Le moteur de jeu utilisé dans ce jeu est Panda 3D, moteur de jeu conçu par l'université Carnegie-Mellon University de Pitsburgh en Pennsylvanie.
+Le moteur de jeu utilisé dans ce jeu est Panda 3D, moteur de jeu conçu par l'université Carnegie-Mellon University de Pitsburgh en Pennsylvanie et par Disney.
 Un grand merci à eux !
