@@ -6,11 +6,12 @@ Le moteur de jeu Panda3D utilisé pour coder le jeu est à l'heure actuelle inut
 En attendant une mise à jour, veuillez utiliser une version plus ancienne (ex : 3.12).
 
 # 1- Résumé
-Après avoir triomphé de Zmeyevick, notre héros a pris une retraite bien méritée.
+Après avoir triomphé de Zmeyevick, le protagoniste de <b>The legend of Therenor</b> a pris une retraite bien méritée.
 Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifier le héros désormais bien faible pour ressusciter l'hydre.
-Le petit-fils du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
+Le descendant du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
 
 # 2- Jouabilité
+<h1>Commandes :</h1>
 Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
