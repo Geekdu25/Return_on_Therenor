@@ -469,7 +469,7 @@ class SetLevel(FSM):
 		self.hide_gui()
 		self.menu = True
 		#-----------------------On charge les textes------------------------------------
-		self.textObject1 = OnscreenText(text='The legend of Therenor 3D', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
+		self.textObject1 = OnscreenText(text='Return on Therenor', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
 		self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
 		#--------------------L'épée--------------------------------------
 		self.epee = loader.loadModel("sword.bam")
