@@ -28,4 +28,4 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHORS “AS IS” AND ANY EXPRESS OR IMPLIED 
 
 De plus, ce jeu a été partiellement conçu avec Sweet Home 3D :
 <b>Projet conçu avec Sweet Home  3D. Contient des modèles 3D et des textures distribués sous licence libre.</b>
-Plus d'informations sur <a href="www.sweethome3d.com">sweethome3d.com</a>
+Plus d'informations sur <a href="https://www.sweethome3d.com">https://www.sweethome3d.com</a>
