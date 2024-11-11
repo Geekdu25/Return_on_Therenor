@@ -1,6 +1,6 @@
 {
-"village_pecheurs.glb":["Marelys.ogg", {}, {"village_pecheurs_maison_heros.glb":["porte", [1320, -996, 6], 60, 15, 150, [830, -470, 6]],
- 	"village_pecheurs_maison_chef.glb":["porte", [2015, -2515, 6], 50, 10, 150, [820, -240, 6]]}, {}, 10],
-"village_pecheurs_maison_heros.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-20, -200, 6], 50, 10, 150, [1300, -1075, 6]]}, {"save_heros": [100, 100, 6]}, 10],
+"village_pecheurs.glb":["Marelys.ogg", {}, {"village_pecheurs_maison_heros.glb":["porte", [30, 30, 25], 4, 2, 9, [0, -20, 6]],
+ 	"village_pecheurs_maison_chef.glb":["porte", [30, 0, 25], 4, 2, 9, [0, -20, 6]]}, {}, 10],
+"village_pecheurs_maison_heros.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 320, 200]]}, {"save_heros": [0, 15, 3]}, 10],
 "village_pecheurs_maison_chef.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {}, 10]
 }
