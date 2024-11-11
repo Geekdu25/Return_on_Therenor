@@ -277,7 +277,6 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------------------------------
 		return -> None
 		"""
-		print(self.player.getPos())
 		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
 			if not self.reading and not reussi:
@@ -1174,6 +1173,8 @@ class SetLevel(FSM):
 			for object in data[self.current_map]:
 				if object == "lit.bam":
 					objet = Lit()
+				elif object == "bateau.glb":
+					objet = Bateau()		
 				objet.object.reparentTo(render)
 				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
 				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
@@ -1238,8 +1239,10 @@ class SetLevel(FSM):
 		if data[self.current_map][5] == "Vrai":
 			self.eau = loader.loadModel("eau.glb")
 			self.eau.reparentTo(render)
-			self.eau.setSx(1000)
-			self.eau.setSy(1000)
+			self.eau.setScale(3)
+			self.eau.setSx(10000)
+			self.eau.setSy(10000)
+			self.eau.setZ(self.eau, 3)
 		else:
 			if hasattr(self, "eau"):
 				self.eau.removeNode()
@@ -1537,6 +1540,9 @@ class SetLevel(FSM):
 			objet.object.removeNode()
 		for statue in self.save_statues:
 			self.save_statues[statue].clearSolids()
+		if hasattr(self, "eau"):
+			self.eau.removeNode()
+			del self.eau	
 		self.save_statues = {}
 		self.antimur.clearInPatterns()
 		self.antimur.clearOutPatterns()
@@ -1548,6 +1554,7 @@ class SetLevel(FSM):
 		self.player.reverse = False
 		self.player.walk = False
 		taskMgr.remove("update")
+		del self.music_name
 		self.ignoreAll()
 		self.accept("escape", self.all_close)
 		self.player.stop()
