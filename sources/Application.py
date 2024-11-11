@@ -121,7 +121,7 @@ class SetLevel(FSM):
 		self.player = Player()
 		self.player.reparentTo(render)
 		self.player.hide()
-		self.current_map = "Village.bam"
+		self.current_map = "village_pecheurs_maison_heros.glb"
 		self.texts = ["It's a secret to everybody."]
 		self.text_index = 0
 		self.letter_index = 0
@@ -277,6 +277,7 @@ class SetLevel(FSM):
 		----------------------------------------------------------------------------------------------
 		return -> None
 		"""
+		print(self.player.getPos())
 		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
 			if not self.reading and not reussi:
@@ -1116,7 +1117,7 @@ class SetLevel(FSM):
 			self.chaptre = 2
 			
 	#-------------Fonction de chargement de map--------------------------------
-	def load_map(self, map="maison_terenor.bam", task=None):
+	def load_map(self, map="village_pecheurs_maison_heros.glb", task=None):
 		"""
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
@@ -1147,6 +1148,7 @@ class SetLevel(FSM):
 				self.map.removeNode()
 			del self.map
 		self.map = loader.loadModel(map)
+		self.map.setHpr(0, 90, 0)
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
 		self.antimur.addInPattern("into")
@@ -1212,12 +1214,8 @@ class SetLevel(FSM):
 		#------------------Les pnjs--------------------------------
 		for pnj in data[self.current_map][1]:
 			info = data[self.current_map][1][pnj]
-			if pnj == "Taya":
-				a = Taya()
-				a.setPos(info[0], info[1], info[2])
-			else:
-				a = PNJ(pnj)
-				a.setPos(info[0], info[1], info[2])
+			a = PNJ(pnj)
+			a.setPos(info[0], info[1], info[2])
 			self.pnjs[pnj] = a
 		for pnj in self.pnjs:
 			self.pnjs[pnj].reparentTo(render)
@@ -1229,6 +1227,7 @@ class SetLevel(FSM):
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
 		self.load_triggers(map)
+		self.map.setScale(data[self.current_map][4])
 		del data
 		#------------Mode debug------------------------
 		if self.debug:
@@ -1257,7 +1256,7 @@ class SetLevel(FSM):
 		if task is not None:
 			return task.done
 
-	def load_triggers(self, map="Village.bam"):
+	def load_triggers(self, map="village_pecheurs_maison_heros.glb"):
 		"""
 		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
 		C'est à dire les collisions "scénaristiques".
@@ -1269,15 +1268,6 @@ class SetLevel(FSM):
 			for trigger in self.triggers:
 				trigger.removeNode()
 		self.triggers = []
-		if map == "Village.bam":
-			#------------Le joueur ne peut pas quitter le village sans l'épée----------------
-			noeud = CollisionNode("1")
-			solid = CollisionBox((1780, -5450, 10), 350, 25, 60)
-			solid.setTangible(False)
-			noeud.addSolid(solid)
-			noeud.setIntoCollideMask(BitMask32.bit(0))
-			chemin_de_noeud = render.attachNewNode(noeud)
-			self.triggers.append(chemin_de_noeud)
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1306,11 +1296,11 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		if self.current_point == "1":
-			self.current_map = "maison_terenor.bam"
+			self.current_map = "village_pecheurs_maison_heros.glb"
 			self.player.setPos(200, -110, 6)
 		#------------Par défaut, le joueur se retrouve chez lui-------------	
 		else:
-			self.current_map = "maison_terenor.bam"
+			self.current_map = "village_pecheurs_maison_heros.glb"
 			self.player.setPos(200, -110, 6)
 		if task != None:
 			return task.done
@@ -1618,8 +1608,8 @@ class SetLevel(FSM):
 		-----------------------------------------------------------------------
 		return -> Vec3
 		"""
-		if self.current_map == "Village.bam" or self.current_map == "maison_taya.bam" or self.current_map == "maison_terenor.bam":
-			return	Vec3(-0.06, 0, -0.625), "Village Toal"
+		if self.current_map == "village_pecheurs.glb" or self.current_map == "village_pecheurs_maison_chef.glb" or self.current_map == "village_pecheurs_maison_heros.glb":
+			return	Vec3(0.5, 0, 0), "Village des pêcheurs"
 		return Vec3(0, 0, 0), "???"
 
 	def change_index_invent(self, dir="left"):
@@ -1670,7 +1660,7 @@ class SetLevel(FSM):
 
 	def exit_inventaire(self):
 		"""
-		Fonction appelée lorsqu'on qitte l'inventaire
+		Fonction appelée lorsqu'on quitte l'inventaire
 		--------------------------------------------------
 		return -> None
 		"""
@@ -1836,7 +1826,7 @@ class SetLevel(FSM):
 			self.chapitre = 0
 			self.player.nom = "Link"
 			self.player.noais = 0
-			self.current_map = "maison_terenor.bam"
+			self.current_map = "village_pecheurs_maison_heros.glb"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais)]
 		file.writelines([donnee +"|" for donnee in info])
