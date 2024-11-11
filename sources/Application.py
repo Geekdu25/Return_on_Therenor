@@ -1218,6 +1218,7 @@ class SetLevel(FSM):
 			self.portails[portail] = solid
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
+			#noeud_np.show() #Décommentez pour voir les portes et les portails.
 		#------------------Les pnjs--------------------------------
 		for pnj in data[self.current_map][1]:
 			info = data[self.current_map][1][pnj]
@@ -1246,8 +1247,17 @@ class SetLevel(FSM):
 		else:
 			if hasattr(self, "eau"):
 				self.eau.removeNode()
-				del self.eau	
-		del data
+				del self.eau
+		i = 0		
+		for mur in data[self.current_map][6]:
+			i += 1
+			noeud = CollisionNode("mur"+str(i))
+			a = (mur[0][0], mur[0][1], mur[0][2])
+			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
+			noeud.setCollideMask(BitMask32.bit(0))
+			noeud_np = self.map.attachNewNode(noeud)
+			noeud_np.show()			
+		del data, i
 		#------------Mode debug------------------------
 		if self.debug:
 			base.enableMouse()
