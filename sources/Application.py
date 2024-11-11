@@ -1256,7 +1256,7 @@ class SetLevel(FSM):
 			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			noeud_np.show()			
+			#noeud_np.show()			
 		del data, i
 		#------------Mode debug------------------------
 		if self.debug:
