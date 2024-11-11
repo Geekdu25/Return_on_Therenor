@@ -1,4 +1,4 @@
-window-title The legend of Therenor 2
+window-title Return on Therenor
 model-path $MAIN_DIR/../data/models 
 model-path $MAIN_DIR/../data/pictures
 model-path $MAIN_DIR/../data/sounds

@@ -78,7 +78,7 @@ class Save_bloc(CollisionBox):
 		center -> tuple
 		return -> Save_bloc
 		"""
-		CollisionBox.__init__(self, (center[0], center[1], center[2]), 15, 15, 30)
+		CollisionBox.__init__(self, (center[0], center[1], center[2]), 1.5, 1.5, 3)
 		self.nom = nom #Un nom lui est attribué pour se repérer.
 
 
@@ -1148,7 +1148,6 @@ class SetLevel(FSM):
 				self.map.removeNode()
 			del self.map
 		self.map = loader.loadModel(map)
-		self.map.setHpr(0, 90, 0)
 		self.map.reparentTo(render)
 		#---------------------------Collisions de la map------------------
 		self.antimur.addInPattern("into")
@@ -1184,12 +1183,19 @@ class SetLevel(FSM):
 		data = json.load(pnj_file)
 		pnj_file.close()
 		#-----Section de gestion de la musique------
-		if self.music is not None:
+		if not hasattr(self, "music_name"):
+			self.music_name = data[self.current_map][0]			
+			self.music = base.loader.loadSfx(data[self.current_map][0])
+			self.music.setLoop(True)
+			self.music.play()
+		if self.music is not None and self.music_name != data[self.current_map][0]:
 			self.music.stop()
 			self.music = None
-		self.music = base.loader.loadSfx(data[self.current_map][0])
-		self.music.setLoop(True)
-		self.music.play()
+		if self.music_name != data[self.current_map][0]:	
+			self.music_name = data[self.current_map][0]			
+			self.music = base.loader.loadSfx(data[self.current_map][0])
+			self.music.setLoop(True)
+			self.music.play()
 		#---------------------Gestion de la caméra du joueur----------------
 		if not hasattr(self.player, "followcam"):
 				self.player.create_camera()
@@ -1228,6 +1234,16 @@ class SetLevel(FSM):
 			noeud_np = self.map.attachNewNode(noeud)
 		self.load_triggers(map)
 		self.map.setScale(data[self.current_map][4])
+		#-----------------Eau--------------------------------------
+		if data[self.current_map][5] == "Vrai":
+			self.eau = loader.loadModel("eau.glb")
+			self.eau.reparentTo(render)
+			self.eau.setSx(1000)
+			self.eau.setSy(1000)
+		else:
+			if hasattr(self, "eau"):
+				self.eau.removeNode()
+				del self.eau	
 		del data
 		#------------Mode debug------------------------
 		if self.debug:

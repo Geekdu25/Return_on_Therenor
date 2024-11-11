@@ -1,7 +1,7 @@
 """
-The legend of Therenor 2
+Return on Therenor
 --------------------------
-Date de sortie prévue  Fin mars 2025
+Date de sortie prévue  Fin janvier 2025
 -------------------------------------
 Créateurs :
 Tyméo Bonvicini-Renaud
