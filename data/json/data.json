@@ -1,6 +1,6 @@
 {
-"Village.bam":["village.ogg", {"Taya":[200, -200, 6]}, {"maison_taya.bam":["porte", [1320, -996, 6], 60, 15, 150, [830, -470, 6]],
- 	"maison_terenor.bam":["porte", [2015, -2515, 6], 50, 10, 150, [820, -240, 6]]}, {}],
-"maison_taya.bam":["house.ogg", {}, {"Village.bam":["porte", [840, -500, 6], 50, 10, 150, [1300, -1075, 6]]}, {}],
-"maison_terenor.bam":["house.ogg", {}, {"Village.bam":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {"Chambre Therenor":[212, -60, 20]}]
+"village_pecheurs.glb":["Marelys.ogg", {}, {"village_pecheurs_maison_heros.glb":["porte", [1320, -996, 6], 60, 15, 150, [830, -470, 6]],
+ 	"village_pecheurs_maison_chef.glb":["porte", [2015, -2515, 6], 50, 10, 150, [820, -240, 6]]}, {}, 10],
+"village_pecheurs_maison_heros.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-20, -200, 6], 50, 10, 150, [1300, -1075, 6]]}, {"save_heros": [100, 100, 6]}, 10],
+"village_pecheurs_maison_chef.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {}, 10]
 }
