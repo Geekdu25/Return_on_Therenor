@@ -1,6 +1,12 @@
 {
-"village_pecheurs.glb":["Marelys.ogg", {}, {"village_pecheurs_maison_heros.glb":["porte", [30, 30, 25], 4, 2, 9, [0, -20, 6]],
- 	"village_pecheurs_maison_chef.glb":["porte", [30, 0, 25], 4, 2, 9, [0, -20, 6]]}, {}, 10, "Vrai"],
-"village_pecheurs_maison_heros.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 320, 200]]}, {"save_heros": [0, 15, 3]}, 10, "Faux"],
-"village_pecheurs_maison_chef.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {}, 10, "Faux"]
+"village_pecheurs.glb":["Marelys.ogg", {}, {"village_pecheurs_maison_heros.glb":["porte", [-45, 36, 25], 4, 2, 9, [0, -20, 6]],
+ 	"village_pecheurs_maison_chef.glb":["porte", [-40, -10, 25], 4, 2, 9, [0, -25, 6]],
+ 	"village_pecheurs_port.glb":["porte", [0, -20, 25], 2, 4, 9, [0, -20, 6]],
+ 	"village_pecheurs_reserve.glb":["porte", [-73, 15, 25], 2, 4, 9, [0, 0, 6]],
+ 	"village_pecheurs_maison_pote.glb":["porte", [-9, 32, 25], 2, 4, 9, [0, -20, 6]]}, {}, 10, "Vrai"],
+"village_pecheurs_maison_heros.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 300, 200]]}, {"save_heros": [0, 15, 3]}, 10, "Faux"],
+"village_pecheurs_maison_chef.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [5, 60, 6], 15, 5, 40, [-400, -35, 200]]}, {}, 3.5, "Faux"],
+"village_pecheurs_port.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {}, 10, "Faux"],
+"village_pecheurs_reserve.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [4, 0.3, 0], 0.7, 1, 5, [-600, 20, 200]]}, {}, 35, "Faux"],
+"village_pecheurs_maison_pote.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [835, -20, 6], 50, 10, 150, [2015, -2270, 6]]}, {}, 10, "Faux"]
 }
