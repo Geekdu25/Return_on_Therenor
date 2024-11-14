@@ -39,7 +39,7 @@ class InputMapping(object):
 
 
 class ChangeActionDialog(object):
-	def __init__(self, action, button_geom, command):
+	def __init__(self, action, command):
 		self.action = action
 		self.newInputType = ""
 		self.newInput = ""
@@ -57,7 +57,6 @@ class ChangeActionDialog(object):
 		text_align=TextNode.ACenter,
 		fadeScreen=0.65,
 		frameColor=VBase4(0.3, 0.3, 0.3, 1),
-		button_geom=button_geom,
 		button_scale=0.15,
 		button_text_scale=0.35,
 		button_text_align=TextNode.ALeft,

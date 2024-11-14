@@ -711,9 +711,6 @@ class SetLevel(FSM):
 				else:
 					self.mapping.mapButton(key, keys_data[key])
 			i += 1
-        #On charge la géométrie des boutons
-		maps = loader.loadModel("gui/button_map")
-		self.buttonGeom = (maps.find("**/ready"), maps.find("**/click"), maps.find("**/hover"), maps.find("**/disabled"))
         #Ici, on crée un titre
 		self.textscale = 0.1
 		self.title = DirectLabel(
@@ -726,25 +723,6 @@ class SetLevel(FSM):
 		text_shadow=VBase4(0, 0, 0, 0.75),
 		text_shadowOffset=Vec2(0.05, 0.05))
 		self.title.setTransparency(1)
-		#---------------------------------------------------
-		thumbMaps = loader.loadModel("gui/thumb_map")
-		thumbGeom = (
-		thumbMaps.find("**/thumb_ready"),
-		thumbMaps.find("**/thumb_click"),
-		thumbMaps.find("**/thumb_hover"),
-		thumbMaps.find("**/thumb_disabled"))
-		incMaps = loader.loadModel("gui/inc_map")
-		incGeom = (
-		incMaps.find("**/inc_ready"),
-		incMaps.find("**/inc_click"),
-		incMaps.find("**/inc_hover"),
-		incMaps.find("**/inc_disabled"))
-		decMaps = loader.loadModel("gui/dec_map")
-		decGeom = (
-		decMaps.find("**/dec_ready"),
-		decMaps.find("**/dec_click"),
-		decMaps.find("**/dec_hover"),
-		decMaps.find("**/dec_disabled"))
         #On crée le menu qui contiendra notre liste
 		self.lstActionMap = DirectScrolledFrame(
 		#On lui fait prendre toute la taille de la fenêtre
@@ -757,21 +735,16 @@ class SetLevel(FSM):
 		verticalScroll_scrollSize=0.2,
 		verticalScroll_frameColor=VBase4(0.02, 0.02, 0.02, 1),
 		verticalScroll_thumb_relief=1,
-		verticalScroll_thumb_geom=thumbGeom,
 		verticalScroll_thumb_pressEffect=False,
 		verticalScroll_thumb_frameColor=VBase4(0, 0, 0, 0),
 		verticalScroll_incButton_relief=1,
-		verticalScroll_incButton_geom=incGeom,
 		verticalScroll_incButton_pressEffect=False,
 		verticalScroll_incButton_frameColor=VBase4(0, 0, 0, 0),
 		verticalScroll_decButton_relief=1,
-		verticalScroll_decButton_geom=decGeom,
 		verticalScroll_decButton_pressEffect=False,
 		verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
 		#On crée notre liste
 		idx = 0
-		self.listBGEven = base.loader.loadModel("gui/list_item_even")
-		self.listBGOdd = base.loader.loadModel("gui/list_item_odd")
 		self.actionLabels = {}
 		for action in self.mapping.actions:
 			mapped = self.mapping.formatMapping(action)
@@ -825,7 +798,7 @@ class SetLevel(FSM):
 			return None
 		else:
 			#On crée notre fenêtre de dialogue.
-			self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
+			self.dlgInput = ChangeActionDialog(action, command=self.closeDialog)
 			#On attache les périphériques d'entrée
 			devices = base.devices.getDevices()
 			self.attachedDevices = devices
@@ -877,13 +850,8 @@ class SetLevel(FSM):
 		return -> DrectFrame
 		"""
 		def dummy(): pass
-		if index % 2 == 0:
-			bg = self.listBGEven
-		else:
-			bg = self.listBGOdd
 		item = DirectFrame(
 		text=action,
-		geom=bg,
 		geom_scale=(base.a2dRight-0.05, 1, 0.1),
 		frameSize=VBase4(base.a2dLeft+0.05, base.a2dRight-0.05, -0.05, 0.05),
 		frameColor=VBase4(1,0,0,0),
@@ -909,7 +877,6 @@ class SetLevel(FSM):
 		buttonScale = 0.15
 		btn = DirectButton(
 		text="Modifier",
-		geom=self.buttonGeom,
 		scale=buttonScale,
 		text_scale=0.25,
 		text_align=TextNode.ALeft,
@@ -950,10 +917,6 @@ class SetLevel(FSM):
 			file = open(self.get_path()+"/keys.json", "wt")
 			file.writelines([json.dumps([self.mapping.get_map()])])
 			file.close()
-		self.listBGEven.removeNode()
-		self.listBGOdd.removeNode()
-		del self.listBGEven
-		del self.listBGOdd
 		self.title.removeNode()
 		self.lstActionMap.removeNode()
 		del self.lstActionMap
