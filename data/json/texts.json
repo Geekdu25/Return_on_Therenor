@@ -1,7 +1,7 @@
 {
 "francais":{"gui":["Voulez-vous sauvegarder ?", "Appuyez sur F1 pour commencer.", "Fichier vide", "Commencer", "Effacer", "Mappage de touches", "Changer la langue", "Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)",
 "Retour", "Salutations jeune aventurier, quel est ton nom ?", "Confirmer", "C'est tout bon ?", "Veuillez reconnecter votre manette.", "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)",
-"Appuyez sur F1 pour recommencer.", "Sauvegarde effectuée !"],
+"Appuyez sur F1 pour recommencer.", "Sauvegarde effectuée !", "Homme", "Femme"],
 "0":["Il existe une légende...", "Une légende racontant...", "Qu'il y a bien longtemps prospérait un royaume...", "Ce royaume légendaire vivait paisiblement...", "Jusqu'au jour où...",
 "Une hydre maléfique du nom de Zmeyevick apparu.", "Elle terrorisa le bon peuple du royaume.", "Mais, alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.", 
 "Il la scella et repartit pour de lointaines contrées.", "Bien que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...", "Il se réincarnera et protégera le monde d'un nouveau fléau."],
@@ -10,7 +10,7 @@
 "3":["Mon nom est Taya...", "Il semblerait que je sois seule avec toi dans ce village...", "...", "Solitude..."]},
 "deutsch":{"gui":["Wollen Sie speichern ?", "Drücken Sie F1, um zu beginnen.", "Leere Datei", "Beginnen", "Löschen", "Tastenzuordnung", "Sprache ändern", "Sind Sie sicher, dass Sie die Daten löschen? (Gelöschte Daten können nicht wiederhergestellt werden)",
 "Zurück", "Grüße junger Abenteurer, wie ist dein Name?", "Bestätigen", "Ist alles gut ?", "Bitte schließen Sie Ihren Controller erneut an", "Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)",
-"Drücken Sie F1 um neu zu beginnen.", "Speichern durchgeführt !"],
+"Drücken Sie F1 um neu zu beginnen.", "Speichern durchgeführt !", "Männlich", "Weiblich"],
 "0":["Es gibt eine Legende...", "Eine Legende, die erzählt...", "Vor langer Zeit blühte ein Königreich...", "Dieses legendäre Königreich lebte friedlich...", "Bis zu dem Tag, an dem...",
 "Eine böse Hydra namens Zmeyevick erschien.", "Sie terrorisierte das gute Volk des Königreichs.", "Doch als alles verloren schien...", "Ein mutiger junger Mann erschien und besiegte die Hydra.", 
 "Er versiegelte sie und zog wieder in ferne Länder.", "Obwohl der Held verschwunden ist, wird sein Name noch immer geflüstert...", "Und man sagt, dass eines Tages...", "Er wird wiedergeboren werden und die Welt vor einer neuen Plage schützen."],
