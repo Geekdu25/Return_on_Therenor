@@ -934,6 +934,11 @@ class SetLevel(FSM):
 		self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
 		self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1))
 		self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
+		self.gender = [0]
+		self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)),
+		DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))]
+		for btn in self.genderRdos:
+			btn.setOthers(self.genderRdos)
 
 	def exitInit(self):
 		"""
@@ -941,6 +946,14 @@ class SetLevel(FSM):
 		--------------------------------------------------------
 		return -> None
 		"""
+		if self.gender[0]:
+			self.player.sexe = "feminin"
+		else:
+			self.player.sexe = "masculin"	
+		del self.gender
+		for btn in self.genderRdos:
+			btn.removeNode()
+		del self.genderRdos	
 		self.music.stop()
 		self.chapitre = 1
 
@@ -1822,9 +1835,10 @@ class SetLevel(FSM):
 			self.chapitre = 0
 			self.player.nom = "Link"
 			self.player.noais = 0
+			self.player.sexe = "masculin"
 			self.current_map = "village_pecheurs_maison_heros.glb"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
-		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais)]
+		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
 
@@ -1876,7 +1890,9 @@ class SetLevel(FSM):
 			elif i == 5:
 				self.player.maxvies = int(truc)
 			elif i == 6:
-				self.player.noais = int(truc)		
+				self.player.noais = int(truc)
+			elif i == 7:
+				self.player.sexe = truc			
 		fichier.close()
 
 	def wait_for_gamepad(self, task):

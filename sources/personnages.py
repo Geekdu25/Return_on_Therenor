@@ -17,6 +17,7 @@ class Player(Actor):
 		self.vies = 3
 		self.maxvies = 3
 		self.inventaire = []
+		self.sexe = "masculin"
 		#--------------------Quelques paramètres simples-----------------------------------
 		self.vitesse = 2.5
 		self.walk = False
