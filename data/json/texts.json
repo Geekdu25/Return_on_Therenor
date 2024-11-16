@@ -2,19 +2,17 @@
 "francais":{"gui":["Voulez-vous sauvegarder ?", "Appuyez sur F1 pour commencer.", "Fichier vide", "Commencer", "Effacer", "Mappage de touches", "Changer la langue", "Etes-vous sur d'effacer ? (Les données effacées ne peuvent pas être récupérées)",
 "Retour", "Salutations jeune aventurier, quel est ton nom ?", "Confirmer", "C'est tout bon ?", "Veuillez reconnecter votre manette.", "Etes-vous sur de quitter ? (Les données non sauvegardées seront effacées)",
 "Appuyez sur F1 pour recommencer.", "Sauvegarde effectuée !", "Homme", "Femme"],
+"trigger":["Voulez-vous rendre à Marelys ?"],
 "0":["Il existe une légende...", "Une légende racontant...", "Qu'il y a bien longtemps prospérait un royaume...", "Ce royaume légendaire vivait paisiblement...", "Jusqu'au jour où...",
 "Une hydre maléfique du nom de Zmeyevick apparu.", "Elle terrorisa le bon peuple du royaume.", "Mais, alors que tout semblait perdu...", "Un jeune homme courageux apparu et terrassa l'hydre.", 
 "Il la scella et repartit pour de lointaines contrées.", "Bien que le héros ait disparu, on murmure encore son nom...", "Et l'on dit qu'un jour...", "Il se réincarnera et protégera le monde d'un nouveau fléau."],
-"1":["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."],
-"2":["Non...", "Je n'ai pas encore d'épée.", "Je dois aller en acheter une chez le forgeron du village."],
-"3":["Mon nom est Taya...", "Il semblerait que je sois seule avec toi dans ce village...", "...", "Solitude..."]},
+"1":["Pour contrôler le monde...", "Il me faut de la puissance...", "Cette puissance ne peut se trouver qu'à un endroit...", "Là où le héros des temps jadis a...", "scéllé l'hydre.", "Mais toi avorton...",  "...tu veux m'empêcher de trouver ce pouvoir.", "Prépare-toi à mourir."]},
 "deutsch":{"gui":["Wollen Sie speichern ?", "Drücken Sie F1, um zu beginnen.", "Leere Datei", "Beginnen", "Löschen", "Tastenzuordnung", "Sprache ändern", "Sind Sie sicher, dass Sie die Daten löschen? (Gelöschte Daten können nicht wiederhergestellt werden)",
 "Zurück", "Grüße junger Abenteurer, wie ist dein Name?", "Bestätigen", "Ist alles gut ?", "Bitte schließen Sie Ihren Controller erneut an", "Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)",
 "Drücken Sie F1 um neu zu beginnen.", "Speichern durchgeführt !", "Männlich", "Weiblich"],
+"trigger":["Wollen Sie nach Marelys gehen ?"],
 "0":["Es gibt eine Legende...", "Eine Legende, die erzählt...", "Vor langer Zeit blühte ein Königreich...", "Dieses legendäre Königreich lebte friedlich...", "Bis zu dem Tag, an dem...",
 "Eine böse Hydra namens Zmeyevick erschien.", "Sie terrorisierte das gute Volk des Königreichs.", "Doch als alles verloren schien...", "Ein mutiger junger Mann erschien und besiegte die Hydra.", 
 "Er versiegelte sie und zog wieder in ferne Länder.", "Obwohl der Held verschwunden ist, wird sein Name noch immer geflüstert...", "Und man sagt, dass eines Tages...", "Er wird wiedergeboren werden und die Welt vor einer neuen Plage schützen."],
-"1":["Um die Welt zu beherrschen...", "Ich brauche Macht...", "Und diese Macht kann nur an einem Ort gefunden werden...", "Dort, wo der Held der alten Zeiten...", "die Hydra gesiegelt hat.", "Aber du Wicht...",  "...du willst mich daran hindern, diese Macht zu finden.", "Bereite dich auf den Tod vor."],
-"2":["Nein...", "Ich habe noch kein Schwert.", "Ich muss mir beim Dorfschmied eins kaufen."],
-"3":["Ich heisse Taya."]}
+"1":["Um die Welt zu beherrschen...", "Ich brauche Macht...", "Und diese Macht kann nur an einem Ort gefunden werden...", "Dort, wo der Held der alten Zeiten...", "die Hydra gesiegelt hat.", "Aber du Wicht...",  "...du willst mich daran hindern, diese Macht zu finden.", "Bereite dich auf den Tod vor."]}
 }
