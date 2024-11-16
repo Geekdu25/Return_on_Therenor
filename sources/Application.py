@@ -282,9 +282,14 @@ class SetLevel(FSM):
 		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
 			if not self.reading and not reussi:
-				self.text_index = 0
-				self.letter_index = 0
-				self.set_text(self.pnjs[self.current_pnj].texts)
+				if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
+					taskMgr.remove("update")
+					self.text_index = 0
+					self.letter_index = 0
+					self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
+				elif self.pnjs[self.current_pnj].commercant:
+					self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
+					self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])	
 		if self.current_porte is not None:
 			self.transition.fadeOut(0.5)
 			taskMgr.remove("update")
@@ -332,7 +337,82 @@ class SetLevel(FSM):
 				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.glb"])		
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")			
-				
+	
+	def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
+		"""
+		Fonction qui s'active lorsqu'un pnj commercant est interrogé.
+		---------------------------------------------------------------
+		articles -> dict
+		return -> None
+		"""			
+		taskMgr.remove("update")
+		properties = WindowProperties()
+		properties.setCursorHidden(False)
+		base.win.requestProperties(properties)
+		self.ignore(self.keys_data["Interagir"])
+		self.ignore("escape")
+		self.accept("escape", self.exit_vente)
+		self.articles = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 4,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
+		for article in articles:
+			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
+			self.articles.addItem(bouton)
+		
+	def add_article(self, article="Vodka", prix=30):
+		"""
+		Méthode permettant d'ajouter à l'inventaire du joueur un article acheté.
+		-------------------------------------------------------------------------
+		article -> str
+		return -> None
+		"""	
+		if self.player.noais >= prix:
+			self.player.noais -= prix #On retire de l'argent au joueur $$$$
+			self.player.inventaire.append(article)
+			self.dialog = OkDialog(text="Votre article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
+		else:
+			self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
+	
+	def cleanup_dialog_vente(self, inutile):
+		self.dialog.cleanup()			
+		
+		
+	def exit_vente(self):
+		"""
+		Méthode s'activant quand la transaction avec un pnj est finie.
+		----------------------------------------------------------------
+		return -> None
+		"""	
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
+		taskMgr.add(self.update, "update")
+		self.ignore("escape")
+		self.accept("escape", self.confirm_quit)
+		self.accept(self.keys_data["Interagir"], self.check_interact)
+		self.articles.removeNode()
+		
+	def reupdate(self):
+		"""
+		Méthode permettant de réactiver la méthode update.
+		----------------------------------------------------
+		return -> None
+		"""	
+		taskMgr.add(self.update, "update")
 
 	def check_interact_dial(self):
 		"""
@@ -1050,6 +1130,7 @@ class SetLevel(FSM):
 			self.map.setPos(500, 500, 0)
 			self.map.setHpr(270, 0, 0)
 			self.magicien = Magicien()
+			self.magicien.setScale(60)
 			self.magicien.setPos(200, 200, 0)
 			self.magicien.loop("Immobile")
 			self.magicien.reparentTo(render)
@@ -1234,7 +1315,7 @@ class SetLevel(FSM):
 		#------------------Les pnjs--------------------------------
 		for pnj in data[self.current_map][1]:
 			info = data[self.current_map][1][pnj]
-			a = PNJ(pnj)
+			a = self.return_pnj(pnj)
 			a.setPos(info[0], info[1], info[2])
 			self.pnjs[pnj] = a
 		for pnj in self.pnjs:
@@ -1260,6 +1341,7 @@ class SetLevel(FSM):
 			if hasattr(self, "eau"):
 				self.eau.removeNode()
 				del self.eau
+		#--------------------Les murs (invisibles)-------------------------		
 		i = 0		
 		for mur in data[self.current_map][6]:
 			i += 1
@@ -1298,6 +1380,17 @@ class SetLevel(FSM):
 		if task is not None:
 			return task.done
 
+	def return_pnj(self, pnj="Magicien"):
+		"""
+		Méthode permettant de renvoyer la bonne classe en fonction du PNJ choisi.
+		----------------------------------------------------------------------
+		pnj -> str
+		return -> PNJ (ou classe qui en hérite)
+		"""
+		if pnj == "magicien":
+			return Magicien() 
+		return PNJ()
+		
 	def load_triggers(self, map="village_pecheurs_maison_heros.glb"):
 		"""
 		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
@@ -1378,7 +1471,8 @@ class SetLevel(FSM):
 			#-----------Si on touche un pnj--------------------------
 			if b in self.pnjs:
 				self.current_pnj = b
-				self.pnjs[b].s.pause()
+				if self.pnjs[b].s is not None:
+					self.pnjs[b].s.pause()
 			elif b in self.portails:
 				if type(self.portails[b]) is Portail:
 					self.transition.fadeOut(0.5)
@@ -1419,7 +1513,8 @@ class SetLevel(FSM):
 		c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1]
 		if c == "player_sphere":
 			if b in self.pnjs:
-				self.pnjs[b].s.resume()
+				if self.pnjs[b].s is not None:
+					self.pnjs[b].s.resume()
 				self.current_pnj = None
 			elif b in self.portails:
 				self.current_porte = None
@@ -1465,6 +1560,7 @@ class SetLevel(FSM):
 		dt = globalClock.getDt()
 		#---------------Section éléments 2D-------------------------------------------
 		self.noai_text.show()
+		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
 		self.noai_image.show()
 		self.croix_image.hide()
 		self.lieu_text.hide()

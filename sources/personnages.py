@@ -52,7 +52,9 @@ class PNJ(Actor):
 		Actor.__init__(self, f"../models/{name}.bam", dico)
 		self.name = name		
 		self.s = None
-		self.texts = 0
+		self.texts = None
+		self.commercant = False
+		self.texts = 2
 		self.setScale(6)
 		self.col = CollisionNode(name)
 		self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
@@ -62,4 +64,8 @@ class PNJ(Actor):
 class Magicien(PNJ):
 	def __init__(self):
 		PNJ.__init__(self, name="magicien", anims=["Immobile"])
-		self.setScale(60)
+		self.setScale(40)
+		self.texts = None
+		self.commercant = True
+		self.texts_vente = 2
+		self.articles = {"Vodka":30, "Tsar Bomba":300}
