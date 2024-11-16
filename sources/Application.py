@@ -1153,8 +1153,8 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		fummee.setColor(0.5, 0.5, 0.5)
-		fummee.setExpDensity(0.01)
+		fummee.setColor(0.4, 0.4, 0.45)
+		fummee.setExpDensity(0.2)
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1529,9 +1529,9 @@ class SetLevel(FSM):
 		if self.player.reverse:
 			self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
 		if self.player.right:
-			self.player.setH(self.player, -self.player.vitesse*10*globalClock.getDt())
+			self.player.setH(self.player, -self.player.vitesse*20*globalClock.getDt())
 		if self.player.left:
-			self.player.setH(self.player, self.player.vitesse*10*globalClock.getDt())
+			self.player.setH(self.player, self.player.vitesse*20*globalClock.getDt())
 		#--------------------Sections gestion des vies-----------------------------
 		if self.player.vies <= 0:
 			self.transition.fadeOut(0.5)
@@ -1545,6 +1545,7 @@ class SetLevel(FSM):
 		----------------------------------------
 		return -> None
 		"""
+		render.clearFog()
 		self.music.stop()
 		self.map.removeNode()
 		self.skybox.removeNode()
