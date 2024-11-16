@@ -8,5 +8,6 @@
 "village_pecheurs_maison_chef.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [5, 60, 6], 15, 5, 40, [-400, -35, 300]]}, {}, 3.5, "Faux", []],
 "village_pecheurs_port.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-50, 52, 6], 5, 25, 50, [100, -285, 300]]}, {}, 3, "Faux", []],
 "village_pecheurs_reserve.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [4, 0.3, 0], 0.7, 1, 5, [-600, 20, 300]]}, {}, 35, "Faux", []],
-"village_pecheurs_maison_pote.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-37, 23, 6], 3, 8.5, 15, [-120, 300, 300]]}, {}, 8, "Faux", []]
+"village_pecheurs_maison_pote.glb":["Marelys.ogg", {}, {"village_pecheurs.glb":["porte", [-37, 23, 6], 3, 8.5, 15, [-120, 300, 300]]}, {}, 8, "Faux", []],
+"Marelys.glb":["Marelys.ogg", {}, {}, {}, 10, "Vrai", [[[0, 50, 0], [10, 2000, 2000]], [[-500, 50, 0], [10, 2000, 2000]], [[-250, -70, 0], [200, 10, 2000]], [[-250, 90, 0], [2000, 10, 2000]]]]
 }
