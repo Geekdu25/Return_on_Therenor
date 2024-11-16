@@ -115,6 +115,7 @@ class SetLevel(FSM):
 		self.skybox = None
 		self.portails = {}
 		self.triggers = []
+		self.murs = []
 		self.save_statues = {}
 		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
 		#-----------------Autres variables-----------------------
@@ -327,8 +328,8 @@ class SetLevel(FSM):
 		elif self.actual_trigger == 1: #Voulez-vous vous rendre au village des pêcheurs ?
 			if clickedYes:
 				self.transition.fadeOut(1)
-				taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 350)])
-				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["village_pecheurs.glb"])		
+				taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
+				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.glb"])		
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")			
 				
@@ -1132,7 +1133,10 @@ class SetLevel(FSM):
 			self.pnjs[pnj].removeNode()
 		for objet in self.objects:
 			objet.object.removeNode()
+		for mur in self.murs:
+			mur.removeNode()
 		self.objects = []
+		self.murs = []
 		self.current_pnj = None
 		self.current_porte = None
 		self.pnjs = {}
@@ -1264,7 +1268,8 @@ class SetLevel(FSM):
 			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les murs.		
+			#noeud_np.show() #Décommentez pour voir les murs.	
+			self.murs.append(noeud_np)	
 		del data, i
 		#------------Mode debug------------------------
 		if self.debug:
@@ -1536,7 +1541,7 @@ class SetLevel(FSM):
 				self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
 		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		#-----------------------Section mouvements du joueur------------------------
-		self.player.setZ(self.player, -0.25)
+		self.player.setZ(self.player, -self.player.gravite*dt)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:
