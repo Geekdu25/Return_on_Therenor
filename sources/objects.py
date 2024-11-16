@@ -30,7 +30,7 @@ class Bateau():
 		return -> Bateau
 		"""
 		self.object = loader.loadModel("bateau.glb")
-		self.object.setScale(40)
+		self.object.setScale(30)
 		self.col = CollisionNode("bateau")
 		self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
 		self.col.setFromCollideMask(BitMask32.allOff())

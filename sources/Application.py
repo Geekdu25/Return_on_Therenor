@@ -311,16 +311,24 @@ class SetLevel(FSM):
 			base.win.requestProperties(properties)
 			self.ignore("escape")
 			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
+			self.ignore("out")
 			
 	def accept_trigger(self, clickedYes):
 		self.triggerDlg.cleanup()
 		properties = WindowProperties()
 		properties.setCursorHidden(True)
 		base.win.requestProperties(properties)
+		self.accept("out", self.out)
 		if self.actual_trigger == 0: #Voulez-vous vous rendre à Marelys ?
 			if clickedYes:
-				pass
-				#self.load_map("Marelys.glb")
+				self.transition.fadeOut(1)
+				taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(-1000, 650, 50)])
+				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["Marelys.glb"])
+		elif self.actual_trigger == 1: #Voulez-vous vous rendre au village des pêcheurs ?
+			if clickedYes:
+				self.transition.fadeOut(1)
+				taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 350)])
+				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["village_pecheurs.glb"])		
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")			
 				
@@ -1154,7 +1162,7 @@ class SetLevel(FSM):
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
 		fummee.setColor(0.4, 0.4, 0.45)
-		fummee.setExpDensity(0.2)
+		fummee.setExpDensity(0.02)
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1237,7 +1245,7 @@ class SetLevel(FSM):
 		self.load_triggers(map)
 		self.map.setScale(data[self.current_map][4])
 		#-----------------Eau--------------------------------------
-		if data[self.current_map][5] == "Vrai":
+		if data[self.current_map][5] == "Vrai" and not hasattr(self, "eau"):
 			self.eau = loader.loadModel("eau.glb")
 			self.eau.reparentTo(render)
 			self.eau.setScale(3)
@@ -1297,15 +1305,23 @@ class SetLevel(FSM):
 			for trigger in self.triggers:
 				trigger.removeNode()
 		self.triggers = []
+		temp = []
 		self.actual_trigger = None
 		if map == "village_pecheurs.glb":
 			trigger = CollisionNode("0")
-			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100)) 
+			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100))
+			temp.append(trigger) 
+		elif map == "Marelys.glb":
+			trigger = CollisionNode("1")
+			trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
+			temp.append(trigger)
+		for trigger in temp:	
 			trigger.setFromCollideMask(BitMask32.allOff())
 			trigger.setIntoCollideMask(BitMask32.bit(0))
 			trigger_chemin_de_noeud = render.attachNewNode(trigger)
 			#trigger_chemin_de_noeud.show() #Décommentez pour voir les triggers
 			self.triggers.append(trigger_chemin_de_noeud)
+		del temp
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1368,8 +1384,8 @@ class SetLevel(FSM):
 			#--------------Si on touche un trigger------------------------------
 			elif b.isdigit():
 				b = int(b)
-				if b == 0:
-					self.actual_trigger = 0
+				if b == 0 or b == 1:
+					self.actual_trigger = b
 			#--------------Si on touche une statue de sauvegarde----------------------------------
 			elif b in self.save_statues:
 				self.actual_statue = b		
@@ -1520,10 +1536,7 @@ class SetLevel(FSM):
 				self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
 		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		#-----------------------Section mouvements du joueur------------------------
-		if self.player.getZ() > 6:
-		  self.player.setZ(self.player, -0.25)
-		else:
-		  self.player.setZ(6)
+		self.player.setZ(self.player, -0.25)
 		if self.player.walk:
 			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
 		if self.player.reverse:
@@ -1649,7 +1662,9 @@ class SetLevel(FSM):
 		return -> Vec3
 		"""
 		if self.current_map == "village_pecheurs.glb" or self.current_map == "village_pecheurs_maison_chef.glb" or self.current_map == "village_pecheurs_maison_heros.glb":
-			return	Vec3(0.5, 0, 0), "Village des pêcheurs"
+			return	Vec3(0.6, 0, 0), "Village des pêcheurs"
+		elif self.current_map == "Marelys.glb":
+			return Vec3(0.2, 0, 0), "Marelys, région océanique"	
 		return Vec3(0, 0, 0), "???"
 
 	def change_index_invent(self, dir="left"):
