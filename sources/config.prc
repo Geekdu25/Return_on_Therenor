@@ -5,8 +5,8 @@ model-path $MAIN_DIR/../data/sounds
 win-size 1024 768
 fullscreen #f
 cursor-hidden #f
-want-directtools #f
-want-tk #f
+want-directtools #t
+want-tk #t
 basic-shaders-only #t
 show-frame-rate-meter false
 icon-filename $THIS_PRC_DIR/icon.ico

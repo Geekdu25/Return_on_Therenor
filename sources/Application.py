@@ -108,6 +108,7 @@ class SetLevel(FSM):
 		self.current_pnj = None
 		self.pnjs = {}
 		self.current_porte = None
+		self.actual_trigger = None
 		base.cTrav = CollisionTraverser() #Le CollisionTraverser, gestionnaire de toutes les collisions.
 		if self.debug:
 			base.cTrav.showCollisions(render)
@@ -302,7 +303,27 @@ class SetLevel(FSM):
 			properties.setCursorHidden(False)
 			base.win.requestProperties(properties)
 			self.ignore("escape")
-			self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save)
+			self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save) #Voulez-vous sauvegarder ?
+		if self.actual_trigger is not None:
+			taskMgr.remove("update")
+			properties = WindowProperties()
+			properties.setCursorHidden(False)
+			base.win.requestProperties(properties)
+			self.ignore("escape")
+			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
+			
+	def accept_trigger(self, clickedYes):
+		self.triggerDlg.cleanup()
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
+		if self.actual_trigger == 0: #Voulez-vous vous rendre à Marelys ?
+			if clickedYes:
+				pass
+				#self.load_map("Marelys.glb")
+		self.accept("escape", self.confirm_quit)
+		taskMgr.add(self.update, "update")			
+				
 
 	def check_interact_dial(self):
 		"""
@@ -470,7 +491,7 @@ class SetLevel(FSM):
 		self.menu = True
 		#-----------------------On charge les textes------------------------------------
 		self.textObject1 = OnscreenText(text='Return on Therenor', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
-		self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1))
+		self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
 		#--------------------L'épée--------------------------------------
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(base.cam)
@@ -532,16 +553,16 @@ class SetLevel(FSM):
 			if self.player.nom != "_":
 				noms.append(self.player.nom)
 			else:
-				noms.append(self.story["gui"][2])	
+				noms.append(self.story["gui"][2]) #Fichier vide
 		self.player.nom = "Link"
 		file = open(path+"/keys.json", "rt")
 		self.keys_data = json.load(file)[0]
 		file.close()
-		self.buttons_continue = [DirectButton(text=self.story["gui"][3], scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)]
-		self.buttons_erase = [DirectButton(text=self.story["gui"][4], scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)]
+		self.buttons_continue = [DirectButton(text=self.story["gui"][3], scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)] #Commencer
+		self.buttons_erase = [DirectButton(text=self.story["gui"][4], scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)] #Effacer
 		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
-		self.button_mapping = DirectButton(text=self.story["gui"][5], scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"])
-		self.button_langue = DirectButton(text=self.story["gui"][6], scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"])		
+		self.button_mapping = DirectButton(text=self.story["gui"][5], scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"]) #Mappage de touches
+		self.button_langue = DirectButton(text=self.story["gui"][6], scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"]) #Changer la langue
 		self.transition.fadeIn(1)
 
 	def confirm_erase(self, file=1):
@@ -551,7 +572,7 @@ class SetLevel(FSM):
 		file -> int
 		return -> None
 		"""
-		self.eraseDlg = YesNoDialog(text=self.story["gui"][7], command=self.erase_file, extraArgs=[file])
+		self.eraseDlg = YesNoDialog(text=self.story["gui"][7], command=self.erase_file, extraArgs=[file]) #Voulez-vous vraiment effacer les données de sauvegarde ?
 
 
 	def erase_file(self, clickedYes, file):
@@ -743,7 +764,6 @@ class SetLevel(FSM):
 		verticalScroll_decButton_relief=1,
 		verticalScroll_decButton_pressEffect=False,
 		verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
-		#On crée notre liste
 		idx = 0
 		self.actionLabels = {}
 		for action in self.mapping.actions:
@@ -751,11 +771,9 @@ class SetLevel(FSM):
 			item = self.__makeListItem(action, mapped, idx)
 			item.reparentTo(self.lstActionMap.getCanvas())
 			idx += 1
-		#On recalcule la taille du canevas pour ajouter une barre de défilement si nécessaire.
 		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
 		self.lstActionMap.setCanvasSize()
-		self.button_retour = DirectButton(text=self.story["gui"][8], pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"])
-		#Petit fade in (sinon on n'y voit rien)
+		self.button_retour = DirectButton(text=self.story["gui"][8], pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"]) #Retour
 		self.transition.fadeIn(2)
 
 	def closeDialog(self, action, newInputType, newInput):
@@ -932,11 +950,11 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
-		self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1))
-		self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1))
+		self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1)) #Salutations jeune aventurier, quel est ton nom ?
+		self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1)) #Confirmer
 		self.gender = [0]
-		self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)),
-		DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))]
+		self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)), #Homme
+		DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))] #Femme
 		for btn in self.genderRdos:
 			btn.setOthers(self.genderRdos)
 
@@ -963,7 +981,7 @@ class SetLevel(FSM):
 		--------------------------------
 		return -> None
 		"""
-		self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName)
+		self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName) #C'est tout bon ?
 
 	def acceptName(self, clickedYes):
 		"""
@@ -1100,6 +1118,7 @@ class SetLevel(FSM):
 		task -> None (ou task)
 		return -> None
 		"""
+		render.clearFog()
 		for pnj in self.pnjs:
 			self.pnjs[pnj].cleanup()
 			self.pnjs[pnj].removeNode()
@@ -1132,6 +1151,11 @@ class SetLevel(FSM):
 			base.cTrav.showCollisions(render)
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
+		#-----------------------Fumée---------------------
+		fummee = Fog("Ma fummee")
+		fummee.setColor(0.5, 0.5, 0.5)
+		fummee.setExpDensity(0.1)
+		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
@@ -1219,7 +1243,7 @@ class SetLevel(FSM):
 			self.eau.setScale(3)
 			self.eau.setSx(10000)
 			self.eau.setSy(10000)
-			self.eau.setZ(self.eau, 3)
+			self.eau.setZ(self.eau, 10)
 		else:
 			if hasattr(self, "eau"):
 				self.eau.removeNode()
@@ -1232,7 +1256,7 @@ class SetLevel(FSM):
 			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show()			
+			#noeud_np.show() #Décommentez pour voir les murs.		
 		del data, i
 		#------------Mode debug------------------------
 		if self.debug:
@@ -1273,6 +1297,15 @@ class SetLevel(FSM):
 			for trigger in self.triggers:
 				trigger.removeNode()
 		self.triggers = []
+		self.actual_trigger = None
+		if map == "village_pecheurs.glb":
+			trigger = CollisionNode("0")
+			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100)) 
+			trigger.setFromCollideMask(BitMask32.allOff())
+			trigger.setIntoCollideMask(BitMask32.bit(0))
+			trigger_chemin_de_noeud = render.attachNewNode(trigger)
+			#trigger_chemin_de_noeud.show() #Décommentez pour voir les triggers
+			self.triggers.append(trigger_chemin_de_noeud)
 
 
 	#---------------------------------Boucle de jeu "normale"----------------------------------------------------------------
@@ -1335,13 +1368,8 @@ class SetLevel(FSM):
 			#--------------Si on touche un trigger------------------------------
 			elif b.isdigit():
 				b = int(b)
-				if b == 1:
-					if not "epee" in self.player.inventaire:
-						taskMgr.remove("update")
-						self.player.stop()
-						s = Sequence(self.player.posInterval(1.5, Vec3(self.player.getX(), self.player.getY()+30, self.player.getZ()), startPos=Vec3(self.player.getX(), self.player.getY(), self.player.getZ())), Func(taskMgr.add, self.update, "update"), Func(self.ignore, "finito"))
-						self.set_text(2, messages=["finito"])
-						self.accept("finito", s.start)
+				if b == 0:
+					self.actual_trigger = 0
 			#--------------Si on touche une statue de sauvegarde----------------------------------
 			elif b in self.save_statues:
 				self.actual_statue = b		
@@ -1376,6 +1404,8 @@ class SetLevel(FSM):
 				self.current_porte = None
 			elif b in self.save_statues:
 				self.actual_statue = None
+			elif b.isdigit():
+				self.actual_trigger = None	
 
 	def touche_pave(self, message="arrow_up"):
 		"""
@@ -1438,7 +1468,7 @@ class SetLevel(FSM):
 				self.hide_gui()
 				self.transition.fadeScreenColor((0, 0, 0, 0.6))
 				self.transition.letterboxOn()
-				self.gamepad_text = OnscreenText(text=self.story["gui"][12], pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1))
+				self.gamepad_text = OnscreenText(text=self.story["gui"][12], pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1)) #Veuillez reconnecter votre manette.
 				self.gamepad_text.setBin("gui-popup", 80)
 				taskMgr.remove("update")
 				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
@@ -1560,7 +1590,7 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Inventaire"])
 		self.ignore("escape")
 		if self.quitDlg is None:
-		  self.quitDlg = YesNoDialog(text = self.story["gui"][13], command = self.quit_confirm)
+		  self.quitDlg = YesNoDialog(text = self.story["gui"][13], command = self.quit_confirm) #Voulez-vous vraiment quitter ?
 
 	def quit_confirm(self, clickedYes):
 		"""
@@ -1795,7 +1825,7 @@ class SetLevel(FSM):
 		self.player.vies = 3
 		self.transition.fadeIn(0.5)
 		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
-		self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1))
+		self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1)) #Appuyez sur F1 pour recommencer.
 		self.accept("f1", self.fade_out, extraArgs=["Map"])
 
 	def exitGame_over(self):
@@ -1851,7 +1881,7 @@ class SetLevel(FSM):
 		self.saveDlg.cleanup()
 		if clickedYes:
 			self.save(file=self.actual_file)
-			self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate)
+			self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
 
 	def reupdate(self, inutile):
 		"""
