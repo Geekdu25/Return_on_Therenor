@@ -927,7 +927,7 @@ class SetLevel(FSM):
 				if "face" in dico[action] or "shoulder" in dico[action]:
 					if not dico[action].startswith("manette"):
 						dico[action] = "manette-" + dico[action]
-			dico["Avancer"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Reculer"], data["Aller a gauche"], data["Aller a droite"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
+			dico["Avancer"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
 			file = open(self.get_path()+"/keys.json", "wt")
 			file.writelines([json.dumps([dico])])
 			file.close()
@@ -1154,7 +1154,7 @@ class SetLevel(FSM):
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
 		fummee.setColor(0.5, 0.5, 0.5)
-		fummee.setExpDensity(0.1)
+		fummee.setExpDensity(0.01)
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
