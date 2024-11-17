@@ -182,7 +182,7 @@ class SetLevel(FSM):
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_moitie.append(a)
 			x+= 0.12
-		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
+		self.noai_text = OnscreenText(text=f"Noaïs : {self.player.noais}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
 		self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
 		self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
@@ -282,9 +282,9 @@ class SetLevel(FSM):
 		if self.current_pnj is not None:
 			self.ignore("out")
 			self.ignore("into")
+			taskMgr.remove("update")
 			if not self.reading and not reussi:
 				if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
-					taskMgr.remove("update")
 					self.text_index = 0
 					self.letter_index = 0
 					self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
@@ -346,8 +346,7 @@ class SetLevel(FSM):
 		articles -> dict
 		return -> None
 		"""	
-		self.hide_gui()		
-		taskMgr.remove("update")
+		self.hide_gui()
 		taskMgr.add(self.update_vente, "update vente")
 		properties = WindowProperties()
 		properties.setCursorHidden(False)
@@ -416,7 +415,7 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
-		self.noai_text.setText(f"Noaïs : {str(self.player.noais)} noaïs")		
+		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")		
 		return task.cont	
 		
 		
