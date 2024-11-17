@@ -182,7 +182,7 @@ class SetLevel(FSM):
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_moitie.append(a)
 			x+= 0.12
-		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-1, 0.7), scale=0.07, fg=(1, 1, 1, 1))
+		self.noai_text = OnscreenText(text=f"Noaïs : {int(self.player.noais)}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
 		self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
 		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
 		self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
@@ -208,7 +208,6 @@ class SetLevel(FSM):
 		self.map_image.hide()
 		self.croix_image.hide()
 		self.lieu_text.hide()
-
 	#-----------------------Autres fonctions----------------------------------
 	def init_fichiers(self):
 		"""
@@ -281,6 +280,8 @@ class SetLevel(FSM):
 		"""
 		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
+			self.ignore("out")
+			self.ignore("into")
 			if not self.reading and not reussi:
 				if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
 					taskMgr.remove("update")
@@ -344,8 +345,10 @@ class SetLevel(FSM):
 		---------------------------------------------------------------
 		articles -> dict
 		return -> None
-		"""			
+		"""	
+		self.hide_gui()		
 		taskMgr.remove("update")
+		taskMgr.add(self.update_vente, "update vente")
 		properties = WindowProperties()
 		properties.setCursorHidden(False)
 		base.win.requestProperties(properties)
@@ -383,7 +386,7 @@ class SetLevel(FSM):
 		if self.player.noais >= prix:
 			self.player.noais -= prix #On retire de l'argent au joueur $$$$
 			self.player.inventaire.append(article)
-			self.dialog = OkDialog(text="Votre article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
+			self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
 		else:
 			self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
 	
@@ -406,13 +409,27 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.articles.removeNode()
 		
+	def update_vente(self, task=None):
+		"""
+		Méthode permettant de mettre à jour la vente.
+		-----------------------------------------------
+		task -> task
+		return -> task.cont
+		"""
+		self.noai_text.setText(f"Noaïs : {str(self.player.noais)} noaïs")		
+		return task.cont	
+		
+		
 	def reupdate(self):
 		"""
 		Méthode permettant de réactiver la méthode update.
 		----------------------------------------------------
 		return -> None
 		"""	
+		taskMgr.remove("update vente")
 		taskMgr.add(self.update, "update")
+		self.accept("out", self.out)
+		self.accept("into", self.into)
 
 	def check_interact_dial(self):
 		"""
@@ -1431,6 +1448,7 @@ class SetLevel(FSM):
 		"""
 		#On montre le joueur.
 		self.player.show()
+		self.accept("t", self.player.degats)
 		#On cache le curseur de la souris.
 		properties = WindowProperties()
 		properties.setCursorHidden(True)
@@ -1719,7 +1737,6 @@ class SetLevel(FSM):
 		self.quitDlg = None
 		taskMgr.add(self.update, "update")
 		if clickedYes:
-			self.read(file=self.actual_file)
 			self.fade_out()
 		else:
 			properties = WindowProperties()
@@ -1751,11 +1768,58 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Courir"]+"-up")
 		self.ignore(self.keys_data["Inventaire"])
 		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
+		if not self.manette:
+			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+			self.accept("arrow_left", self.change_index_invent)
 		taskMgr.add(self.update_invent, "update_invent")
+		self.inventaire_show = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 4,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
+		for article in self.player.inventaire:
+			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+			self.inventaire_show.addItem(bouton)
 		self.music.setVolume(0.6)
 		self.croix_image.setPos(self.get_pos_croix()[0])
 		self.lieu_text.setText(self.get_pos_croix()[1])
 
+	def active_article(self, article="Vodka"):
+		"""
+		Méthode s'activant quand on consomme un article.
+		-------------------------------------------------
+		return -> None
+		"""
+		if article == "Vodka":
+			self.OkDialog = OkDialog("Miam, de la vodka !", self.inutile)
+			if self.player.vies + 3 > self.player.maxvies:
+				self.player.vies = self.player.maxvies
+			else:
+				self.player.vies += 3	
+			
+	def inutile(self, inutile=None):
+		"""
+		Fonction qui permet d'effacer le diaogue ok.
+		--------------------------------------------
+		inutile -> bool
+		return -> None
+		"""	
+		self.OkDialog.cleanup()	
+		
+		
+		
 	def get_pos_croix(self):
 		"""
 		Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
@@ -1793,6 +1857,7 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
+		self.inventaire_show.hide()
 		self.map_image.hide()
 		self.croix_image.hide()
 		self.noai_image.hide()
@@ -1811,6 +1876,7 @@ class SetLevel(FSM):
 		elif self.index_invent == 1:
 			self.noai_image.show()
 			self.noai_text.show()
+			self.inventaire_show.show()
 		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		return task.cont
 
@@ -1820,6 +1886,8 @@ class SetLevel(FSM):
 		--------------------------------------------------
 		return -> None
 		"""
+		self.inventaire_show.removeNode()
+		del self.inventaire_show
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
 		taskMgr.add(self.update, "update")

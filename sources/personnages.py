@@ -34,8 +34,21 @@ class Player(Actor):
 		self.col.setIntoCollideMask(BitMask32.allOff()) 
 		self.col_np = self.attachNewNode(self.col)
 	
-	
+	def degats(self, degats=1):
+		"""
+		Méthode permettant d'ajouter des dégâts au joueur.
+		---------------------------------------------------
+		return -> None
+		"""
+		self.vies -= degats
+		
+		
 	def create_camera(self):
+		"""
+		Méthode permettant de créer la caméra du joueur.
+		--------------------------------------------------
+		return -> None
+		"""
 		self.followcam = ManetteCam(base.cam, self)
 		
 		
