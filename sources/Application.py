@@ -1262,8 +1262,12 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		fummee.setColor(0.4, 0.4, 0.45)
-		fummee.setExpDensity(0.02)
+		if map == "arene.glb":
+			fummee.setColor(0, 0.5, 0)
+			fummee.setExpDensity(0.01)
+		else:
+			fummee.setColor(0.5, 0.5, 0.55)
+			fummee.setExpDensity(0.02)	
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1327,7 +1331,7 @@ class SetLevel(FSM):
 			self.portails[portail] = solid
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les portes et les portails.
+			noeud_np.show() #Décommentez pour voir les portes et les portails.
 		#------------------Les pnjs--------------------------------
 		for pnj in data[self.current_map][1]:
 			info = data[self.current_map][1][pnj]
