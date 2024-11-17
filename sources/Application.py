@@ -280,9 +280,9 @@ class SetLevel(FSM):
 		"""
 		reussi = self.check_interact_dial()
 		if self.current_pnj is not None:
+			taskMgr.remove("update")
 			self.ignore("out")
 			self.ignore("into")
-			taskMgr.remove("update")
 			if not self.reading and not reussi:
 				if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
 					self.text_index = 0
@@ -346,6 +346,7 @@ class SetLevel(FSM):
 		articles -> dict
 		return -> None
 		"""	
+		self.d_actif = False
 		self.hide_gui()
 		taskMgr.add(self.update_vente, "update vente")
 		properties = WindowProperties()
@@ -367,7 +368,7 @@ class SetLevel(FSM):
 		frameColor=(0.1, 0.1, 0.1, 0.8),
 		pos=(0, 0, 0),
 		items=[],
-		numItemsVisible = 4,
+		numItemsVisible = 7,
 		forceHeight = 0.15,
 		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
 		itemFrame_pos=(0, 0, 0))
@@ -382,15 +383,19 @@ class SetLevel(FSM):
 		article -> str
 		return -> None
 		"""	
-		if self.player.noais >= prix:
-			self.player.noais -= prix #On retire de l'argent au joueur $$$$
-			self.player.inventaire.append(article)
-			self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
-		else:
-			self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
+		if not self.d_actif:
+			self.d_actif = True
+			if self.player.noais >= prix:
+				self.player.noais -= prix #On retire de l'argent au joueur $$$$
+				self.player.inventaire.append(article)
+				self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
+			else:
+				self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
+				
 	
 	def cleanup_dialog_vente(self, inutile):
 		self.dialog.cleanup()			
+		self.d_actif = False
 		
 		
 	def exit_vente(self):
@@ -399,14 +404,18 @@ class SetLevel(FSM):
 		----------------------------------------------------------------
 		return -> None
 		"""	
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		taskMgr.add(self.update, "update")
-		self.ignore("escape")
-		self.accept("escape", self.confirm_quit)
-		self.accept(self.keys_data["Interagir"], self.check_interact)
-		self.articles.removeNode()
+		if not self.d_actif:
+			properties = WindowProperties()
+			properties.setCursorHidden(True)
+			base.win.requestProperties(properties)
+			taskMgr.add(self.update, "update")
+			self.ignore("escape")
+			self.accept("escape", self.confirm_quit)
+			self.accept(self.keys_data["Interagir"], self.check_interact)
+			self.articles.removeNode()
+			self.accept("into", self.into)
+			self.accept("out", self.out)
+			self.current_pnj = None
 		
 	def update_vente(self, task=None):
 		"""
@@ -1263,8 +1272,13 @@ class SetLevel(FSM):
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
 		if map == "arene.glb":
-			fummee.setColor(0, 0.5, 0)
-			fummee.setExpDensity(0.01)
+			fummee.setColor(0, 0.8, 0)
+			fummee.setExpDensity(0.05)
+			lumiere2 = PointLight("dlight")
+			lumiere2.setColor((0.2, 500000, 0.2, 1.5))
+			lumiere2_np = render.attachNewNode(lumiere2)
+			lumiere2_np.setPos(lumiere2_np, 0, 0, 1000)
+			render.setLight(lumiere2_np)
 		else:
 			fummee.setColor(0.5, 0.5, 0.55)
 			fummee.setExpDensity(0.02)	
@@ -1788,7 +1802,7 @@ class SetLevel(FSM):
 		frameColor=(0.1, 0.1, 0.1, 0.8),
 		pos=(0, 0, 0),
 		items=[],
-		numItemsVisible = 4,
+		numItemsVisible = 7,
 		forceHeight = 0.15,
 		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
 		itemFrame_pos=(0, 0, 0))
@@ -1805,12 +1819,16 @@ class SetLevel(FSM):
 		-------------------------------------------------
 		return -> None
 		"""
+		taskMgr.remove("update_invent")
+		self.inventaire_show.removeNode()
+		self.player.inventaire.remove(article)
 		if article == "Vodka":
-			self.OkDialog = OkDialog("Miam, de la vodka !", self.inutile)
+			self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
 			if self.player.vies + 3 > self.player.maxvies:
 				self.player.vies = self.player.maxvies
 			else:
 				self.player.vies += 3	
+				
 			
 	def inutile(self, inutile=None):
 		"""
@@ -1820,7 +1838,27 @@ class SetLevel(FSM):
 		return -> None
 		"""	
 		self.OkDialog.cleanup()	
-		
+		self.inventaire_show = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 7,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
+		for article in self.player.inventaire:
+			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+			self.inventaire_show.addItem(bouton)
+		taskMgr.add(self.update_invent, "update_invent")
 		
 		
 	def get_pos_croix(self):
@@ -1852,6 +1890,14 @@ class SetLevel(FSM):
 				self.index_invent += 1
 			else:
 				self.index_invent = 0
+		if self.index_invent == 1:
+			properties = WindowProperties()
+			properties.setCursorHidden(False)
+			base.win.requestProperties(properties)
+		else:
+			properties = WindowProperties()
+			properties.setCursorHidden(True)
+			base.win.requestProperties(properties)			
 
 	def update_invent(self, task):
 		"""
@@ -1889,6 +1935,9 @@ class SetLevel(FSM):
 		--------------------------------------------------
 		return -> None
 		"""
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
 		self.inventaire_show.removeNode()
 		del self.inventaire_show
 		self.music.setVolume(1)

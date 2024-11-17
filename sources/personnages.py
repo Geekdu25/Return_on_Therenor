@@ -81,4 +81,4 @@ class Magicien(PNJ):
 		self.texts = None
 		self.commercant = True
 		self.texts_vente = 2
-		self.articles = {"Vodka":30, "Tsar Bomba":300}
+		self.articles = {"Vodka":30, "Tsar Bomba":300, "Cigare cubain":50,"Machins":5}
