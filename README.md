@@ -1,6 +1,5 @@
 # Return on Therenor
 Un jeu en 3 dimensions crée par Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora et Etienne Pacault pour les trophées NSI 2025.
-<img src="sources/icon.ico" alt="Logo" title="Logo"/>
 # 1- Résumé
 Après avoir triomphé de Zmeyevick, le protagoniste de <b>The legend of Therenor</b> a pris une retraite bien méritée.
 Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifier le héros désormais bien faible pour ressusciter l'hydre.
