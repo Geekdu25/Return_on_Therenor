@@ -150,6 +150,31 @@ class SetLevel(FSM):
 		base.win.setCloseRequestEvent("escape")
 
 
+	def genere_liste_defilement(self):
+		"""
+		Fonction permettant de renvoyer une liste de défilement.
+		--------------------------------------------------------
+		return -> DirectScrolledList
+		"""
+		a = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 4,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
+		return a
+
 	#---------------Fonctions de manipulation de la GUI------------------------------
 	def load_gui(self):
 		"""
@@ -355,23 +380,7 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Interagir"])
 		self.ignore("escape")
 		self.accept("escape", self.exit_vente)
-		self.articles = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
+		self.articles = self.genere_liste_defilement()
 		for article in articles:
 			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
 			self.articles.addItem(bouton)
@@ -1271,17 +1280,8 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		if map == "arene.glb":
-			fummee.setColor(0, 0.8, 0)
-			fummee.setExpDensity(0.05)
-			lumiere2 = PointLight("dlight")
-			lumiere2.setColor((0.2, 500000, 0.2, 1.5))
-			lumiere2_np = render.attachNewNode(lumiere2)
-			lumiere2_np.setPos(lumiere2_np, 0, 0, 1000)
-			render.setLight(lumiere2_np)
-		else:
-			fummee.setColor(0.5, 0.5, 0.55)
-			fummee.setExpDensity(0.02)	
+		fummee.setColor(0.5, 0.5, 0.6)
+		fummee.setExpDensity(0.02)	
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1345,7 +1345,7 @@ class SetLevel(FSM):
 			self.portails[portail] = solid
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			noeud_np.show() #Décommentez pour voir les portes et les portails.
+			#noeud_np.show() #Décommentez pour voir les portes et les portails.
 		#------------------Les pnjs--------------------------------
 		for pnj in data[self.current_map][1]:
 			info = data[self.current_map][1][pnj]
@@ -1789,23 +1789,7 @@ class SetLevel(FSM):
 			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
 			self.accept("arrow_left", self.change_index_invent)
 		taskMgr.add(self.update_invent, "update_invent")
-		self.inventaire_show = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
+		self.inventaire_show = self.genere_liste_defilement()
 		for article in self.player.inventaire:
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
@@ -1838,23 +1822,7 @@ class SetLevel(FSM):
 		return -> None
 		"""	
 		self.OkDialog.cleanup()	
-		self.inventaire_show = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
+		self.inventaire_show = self.genere_liste_defilement()
 		for article in self.player.inventaire:
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
