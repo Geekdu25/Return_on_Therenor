@@ -1926,7 +1926,6 @@ class SetLevel(FSM):
 			self.noai_image.show()
 			self.noai_text.show()
 			self.inventaire_show.show()
-		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		return task.cont
 
 	def exit_inventaire(self):
