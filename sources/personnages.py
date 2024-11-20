@@ -27,9 +27,6 @@ class Player(Actor):
 		self.setHpr(90, 0, 0)
 		self.setScale(70)
 		self.gravite = 0.3
-		self.cache = True
-		if self.cache:
-			self.setAlphaScale(0.5)
 		#---------------Section de gestion des collisions------------------
 		self.col = CollisionNode('player_sphere')
 		self.col.addSolid(CollisionSphere((0, 0, 0.5), 0.65)) 

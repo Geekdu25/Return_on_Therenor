@@ -123,7 +123,7 @@ class SetLevel(FSM):
 		self.player = Player()
 		self.player.reparentTo(render)
 		self.player.hide()
-		self.current_map = "village_pecheurs_maison_heros.glb"
+		self.current_map = "village_pecheurs_maison_heros.bam"
 		self.texts = ["It's a secret to everybody."]
 		self.text_index = 0
 		self.letter_index = 0
@@ -149,31 +149,6 @@ class SetLevel(FSM):
 		self.accept("escape", self.all_close)
 		base.win.setCloseRequestEvent("escape")
 
-
-	def genere_liste_defilement(self):
-		"""
-		Fonction permettant de renvoyer une liste de défilement.
-		--------------------------------------------------------
-		return -> DirectScrolledList
-		"""
-		a = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 4,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
-		return a
 
 	#---------------Fonctions de manipulation de la GUI------------------------------
 	def load_gui(self):
@@ -355,12 +330,12 @@ class SetLevel(FSM):
 			if clickedYes:
 				self.transition.fadeOut(1)
 				taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(-1000, 650, 50)])
-				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["Marelys.glb"])
+				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["Marelys.bam"])
 		elif self.actual_trigger == 1: #Voulez-vous vous rendre au village des pêcheurs ?
 			if clickedYes:
 				self.transition.fadeOut(1)
 				taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
-				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.glb"])		
+				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])		
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")			
 	
@@ -380,7 +355,23 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Interagir"])
 		self.ignore("escape")
 		self.accept("escape", self.exit_vente)
-		self.articles = self.genere_liste_defilement()
+		self.articles = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 7,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
 		for article in articles:
 			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
 			self.articles.addItem(bouton)
@@ -1234,7 +1225,7 @@ class SetLevel(FSM):
 			self.chaptre = 2
 			
 	#-------------Fonction de chargement de map--------------------------------
-	def load_map(self, map="village_pecheurs_maison_heros.glb", task=None):
+	def load_map(self, map="village_pecheurs_maison_heros.bam", task=None):
 		"""
 		Fonction qui nous permet de charger une map
 		-------------------------------------------
@@ -1280,8 +1271,17 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		fummee.setColor(0.5, 0.5, 0.6)
-		fummee.setExpDensity(0.02)	
+		if map == "arene.bam":
+			fummee.setColor(0, 0.8, 0)
+			fummee.setExpDensity(0.05)
+			lumiere2 = PointLight("dlight")
+			lumiere2.setColor((0.2, 500000, 0.2, 1.5))
+			lumiere2_np = render.attachNewNode(lumiere2)
+			lumiere2_np.setPos(lumiere2_np, 0, 0, 1000)
+			render.setLight(lumiere2_np)
+		else:
+			fummee.setColor(0.5, 0.5, 0.55)
+			fummee.setExpDensity(0.1)	
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1300,7 +1300,7 @@ class SetLevel(FSM):
 			for object in data[self.current_map]:
 				if object == "lit.bam":
 					objet = Lit()
-				elif object == "bateau.glb":
+				elif object == "bateau.bam":
 					objet = Bateau()		
 				objet.object.reparentTo(render)
 				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
@@ -1365,7 +1365,7 @@ class SetLevel(FSM):
 		self.map.setScale(data[self.current_map][4])
 		#-----------------Eau--------------------------------------
 		if data[self.current_map][5] == "Vrai" and not hasattr(self, "eau"):
-			self.eau = loader.loadModel("eau.glb")
+			self.eau = loader.loadModel("eau.bam")
 			self.eau.reparentTo(render)
 			self.eau.setScale(3)
 			self.eau.setSx(10000)
@@ -1425,7 +1425,7 @@ class SetLevel(FSM):
 			return Magicien() 
 		return PNJ()
 		
-	def load_triggers(self, map="village_pecheurs_maison_heros.glb"):
+	def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
 		"""
 		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
 		C'est à dire les collisions "scénaristiques".
@@ -1439,11 +1439,11 @@ class SetLevel(FSM):
 		self.triggers = []
 		temp = []
 		self.actual_trigger = None
-		if map == "village_pecheurs.glb":
+		if map == "village_pecheurs.bam":
 			trigger = CollisionNode("0")
 			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100))
 			temp.append(trigger) 
-		elif map == "Marelys.glb":
+		elif map == "Marelys.bam":
 			trigger = CollisionNode("1")
 			trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
 			temp.append(trigger)
@@ -1483,11 +1483,11 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		if self.current_point == "1":
-			self.current_map = "village_pecheurs_maison_heros.glb"
+			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
 		#------------Par défaut, le joueur se retrouve chez lui-------------	
 		else:
-			self.current_map = "village_pecheurs_maison_heros.glb"
+			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
 		if task != None:
 			return task.done
@@ -1789,7 +1789,23 @@ class SetLevel(FSM):
 			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
 			self.accept("arrow_left", self.change_index_invent)
 		taskMgr.add(self.update_invent, "update_invent")
-		self.inventaire_show = self.genere_liste_defilement()
+		self.inventaire_show = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 7,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
 		for article in self.player.inventaire:
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
@@ -1822,7 +1838,23 @@ class SetLevel(FSM):
 		return -> None
 		"""	
 		self.OkDialog.cleanup()	
-		self.inventaire_show = self.genere_liste_defilement()
+		self.inventaire_show = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 7,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
 		for article in self.player.inventaire:
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
@@ -1835,9 +1867,9 @@ class SetLevel(FSM):
 		-----------------------------------------------------------------------
 		return -> Vec3
 		"""
-		if self.current_map == "village_pecheurs.glb" or self.current_map == "village_pecheurs_maison_chef.glb" or self.current_map == "village_pecheurs_maison_heros.glb":
+		if self.current_map == "village_pecheurs.bam" or self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam":
 			return	Vec3(0.6, 0, 0), "Village des pêcheurs"
-		elif self.current_map == "Marelys.glb":
+		elif self.current_map == "Marelys.bam":
 			return Vec3(0.2, 0, 0), "Marelys, région océanique"	
 		return Vec3(0, 0, 0), "???"
 
@@ -1894,6 +1926,7 @@ class SetLevel(FSM):
 			self.noai_image.show()
 			self.noai_text.show()
 			self.inventaire_show.show()
+		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		return task.cont
 
 	def exit_inventaire(self):
@@ -2070,7 +2103,7 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.player.noais = 0
 			self.player.sexe = "masculin"
-			self.current_map = "village_pecheurs_maison_heros.glb"
+			self.current_map = "village_pecheurs_maison_heros.bam"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
 		file.writelines([donnee +"|" for donnee in info])
