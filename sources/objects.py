@@ -29,7 +29,7 @@ class Bateau():
 		----------------------
 		return -> Bateau
 		"""
-		self.object = loader.loadModel("bateau.glb")
+		self.object = loader.loadModel("bateau.bam")
 		self.object.setScale(30)
 		self.col = CollisionNode("bateau")
 		self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
