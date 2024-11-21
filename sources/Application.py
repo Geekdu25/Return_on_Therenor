@@ -339,6 +339,32 @@ class SetLevel(FSM):
 				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")
+		
+	def genere_liste_defilement(self):
+		"""
+		Méthode permettant de générer une liste de défilement, ce qui est utile pour la vente et l'inventaire.
+		------------------------------------------------------------------------------------------------------
+		return -> DirectScrolledList
+		"""	
+		a = DirectScrolledList(
+		decButton_pos=(0, 0, 0.7),
+		decButton_text="+",
+		decButton_text_scale=0.07,
+		decButton_borderWidth=(0.005, 0.005),
+		incButton_pos=(0, 0, -0.7),
+		incButton_text="-",
+		incButton_text_scale=0.07,
+		incButton_borderWidth=(0.005, 0.005),
+		frameSize=(-0.7, 0.7, -0.8, 0.8),
+		frameColor=(0.1, 0.1, 0.1, 0.8),
+		pos=(0, 0, 0),
+		items=[],
+		numItemsVisible = 7,
+		forceHeight = 0.15,
+		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+		itemFrame_pos=(0, 0, 0))
+		return a
+		
 
 	def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
 		"""
@@ -356,23 +382,7 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Interagir"])
 		self.ignore("escape")
 		self.accept("escape", self.exit_vente)
-		self.articles = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
+		self.articles = self.genere_liste_defilement()
 		for article in articles:
 			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
 			self.articles.addItem(bouton)
@@ -1790,23 +1800,7 @@ class SetLevel(FSM):
 			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
 			self.accept("arrow_left", self.change_index_invent)
 		taskMgr.add(self.update_invent, "update_invent")
-		self.inventaire_show = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
+		self.inventaire_show = self.genere_liste_defilement()
 		for article in self.player.inventaire:
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
