@@ -48,6 +48,7 @@ class Portail(CollisionBox):
 		self.newpos = newpos
 		self.setTangible(False) #On peut traverser un portail
 
+
 class Porte(CollisionBox):
 	"""
 	Contrairement à un portail, une porte doit être ouverte par le joueur en appuyant sur espace pour le téléporter.
@@ -168,14 +169,14 @@ class SetLevel(FSM):
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_vides.append(a)
 			x += 0.12
-		#-------------------------Les coeurs pleins---------------------------------	
+		#-------------------------Les coeurs pleins---------------------------------
 		x = -1.2
 		for loop in range(10):
 			a = OnscreenImage("vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
 			a.setTransparency(TransparencyAttrib.MAlpha)
 			self.coeurs_pleins.append(a)
 			x += 0.12
-		#--------------------Les coeurs à moitié pleins-------------------------------------	
+		#--------------------Les coeurs à moitié pleins-------------------------------------
 		x = -1.2
 		for loop in range(10):
 			a = OnscreenImage("vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
@@ -220,28 +221,28 @@ class SetLevel(FSM):
 		if platform.system() == "Windows":
 			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
 				self.augustins = True
-		self.langue = "francais"		
+		self.langue = "francais"
 		path = self.get_path()
 		#----------Création du dossier---------------------------
 		if not os.path.exists(path):
 			os.mkdir(path)
-		#-----------------Création des 3 fichiers individuels----------------	
+		#-----------------Création des 3 fichiers individuels----------------
 		for loop in range(3):
 			if not os.path.exists(path+f"/save_{loop+1}.txt"):
 				file = open(path+f"/save_{loop+1}.txt", "wt")
 				file.writelines(["_|0|1|3|3"])
 				file.close()
-		#--------------Création du fichier de mappage de touches-------------------------------		
+		#--------------Création du fichier de mappage de touches-------------------------------
 		if not os.path.exists(path+"/keys.json"):
 			file = open(path+"/keys.json", "wt")
 			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
 			file.close()
-		#----------------Création du fichier pour enregistrer les vriables communes à tous les joueurs (ex : langue)---------------------	
+		#----------------Création du fichier pour enregistrer les vriables communes à tous les joueurs (ex : langue)---------------------
 		if not os.path.exists(path+"/global.txt"):
 			self.save_global(reset=True)
-		#On lit ce fichier pour mettre à jour toutes les variables.	
+		#On lit ce fichier pour mettre à jour toutes les variables.
 		self.read_global()
-		
+
 	def read_global(self):
 		"""
 		Méthode de lecture du fichier contenant les variables globales.
@@ -254,8 +255,8 @@ class SetLevel(FSM):
 			i += 1
 			if i == 1:
 				self.langue = machin
-		file.close()			
-		
+		file.close()
+
 	def save_global(self, reset=False):
 		"""
 		Méthode pour enregistrer le fichier de sauvegarde commun aux différents joueurs.
@@ -269,8 +270,8 @@ class SetLevel(FSM):
 		info = [self.langue]
 		file.writelines([donnee +"|" for donnee in info])
 		file.close()
-			
-		
+
+
 	def check_interact(self):
 		"""
 		Fonction appelée chaque fois que le joueur appuie sur espace.
@@ -290,7 +291,7 @@ class SetLevel(FSM):
 					self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
 				elif self.pnjs[self.current_pnj].commercant:
 					self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
-					self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])	
+					self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
 		if self.current_porte is not None:
 			self.transition.fadeOut(0.5)
 			taskMgr.remove("update")
@@ -319,7 +320,7 @@ class SetLevel(FSM):
 			self.ignore("escape")
 			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
 			self.ignore("out")
-			
+
 	def accept_trigger(self, clickedYes):
 		self.triggerDlg.cleanup()
 		properties = WindowProperties()
@@ -335,17 +336,17 @@ class SetLevel(FSM):
 			if clickedYes:
 				self.transition.fadeOut(1)
 				taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
-				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])		
+				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
 		self.accept("escape", self.confirm_quit)
-		taskMgr.add(self.update, "update")			
-	
+		taskMgr.add(self.update, "update")
+
 	def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
 		"""
 		Fonction qui s'active lorsqu'un pnj commercant est interrogé.
 		---------------------------------------------------------------
 		articles -> dict
 		return -> None
-		"""	
+		"""
 		self.d_actif = False
 		self.hide_gui()
 		taskMgr.add(self.update_vente, "update vente")
@@ -375,14 +376,14 @@ class SetLevel(FSM):
 		for article in articles:
 			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
 			self.articles.addItem(bouton)
-		
+
 	def add_article(self, article="Vodka", prix=30):
 		"""
 		Méthode permettant d'ajouter à l'inventaire du joueur un article acheté.
 		-------------------------------------------------------------------------
 		article -> str
 		return -> None
-		"""	
+		"""
 		if not self.d_actif:
 			self.d_actif = True
 			if self.player.noais >= prix:
@@ -391,19 +392,19 @@ class SetLevel(FSM):
 				self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
 			else:
 				self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
-				
-	
+
+
 	def cleanup_dialog_vente(self, inutile):
-		self.dialog.cleanup()			
+		self.dialog.cleanup()
 		self.d_actif = False
-		
-		
+
+
 	def exit_vente(self):
 		"""
 		Méthode s'activant quand la transaction avec un pnj est finie.
 		----------------------------------------------------------------
 		return -> None
-		"""	
+		"""
 		if not self.d_actif:
 			properties = WindowProperties()
 			properties.setCursorHidden(True)
@@ -416,7 +417,7 @@ class SetLevel(FSM):
 			self.accept("into", self.into)
 			self.accept("out", self.out)
 			self.current_pnj = None
-		
+
 	def update_vente(self, task=None):
 		"""
 		Méthode permettant de mettre à jour la vente.
@@ -424,16 +425,16 @@ class SetLevel(FSM):
 		task -> task
 		return -> task.cont
 		"""
-		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")		
-		return task.cont	
-		
-		
+		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
+		return task.cont
+
+
 	def reupdate(self):
 		"""
 		Méthode permettant de réactiver la méthode update.
 		----------------------------------------------------
 		return -> None
-		"""	
+		"""
 		taskMgr.remove("update vente")
 		taskMgr.add(self.update, "update")
 		self.accept("out", self.out)
@@ -504,10 +505,10 @@ class SetLevel(FSM):
 					if truc.endswith(".ogg"):
 						self.sons_messages.append(f"../data/sounds/dialogues/{numero}/"+truc)
 					if len(self.sons_messages) == len(self.story[str(numero)]):
-						break	
+						break
 				if len(self.sons_messages) < len(self.story[str(numero)]):
 					while len(self.sons_messages) < len(self.story[str(numero)]):
-						self.sons_messages.append("../data/sounds/dialogues/blank.ogg")	
+						self.sons_messages.append("../data/sounds/dialogues/blank.ogg")
 			self.messages = messages
 			#-------------Partie de chargement des fichiers audios de dialogue------------
 			if len(self.sons_messages) > 0:
@@ -584,7 +585,7 @@ class SetLevel(FSM):
 				return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
 		else:
 			return f"/home/{os.getlogin()}/.Therenor"
-			
+
 	#---------------------------Ecran titre--------------------------------
 	def enterMenu(self):
 		"""
@@ -749,7 +750,7 @@ class SetLevel(FSM):
 		self.read(file=file)
 		with open("../data/json/texts.json", encoding="utf-8") as texts:
 			self.story = json.load(texts)
-		self.story = self.story[self.langue]	
+		self.story = self.story[self.langue]
 		#--------------Initialisation-----------------
 		if self.chapitre == 0:
 			self.request("Init")
@@ -800,9 +801,9 @@ class SetLevel(FSM):
 			self.exit_button.setText("Retour")
 		elif self.langue == "deutsch":
 			self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
-			self.exit_button.setText("Zurück")	
+			self.exit_button.setText("Zurück")
 
-	
+
 	def exitLanguage(self):
 		"""
 		Fonction qui s'active lorsque l'on quitte l'état pour changer de langue.
@@ -820,7 +821,7 @@ class SetLevel(FSM):
 		del self.menu
 		self.exit_button.removeNode()
 		del self.exit_button
-		
+
 	#-------------------------------Gestion du mappage de touches--------------------------------------------------
 	def enterMapping(self):
 		"""
@@ -1081,11 +1082,11 @@ class SetLevel(FSM):
 		if self.gender[0]:
 			self.player.sexe = "feminin"
 		else:
-			self.player.sexe = "masculin"	
+			self.player.sexe = "masculin"
 		del self.gender
 		for btn in self.genderRdos:
 			btn.removeNode()
-		del self.genderRdos	
+		del self.genderRdos
 		self.music.stop()
 		self.chapitre = 1
 
@@ -1114,7 +1115,7 @@ class SetLevel(FSM):
 			self.nameEnt.removeNode()
 			del self.nameEnt
 			self.request("Cinematique")
-			
+
 	#-------------------------------Introduction avec la légende--------------------------------------
 	def enterCinematique(self):
 		"""
@@ -1209,7 +1210,7 @@ class SetLevel(FSM):
 		"""
 		for light in self.actuals_light:
 			render.clearLight(light)
-			light.removeNode()	
+			light.removeNode()
 		del self.actuals_light
 		taskMgr.remove("update_cinematique")
 		self.ignore("Fini")
@@ -1223,7 +1224,7 @@ class SetLevel(FSM):
 			self.player.setScale(70)
 			self.music.stop()
 			self.chaptre = 2
-			
+
 	#-------------Fonction de chargement de map--------------------------------
 	def load_map(self, map="village_pecheurs_maison_heros.bam", task=None):
 		"""
@@ -1281,7 +1282,7 @@ class SetLevel(FSM):
 			render.setLight(lumiere2_np)
 		else:
 			fummee.setColor(0.5, 0.5, 0.55)
-			fummee.setExpDensity(0.1)	
+			fummee.setExpDensity(0.1)
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1301,7 +1302,7 @@ class SetLevel(FSM):
 				if object == "lit.bam":
 					objet = Lit()
 				elif object == "bateau.bam":
-					objet = Bateau()		
+					objet = Bateau()
 				objet.object.reparentTo(render)
 				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
 				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
@@ -1312,15 +1313,15 @@ class SetLevel(FSM):
 		pnj_file.close()
 		#-----Section de gestion de la musique------
 		if not hasattr(self, "music_name"):
-			self.music_name = data[self.current_map][0]			
+			self.music_name = data[self.current_map][0]
 			self.music = base.loader.loadSfx(data[self.current_map][0])
 			self.music.setLoop(True)
 			self.music.play()
 		if self.music is not None and self.music_name != data[self.current_map][0]:
 			self.music.stop()
 			self.music = None
-		if self.music_name != data[self.current_map][0]:	
-			self.music_name = data[self.current_map][0]			
+		if self.music_name != data[self.current_map][0]:
+			self.music_name = data[self.current_map][0]
 			self.music = base.loader.loadSfx(data[self.current_map][0])
 			self.music.setLoop(True)
 			self.music.play()
@@ -1330,9 +1331,9 @@ class SetLevel(FSM):
 		if not self.player.followcam.active:
 			self.player.followcam.set_active(True)
 		self.player.followcam.dummy.setHpr(180, 0, 0)
-		self.player.followcam.camera.setHpr(0, 0, 0)	
-		self.player.followcam.camera.setPos(0, 0, 0)	
-		self.player.followcam.camera.setPos(0, -2, 0)	
+		self.player.followcam.camera.setHpr(0, 0, 0)
+		self.player.followcam.camera.setPos(0, 0, 0)
+		self.player.followcam.camera.setPos(0, -2, 0)
 		#----------Les portes-----------------------
 		for portail in data[self.current_map][2]:
 			noeud = CollisionNode(portail)
@@ -1375,8 +1376,8 @@ class SetLevel(FSM):
 			if hasattr(self, "eau"):
 				self.eau.removeNode()
 				del self.eau
-		#--------------------Les murs (invisibles)-------------------------		
-		i = 0		
+		#--------------------Les murs (invisibles)-------------------------
+		i = 0
 		for mur in data[self.current_map][6]:
 			i += 1
 			noeud = CollisionNode("mur"+str(i))
@@ -1384,8 +1385,8 @@ class SetLevel(FSM):
 			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les murs.	
-			self.murs.append(noeud_np)	
+			#noeud_np.show() #Décommentez pour voir les murs.
+			self.murs.append(noeud_np)
 		del data, i
 		#------------Mode debug------------------------
 		if self.debug:
@@ -1422,9 +1423,9 @@ class SetLevel(FSM):
 		return -> PNJ (ou classe qui en hérite)
 		"""
 		if pnj == "magicien":
-			return Magicien() 
+			return Magicien()
 		return PNJ()
-		
+
 	def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
 		"""
 		Fonction dans laquelle on rentre toutes les instructions sur nos triggers.
@@ -1442,12 +1443,12 @@ class SetLevel(FSM):
 		if map == "village_pecheurs.bam":
 			trigger = CollisionNode("0")
 			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100))
-			temp.append(trigger) 
+			temp.append(trigger)
 		elif map == "Marelys.bam":
 			trigger = CollisionNode("1")
 			trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
 			temp.append(trigger)
-		for trigger in temp:	
+		for trigger in temp:
 			trigger.setFromCollideMask(BitMask32.allOff())
 			trigger.setIntoCollideMask(BitMask32.bit(0))
 			trigger_chemin_de_noeud = render.attachNewNode(trigger)
@@ -1485,7 +1486,7 @@ class SetLevel(FSM):
 		if self.current_point == "1":
 			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
-		#------------Par défaut, le joueur se retrouve chez lui-------------	
+		#------------Par défaut, le joueur se retrouve chez lui-------------
 		else:
 			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
@@ -1522,7 +1523,7 @@ class SetLevel(FSM):
 					self.actual_trigger = b
 			#--------------Si on touche une statue de sauvegarde----------------------------------
 			elif b in self.save_statues:
-				self.actual_statue = b		
+				self.actual_statue = b
 
 
 	def change_vitesse(self, touche="b"):
@@ -1556,7 +1557,7 @@ class SetLevel(FSM):
 			elif b in self.save_statues:
 				self.actual_statue = None
 			elif b.isdigit():
-				self.actual_trigger = None	
+				self.actual_trigger = None
 
 	def touche_pave(self, message="arrow_up"):
 		"""
@@ -1708,7 +1709,7 @@ class SetLevel(FSM):
 			self.save_statues[statue].clearSolids()
 		if hasattr(self, "eau"):
 			self.eau.removeNode()
-			del self.eau	
+			del self.eau
 		self.save_statues = {}
 		self.antimur.clearInPatterns()
 		self.antimur.clearOutPatterns()
@@ -1744,7 +1745,7 @@ class SetLevel(FSM):
 
 	def quit_confirm(self, clickedYes):
 		"""
-		Fonction qui se met en marche une fois que le joueur 
+		Fonction qui se met en marche une fois que le joueur
 		a répondu à la boîte de dialogue pour quitter le jeu.
 		-----------------------------------------------------
 		clickedYes -> bool
@@ -1762,7 +1763,7 @@ class SetLevel(FSM):
 			self.accept("escape", self.confirm_quit)
 			self.accept(self.keys_data["Inventaire"], self.inventaire)
 
-		
+
 	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
 	def inventaire(self):
 		"""
@@ -1827,17 +1828,17 @@ class SetLevel(FSM):
 			if self.player.vies + 3 > self.player.maxvies:
 				self.player.vies = self.player.maxvies
 			else:
-				self.player.vies += 3	
-				
-			
+				self.player.vies += 3
+
+
 	def inutile(self, inutile=None):
 		"""
 		Fonction qui permet d'effacer le diaogue ok.
 		--------------------------------------------
 		inutile -> bool
 		return -> None
-		"""	
-		self.OkDialog.cleanup()	
+		"""
+		self.OkDialog.cleanup()
 		self.inventaire_show = DirectScrolledList(
 		decButton_pos=(0, 0, 0.7),
 		decButton_text="+",
@@ -1859,8 +1860,8 @@ class SetLevel(FSM):
 			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
 			self.inventaire_show.addItem(bouton)
 		taskMgr.add(self.update_invent, "update_invent")
-		
-		
+
+
 	def get_pos_croix(self):
 		"""
 		Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
@@ -1870,7 +1871,7 @@ class SetLevel(FSM):
 		if self.current_map == "village_pecheurs.bam" or self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam":
 			return	Vec3(0.6, 0, 0), "Village des pêcheurs"
 		elif self.current_map == "Marelys.bam":
-			return Vec3(0.2, 0, 0), "Marelys, région océanique"	
+			return Vec3(0.2, 0, 0), "Marelys, région océanique"
 		return Vec3(0, 0, 0), "???"
 
 	def change_index_invent(self, dir="left"):
@@ -1897,7 +1898,7 @@ class SetLevel(FSM):
 		else:
 			properties = WindowProperties()
 			properties.setCursorHidden(True)
-			base.win.requestProperties(properties)			
+			base.win.requestProperties(properties)
 
 	def update_invent(self, task):
 		"""
@@ -1926,7 +1927,6 @@ class SetLevel(FSM):
 			self.noai_image.show()
 			self.noai_text.show()
 			self.inventaire_show.show()
-		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
 		return task.cont
 
 	def exit_inventaire(self):
@@ -1984,7 +1984,7 @@ class SetLevel(FSM):
 				c = (1, 1, 1, 1)
 				y -= 0.25
 			self.texts_gen.append(OnscreenText(text[0], pos=(0, y), scale=s , fg=(c)))
-		self.texts_gen.append(OnscreenText("Fin", pos=(0, y-0.5), scale=(0.2, 0.2, 0.2), fg=(1, 1, 1, 1)))	
+		self.texts_gen.append(OnscreenText("Fin", pos=(0, y-0.5), scale=(0.2, 0.2, 0.2), fg=(1, 1, 1, 1)))
 		taskMgr.add(self.update_generique, "update generique")
 
 	def exitGenerique(self):
@@ -2080,7 +2080,7 @@ class SetLevel(FSM):
 
 	def apparaitre_render(self, task):
 		"""
-		Fonction qui permet de masquer les textes 
+		Fonction qui permet de masquer les textes
 		de game over et faire apparaître le rendu
 		------------------------------------------
 		task -> task
@@ -2159,7 +2159,7 @@ class SetLevel(FSM):
 			elif i == 6:
 				self.player.noais = int(truc)
 			elif i == 7:
-				self.player.sexe = truc			
+				self.player.sexe = truc
 		fichier.close()
 
 	def wait_for_gamepad(self, task):
