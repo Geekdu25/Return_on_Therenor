@@ -1,3 +1,11 @@
+"""
+Fichier tiré d'un exemple de Panda3D illustrant le paramétrage des touches par le joueur.
+Nous n'avons pas codé ce programme, mais nous l'avons en partie modifié, c'est pourquoi nous
+citons ses auteurs.
+---------------------------------------------------------------------------------------------
+Rendez-vous sur : https://docs.panda3d.org/1.10/python/more-resources/samples/gamepad
+"""
+
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import *
 from panda3d.core import *

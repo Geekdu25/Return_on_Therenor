@@ -4,6 +4,7 @@ from FollowCam import *
 import os
 from direct.interval.IntervalGlobal import *
 
+#-------------------------Le joueur----------------------------------------------
 class Player(Actor):
 	"""
 	Classe gérant le joueur.
@@ -51,7 +52,7 @@ class Player(Actor):
 		"""
 		self.followcam = ManetteCam(base.cam, self)
 		
-		
+#-------------------------------Les pnjs---------------------------------------		
 class PNJ(Actor):
 	"""
 	Classe nous servant de base pour tous les pnjs du jeu.
@@ -73,6 +74,8 @@ class PNJ(Actor):
 		self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
 		self.col.setIntoCollideMask(BitMask32.bit(0)) 
 		self.col_np = self.attachNewNode(self.col)
+
+#-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):
 	def __init__(self):

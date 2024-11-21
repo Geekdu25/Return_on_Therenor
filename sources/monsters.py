@@ -5,6 +5,7 @@ import os
 Fichier qui va gérer toutes les stats des monstres
 """
 
+#--------------------------Classe de base-----------------------------------------
 class Monster(Actor):
 	"""
 	Classe d'un monstre on ne peut plus basique.
@@ -30,7 +31,8 @@ class Monster(Actor):
 		self.col.setIntoCollideMask(BitMask32.bit(0)) 
 		self.col_np = self.attachNewNode(self.col)
 		self.vies = vies
-		
+
+#------------------------------Tous les monstres-------------------------------		
 class Slime(Monster):
 	def __init__(self):
 		Monster.__init__(self)	

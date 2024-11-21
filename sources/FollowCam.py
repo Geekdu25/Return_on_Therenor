@@ -13,7 +13,10 @@ class ManetteCam():
 		self.active = True
 		self.vue = True
 		camera.node().getLens().setFov(100)
-		self.camera_col_node = CollisionNode("Camera_collision")
+		#Toute cette partie du code concerne la gestion de collision de la caméra.
+		#Cette section est toutefois à l'abandon pour le moment.
+		#Cela permettrait notamment d'éviter au joueur de regarder dehors.
+		"""self.camera_col_node = CollisionNode("Camera_collision")
 		self.camera_col_node.addSolid(CollisionSphere((0, 0.2, 0), 0.75))
 		self.camera_col_node.setFromCollideMask(BitMask32.bit(0))
 		self.camera_col_node.setIntoCollideMask(BitMask32.allOff()) 
@@ -25,7 +28,7 @@ class ManetteCam():
 		base.accept("dedans", self.into)
 		base.accept("dehors", self.out)
 		base.accept("encore", self.again)
-		base.cTrav.addCollider(self.camera_col_np, self.camera_col_manager)
+		base.cTrav.addCollider(self.camera_col_np, self.camera_col_manager)"""
 		taskMgr.add(self.update_camera, "updateCamera")
 		
 	def change_vue(self):
