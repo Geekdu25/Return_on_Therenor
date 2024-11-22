@@ -352,6 +352,7 @@ class SetLevel(FSM):
 		self.ignore(self.keys_data["Interagir"])
 		self.ignore("escape")
 		self.accept("escape", self.exit_vente)
+		self.ignore(self.keys_data["Inventaire"])
 		self.articles = self.genere_liste_defilement()
 		for article in articles:
 			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
@@ -398,6 +399,7 @@ class SetLevel(FSM):
 			taskMgr.add(self.update, "update")
 			self.ignore("escape")
 			self.accept("escape", self.confirm_quit)
+			self.accept(self.keys_data["Inventaire"], self.inventaire)
 			self.accept(self.keys_data["Interagir"], self.check_interact)
 			self.articles.removeNode()
 			self.accept("into", self.into)
