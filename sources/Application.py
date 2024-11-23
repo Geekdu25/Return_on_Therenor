@@ -17,7 +17,7 @@ from monsters import *
 from objects import *
 from mappingGUI import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
-import os, sys, json, platform, random
+import os, sys, json, platform, random, time
 
 
 #----------------------------Création de certaines classes dont nous aurons besoin (en particulier des solide de collisions.)--------------------------
@@ -298,7 +298,7 @@ class SetLevel(FSM):
 				self.ignore(self.keys_data[event])
 			self.ignore("into")
 			self.ignore("out")
-			taskMgr.doMethodLater(0.45, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
+			taskMgr.doMethodLater(0.48, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
 			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
@@ -1246,17 +1246,8 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		if map == "arene.bam":
-			fummee.setColor(0, 0.8, 0)
-			fummee.setExpDensity(0.05)
-			lumiere2 = PointLight("dlight")
-			lumiere2.setColor((0.2, 500000, 0.2, 1.5))
-			lumiere2_np = render.attachNewNode(lumiere2)
-			lumiere2_np.setPos(lumiere2_np, 0, 0, 1000)
-			render.setLight(lumiere2_np)
-		else:
-			fummee.setColor(0.5, 0.5, 0.55)
-			fummee.setExpDensity(0.1)
+		fummee.setColor(0.5, 0.5, 0.55)
+		fummee.setExpDensity(0.1)
 		render.setFog(fummee)
 		#-------------La skybox-----------------
 		if self.skybox is not None:
@@ -1372,20 +1363,8 @@ class SetLevel(FSM):
 		light_np = render.attachNewNode(light)
 		self.actuals_light.append(light_np)
 		render.setLight(light_np)
-		#--------------Attribution des touches à des fonctions-------------------------------
-		self.accept("escape", self.confirm_quit)
-		if not self.manette:
-			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
-			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
-		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
-		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
-		self.accept(self.keys_data["Inventaire"], self.inventaire)
-		self.accept(self.keys_data["Interagir"], self.check_interact)
-		self.accept("into", self.into)
-		self.accept("out", self.out)
-		taskMgr.add(self.update, "update")
 		self.transition.fadeIn(2)
+		self.accept_touches()
 		if task is not None:
 			return task.done
 
@@ -1444,10 +1423,48 @@ class SetLevel(FSM):
 		properties.setCursorHidden(True)
 		base.win.requestProperties(properties)
 		self.load_save()
-		#Petit fade in et on charge la map.
-		self.transition.fadeIn(1)
 		self.load_map(self.current_map)
 
+	def accept_touches(self):
+		"""
+		Méthode permettant d'accepter les évènements liés à des touches.
+		----------------------------------------------------------------
+		return -> None
+		"""
+		self.accept("escape", self.confirm_quit)
+		if not self.manette:
+			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
+		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
+		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
+		self.accept(self.keys_data["Inventaire"], self.inventaire)
+		self.accept(self.keys_data["Interagir"], self.check_interact)
+		self.accept("into", self.into)
+		self.accept("out", self.out)
+		self.accept("mouse1", self.active_epee)
+		taskMgr.remove("update")
+		taskMgr.add(self.update, "update")
+	
+	def ignore_touches(self):
+		"""
+		Méthode permettant d'ignorer les évènements liés à des touches.
+		----------------------------------------------------------------
+		return -> None
+		"""
+		self.ignore("escape")
+		self.ignore(self.keys_data["Avancer"])
+		self.ignore(self.keys_data["Avancer"]+"-up")
+		self.ignore(self.keys_data["Changer le point de vue"])
+		self.ignore(self.keys_data["Courir"])
+		self.ignore(self.keys_data["Courir"]+"-up")
+		self.ignore(self.keys_data["Inventaire"])
+		self.ignore(self.keys_data["Interagir"])
+		self.ignore("into")
+		self.ignore("out")
+		self.ignore("mouse1")
+		taskMgr.remove("update")
+		
 	def load_save(self, task=None):
 		"""
 		Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
@@ -1692,15 +1709,40 @@ class SetLevel(FSM):
 			self.player.setH(self.player, -self.player.vitesse*20*globalClock.getDt())
 		if self.player.left:
 			self.player.setH(self.player, self.player.vitesse*20*globalClock.getDt())
-		#--------------------Sections gestion des vies-----------------------------
+		#--------------------Section gestion des vies-----------------------------
 		if self.player.vies <= 0:
 			self.transition.fadeOut(0.5)
 			taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")
 			return task.done
+		#------------------Section de gestion de l'épée-----------------------------
+		l = []
+		i = 0
+		for sphere in self.player.liste_spheres:
+			for dico in sphere:
+				if time.time() - sphere[dico] > 1:
+					dico.removeNode()
+					l.append(i)
+			i += 1				
+		for indice in l:
+			del self.player.liste_spheres[indice]		
+		del l, i		
 		return task.cont
 
 
-
+	def active_epee(self):
+		"""
+		Méthode qui s'active lorsque le joueur donne un coup d'épée.
+		-------------------------------------------------------------
+		return -> None
+		"""
+		sphere_sword = CollisionNode('sphere_sword')
+		sphere_sword.addSolid(CollisionSphere((self.player.getX(), self.player.getY()+20, self.player.getZ()+30), 10)) 
+		sphere_sword.setFromCollideMask(BitMask32.bit(0))
+		sphere_sword.setIntoCollideMask(BitMask32.allOff()) 
+		sphere_sword_np = render.attachNewNode(sphere_sword)
+		self.player.liste_spheres.append({sphere_sword_np:time.time()})
+		sphere_sword_np.show()
+		
 	#--------------------------Pop-ups----------------------------------------
 	def confirm_quit(self):
 		"""
@@ -1747,19 +1789,10 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		self.player.stop()
-		taskMgr.remove("update")
+		self.ignore_touches()
 		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
 		self.index_invent = 0
-		self.ignore("out")
-		self.ignore("into")
-		self.ignore("escape")
 		self.accept("escape", self.exit_inventaire)
-		self.ignore(self.keys_data["Avancer"])
-		self.ignore(self.keys_data["Avancer"]+"-up")
-		self.ignore(self.keys_data["Changer le point de vue"])
-		self.ignore(self.keys_data["Courir"])
-		self.ignore(self.keys_data["Courir"]+"-up")
-		self.ignore(self.keys_data["Inventaire"])
 		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
 		if not self.manette:
 			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
@@ -1901,17 +1934,7 @@ class SetLevel(FSM):
 		del self.inventaire_show
 		self.music.setVolume(1)
 		taskMgr.remove("update_invent")
-		taskMgr.add(self.update, "update")
-		self.accept("escape", self.confirm_quit)
-		if not self.manette:
-			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
-			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
-		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
-		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
-		self.accept(self.keys_data["Inventaire"], self.inventaire)
-		self.accept("into", self.into)
-		self.accept("out", self.out)
+		self.accept_touches()
 		
 	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
 	def enterGenerique(self):
@@ -2142,14 +2165,14 @@ class SetLevel(FSM):
 		for loop in range(3):
 			if not os.path.exists(path+f"/save_{loop+1}.txt"):
 				file = open(path+f"/save_{loop+1}.txt", "wt")
-				file.writelines(["_|0|1|3|3"])
+				file.writelines(["_|0|1|3|3|0|masculin"])
 				file.close()
 		#--------------Création du fichier de mappage de touches-------------------------------
 		if not os.path.exists(path+"/keys.json"):
 			file = open(path+"/keys.json", "wt")
-			file.writelines(['[{"Avancer":"arrow_up", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"b", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+			file.writelines(['[{"Avancer":"z", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"lshift", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
 			file.close()
-		#----------------Création du fichier pour enregistrer les vriables communes à tous les joueurs (ex : langue)---------------------
+		#----------------Création du fichier pour enregistrer les variables communes à tous les joueurs (ex : langue)---------------------
 		if not os.path.exists(path+"/global.txt"):
 			self.save_global(reset=True)
 		#On lit ce fichier pour mettre à jour toutes les variables.

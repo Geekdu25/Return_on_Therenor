@@ -29,6 +29,7 @@ class Player(Actor):
 		self.setScale(70)
 		self.gravite = 0.3
 		#---------------Section de gestion des collisions------------------
+		self.liste_spheres = []
 		self.col = CollisionNode('player_sphere')
 		self.col.addSolid(CollisionSphere((0, 0, 0.5), 0.65)) 
 		self.col.setFromCollideMask(BitMask32.bit(0))
