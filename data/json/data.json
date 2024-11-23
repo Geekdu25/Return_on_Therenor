@@ -4,12 +4,10 @@
  	"village_pecheurs_port.bam":["porte", [11, -28.5, 25], 2, 4, 9, [-50, 130, 6]],
  	"village_pecheurs_reserve.bam":["porte", [-70, 10, 25], 2, 4, 9, [0, 0, 6]],
  	"village_pecheurs_maison_pote.bam":["porte", [-7.5, 27, 25], 2, 6, 9, [-100, 120, 6]]}, {}, 12, "Vrai", [[[-160, 0, 25], [10, 200, 200]], [[107, 0, 25], [10, 200, 200]], [[0, -110, 25], [200, 10, 200]], [[0, 140, 25], [200, 10, 200]]]],
-"village_pecheurs_maison_heros.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 300, 300]],
-	"arene.bam":["portail", [0, 20, 6], 10, 10, 10, [0, 0, 600]]}, {"save_heros": [0, 15, 3]}, 10, "Faux", []],
+"village_pecheurs_maison_heros.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 300, 300]]}, {"save_heros": [0, 15, 3]}, 10, "Faux", []],
 "village_pecheurs_maison_chef.bam":["Marelys.ogg", {"magicien":[0, 0, 0]}, {"village_pecheurs.bam":["porte", [5, 60, 6], 15, 5, 40, [-400, -35, 300]]}, {}, 3.5, "Faux", []],
 "village_pecheurs_port.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-50, 52, 6], 5, 25, 50, [100, -285, 300]]}, {}, 3, "Faux", []],
 "village_pecheurs_reserve.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [4, 0.3, 0], 0.7, 1, 5, [-600, 20, 300]]}, {}, 35, "Faux", []],
 "village_pecheurs_maison_pote.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-37, 23, 6], 3, 8.5, 15, [-120, 300, 300]]}, {}, 8, "Faux", []],
-"Marelys.bam":["Marelys.ogg", {}, {}, {}, 10, "Vrai", []],
-"arene.bam":["Zmeyevick,_l'antique_terreur_phase_1.ogg", {}, {}, {}, 100, "Faux", []]
+"Marelys.bam":["Marelys.ogg", {}, {}, {}, 10, "Vrai", []]
 }
