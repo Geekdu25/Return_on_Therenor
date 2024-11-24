@@ -1216,6 +1216,9 @@ class SetLevel(FSM):
 			objet.object.removeNode()
 		for mur in self.murs:
 			mur.removeNode()
+		for statue in self.save_statues:
+			self.save_statues[statue][0].removeNode()
+			self.save_statues[statue][1].removeNode()	
 		self.objects = []
 		self.murs = []
 		self.current_pnj = None
@@ -1246,10 +1249,10 @@ class SetLevel(FSM):
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
 		fummee = Fog("Ma fummee")
-		fummee.setColor(0.5, 0.5, 0.55)
-		fummee.setExpDensity(0.1)
+		fummee.setColor(0.5, 0.5, 0.6)
+		fummee.setExpDensity(0.01)
 		render.setFog(fummee)
-		#-------------La skybox-----------------
+		#--------------La skybox----------------------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
 		self.skybox = loader.loadModel("skybox.bam")
@@ -1323,10 +1326,22 @@ class SetLevel(FSM):
         #-------------Les points de sauvegardes------------------------
 		for save in data[self.current_map][3]:
 			noeud = CollisionNode(save)
-			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save]))
-			self.save_statues[save] = noeud
+			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save][0:3]))
 			noeud.setCollideMask(BitMask32.bit(0))
 			noeud_np = self.map.attachNewNode(noeud)
+			#noeud_np.show() #Décommentez pour voir les solides de collision de sauvegardes.
+			model_save = loader.loadModel("save_point.bam")
+			model_save.reparentTo(render)
+			model_save.setPos((data[self.current_map][3][save][0]*data[self.current_map][4], data[self.current_map][3][save][1]*data[self.current_map][4], data[self.current_map][3][save][2]*data[self.current_map][4]))
+			if len(data[self.current_map][3][save]) > 3:
+				if data[self.current_map][3][save][3] == "gauche":
+					model_save.setH(90)
+				elif data[self.current_map][3][save][3] == "devant":
+					model_save.setH(180)
+				else:
+					model_save.setH(270)		
+			model_save.setScale(18.5)			
+			self.save_statues[save] = [noeud_np, model_save]
 		self.load_triggers(map)
 		self.map.setScale(data[self.current_map][4])
 		#-----------------Eau--------------------------------------
@@ -1498,7 +1513,8 @@ class SetLevel(FSM):
 		for objet in self.objects:
 			objet.object.removeNode()
 		for statue in self.save_statues:
-			self.save_statues[statue].clearSolids()
+			self.save_statues[statue][0].removeNode()
+			self.save_statues[statue][1].removeNode()
 		if hasattr(self, "eau"):
 			self.eau.removeNode()
 			del self.eau
@@ -1547,6 +1563,9 @@ class SetLevel(FSM):
 					self.actual_trigger = b
 			elif b in self.save_statues: #Statue de sauvegarde
 				self.actual_statue = b
+		elif c == "sphere_sword":
+			if b in self.pnjs:
+				self.set_text(3)		
 				
 	def out(self, a):
 		"""
@@ -1736,7 +1755,9 @@ class SetLevel(FSM):
 		return -> None
 		"""
 		sphere_sword = CollisionNode('sphere_sword')
-		sphere_sword.addSolid(CollisionSphere((self.player.getX(), self.player.getY()+20, self.player.getZ()+30), 10)) 
+		solid = CollisionSphere((self.player.getX(), self.player.getY(), 50), 70)
+		solid.setTangible(False)
+		sphere_sword.addSolid(solid) 
 		sphere_sword.setFromCollideMask(BitMask32.bit(0))
 		sphere_sword.setIntoCollideMask(BitMask32.allOff()) 
 		sphere_sword_np = render.attachNewNode(sphere_sword)
@@ -2102,6 +2123,8 @@ class SetLevel(FSM):
 		if clickedYes:
 			self.save(file=self.actual_file)
 			self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
+		else:
+			self.reupdate(False)	
 
 	def reupdate(self, inutile):
 		"""
@@ -2113,7 +2136,9 @@ class SetLevel(FSM):
 		properties = WindowProperties()
 		properties.setCursorHidden(True)
 		base.win.requestProperties(properties)
-		self.myOkDialog.cleanup()
+		if hasattr(self, "myOkDialog"):
+			if self.myOkDialog is not None:
+				self.myOkDialog.cleanup()
 		self.accept("escape", self.confirm_quit)
 		taskMgr.add(self.update, "update")
 
