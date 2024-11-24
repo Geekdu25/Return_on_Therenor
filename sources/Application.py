@@ -306,6 +306,7 @@ class SetLevel(FSM):
 			properties.setCursorHidden(False)
 			base.win.requestProperties(properties)
 			self.ignore("escape")
+			self.current_point = self.actual_statue
 			self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save) #Voulez-vous sauvegarder ?
 		if self.actual_trigger is not None:
 			taskMgr.remove("update")
@@ -1487,9 +1488,12 @@ class SetLevel(FSM):
 		task -> task
 		return -> None
 		"""
-		if self.current_point == "1":#Maison du joueur.
+		if self.current_point == "save_heros":#Maison du joueur.
 			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
+		elif self.current_point == "save_village": #Dans le village des pecheurs
+			self.current_map = "village_pecheurs.bam"
+			self.player.setPos(-20, 10, 250)	
 		else:#Le joueur se retrouve chez lui par défaut
 			self.current_map = "village_pecheurs_maison_heros.bam"
 			self.player.setPos(200, -110, 6)
@@ -2107,7 +2111,7 @@ class SetLevel(FSM):
 			self.player.nom = "Link"
 			self.player.noais = 0
 			self.player.sexe = "masculin"
-			self.current_map = "village_pecheurs_maison_heros.bam"
+			self.current_point = "save_heros"
 		file = open(self.get_path()+f"/save_{file}.txt", "wt")
 		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
 		file.writelines([donnee +"|" for donnee in info])
@@ -2190,7 +2194,7 @@ class SetLevel(FSM):
 		for loop in range(3):
 			if not os.path.exists(path+f"/save_{loop+1}.txt"):
 				file = open(path+f"/save_{loop+1}.txt", "wt")
-				file.writelines(["_|0|1|3|3|0|masculin"])
+				file.writelines(["_|0|save_heros|3|3|0|masculin"])
 				file.close()
 		#--------------Création du fichier de mappage de touches-------------------------------
 		if not os.path.exists(path+"/keys.json"):
