@@ -14,3 +14,4 @@ from Application import Application
 
 app = Application()
 app.run()
+#Temporaire : {"village_pecheurs.bam":["porte", [-1.5, -25, 6], 4, 2, 9, [-460, 300, 300]]}
