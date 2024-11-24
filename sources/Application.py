@@ -1249,9 +1249,9 @@ class SetLevel(FSM):
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
-		fummee = Fog("Ma fummee")
-		fummee.setColor(0.5, 0.5, 0.6)
-		fummee.setExpDensity(0.01)
+		fummee = Fog("Brume")
+		fummee.setColor(0.5, 0.5, 0.55)
+		fummee.setExpDensity(0.02)
 		render.setFog(fummee)
 		#--------------La skybox----------------------------
 		if self.skybox is not None:
@@ -1375,7 +1375,7 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière----------------------------
-		light = AmbientLight("a")
+		light = AmbientLight("Lumière ambiante")
 		light_np = render.attachNewNode(light)
 		self.actuals_light.append(light_np)
 		render.setLight(light_np)
@@ -1490,13 +1490,16 @@ class SetLevel(FSM):
 		"""
 		if self.current_point == "save_heros":#Maison du joueur.
 			self.current_map = "village_pecheurs_maison_heros.bam"
-			self.player.setPos(200, -110, 6)
+			self.player.setPos(0, 30, 6)
 		elif self.current_point == "save_village": #Dans le village des pecheurs
 			self.current_map = "village_pecheurs.bam"
-			self.player.setPos(-20, 10, 250)	
+			self.player.setPos(-380, 220, 250)	
+		elif self.current_point == "save_pyramide": #Dans la pyramide
+			self.current_map = "pyramide.bam"
+			self.player.setPos(150, -50, 0)	
 		else:#Le joueur se retrouve chez lui par défaut
 			self.current_map = "village_pecheurs_maison_heros.bam"
-			self.player.setPos(200, -110, 6)
+			self.player.setPos(0, 30, 6)
 		if task != None:
 			return task.done
 			
