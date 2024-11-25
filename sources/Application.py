@@ -1265,17 +1265,20 @@ class SetLevel(FSM):
 		#--------------------Chargement du premier fichier json (objets)---------------
 		objects_file = open("../data/json/objects.json")
 		data = json.load(objects_file)
-		objects_file.close()
+		print(self.current_map)
 		if self.current_map in data:
 			for object in data[self.current_map]:
 				if object == "lit.bam":
 					objet = Lit()
 				elif object == "bateau.bam":
 					objet = Bateau()
+				elif object == "coffre.egg":
+					objet = Coffre()	
 				objet.object.reparentTo(render)
 				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
 				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
 				self.objects.append(objet)
+		objects_file.close()		
 		#--------------------Chargement du deuxième fichier json-------------
 		pnj_file = open("../data/json/data.json")
 		data = json.load(pnj_file)
@@ -1892,6 +1895,8 @@ class SetLevel(FSM):
 			return	Vec3(0.6, 0, 0), "Village des pêcheurs"
 		elif self.current_map == "Marelys.bam":
 			return Vec3(0.2, 0, 0), "Marelys, région océanique"
+		elif self.current_map == "pyramide.bam":
+			return Vec3(0, 0, 0.6), "Pyramide antique"	
 		return Vec3(0, 0, 0), "???"
 
 	def change_index_invent(self, dir="left"):
