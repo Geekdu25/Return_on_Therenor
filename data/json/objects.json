@@ -2,5 +2,6 @@
 "village_pecheurs.bam":{"bateau.bam":[[350, -1600, 150], [180, 0, 0]]},	
 "village_pecheurs_maison_heros.bam":{"lit.bam":[[-290, 120, 10], [270, 0, 0]]},
 "village_pecheurs_maison_chef.bam":{"lit.bam":[[-190, 0, 0], [0, 0, 0]]},
-"Marelys.bam":{"bateau.bam":[[-1000, 1000, -1], [0, 0, 0]]}
+"Marelys.bam":{"bateau.bam":[[-1000, 1000, -1], [0, 0, 0]]},
+"pyramide.bam":{"coffre.egg":[[0, 0, 0], [0, 0, 0]]}}
 }
