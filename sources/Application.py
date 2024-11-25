@@ -135,6 +135,7 @@ class SetLevel(FSM):
 		self.pnjs = {}
 		self.current_porte = None
 		self.actual_trigger = None
+		self.actual_coffre = None
 		base.cTrav = CollisionTraverser() #Le CollisionTraverser, gestionnaire de toutes les collisions.
 		if self.debug:
 			base.cTrav.showCollisions(render)
@@ -316,6 +317,19 @@ class SetLevel(FSM):
 			self.ignore("escape")
 			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
 			self.ignore("out")
+		if self.actual_coffre is not None:
+			taskMgr.remove("update")
+			properties = WindowProperties()
+			properties.setCursorHidden(False)
+			base.win.requestProperties(properties)
+			for objet in self.objects:
+					if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
+						objet.object.play("anim")
+			if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
+				item = "Vodka"
+			self.player.ajoute_item(item)
+			self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)	
+				
 
 	def accept_trigger(self, clickedYes):
 		self.triggerDlg.cleanup()
@@ -370,7 +384,7 @@ class SetLevel(FSM):
 			self.d_actif = True
 			if self.player.noais >= prix:
 				self.player.noais -= prix #On retire de l'argent au joueur $$$$
-				self.player.inventaire.append(article)
+				self.player.inventaire.ajoute_item(article)
 				self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
 			else:
 				self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
@@ -386,6 +400,18 @@ class SetLevel(FSM):
 		self.dialog.cleanup()
 		self.d_actif = False
 
+	def cleanup_dialog_tresor(self, inutile):
+		"""
+		Méthode permettant d'enlever le dialogue de découverte d'un trésor.
+		----------------------------------------------------------------------
+		inutile -> bool
+		return -> None
+		"""
+		self.dialog.cleanup()
+		properties = WindowProperties()
+		properties.setCursorHidden(True)
+		base.win.requestProperties(properties)
+		taskMgr.add(self.update, "update")
 
 	def exit_vente(self):
 		"""
@@ -1265,7 +1291,7 @@ class SetLevel(FSM):
 		#--------------------Chargement du premier fichier json (objets)---------------
 		objects_file = open("../data/json/objects.json")
 		data = json.load(objects_file)
-		print(self.current_map)
+		n_coffre = 0
 		if self.current_map in data:
 			for object in data[self.current_map]:
 				if object == "lit.bam":
@@ -1273,7 +1299,8 @@ class SetLevel(FSM):
 				elif object == "bateau.bam":
 					objet = Bateau()
 				elif object == "coffre.egg":
-					objet = Coffre()	
+					objet = Coffre(n_coffre)
+					n_coffre += 1	
 				objet.object.reparentTo(render)
 				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
 				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
@@ -1573,6 +1600,8 @@ class SetLevel(FSM):
 					self.actual_trigger = b
 			elif b in self.save_statues: #Statue de sauvegarde
 				self.actual_statue = b
+			elif "coffre" in b:
+				self.actual_coffre = b.split("_")[len(b.split("_"))-1]	
 		elif c == "sphere_sword":
 			if b in self.pnjs:
 				self.set_text(3)		
@@ -1596,7 +1625,9 @@ class SetLevel(FSM):
 			elif b in self.save_statues:
 				self.actual_statue = None
 			elif b.isdigit():
-				self.actual_trigger = None			
+				self.actual_trigger = None	
+			elif "coffre" in b:
+				self.actual_coffre = None			
 
 
 	def change_vitesse(self, touche="b"):
@@ -1831,8 +1862,9 @@ class SetLevel(FSM):
 		taskMgr.add(self.update_invent, "update_invent")
 		self.inventaire_show = self.genere_liste_defilement()
 		for article in self.player.inventaire:
-			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
-			self.inventaire_show.addItem(bouton)
+			if self.player.inventaire[article] > 0:
+				bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+				self.inventaire_show.addItem(bouton)
 		self.music.setVolume(0.6)
 		self.croix_image.setPos(self.get_pos_croix()[0])
 		self.lieu_text.setText(self.get_pos_croix()[1])
@@ -1845,7 +1877,7 @@ class SetLevel(FSM):
 		"""
 		taskMgr.remove("update_invent")
 		self.inventaire_show.removeNode()
-		self.player.inventaire.remove(article)
+		self.player.inventaire[article] -= 1
 		if article == "Vodka":
 			self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
 			if self.player.vies + 3 > self.player.maxvies:
@@ -1880,8 +1912,9 @@ class SetLevel(FSM):
 		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
 		itemFrame_pos=(0, 0, 0))
 		for article in self.player.inventaire:
-			bouton = DirectButton(text=article,  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
-			self.inventaire_show.addItem(bouton)
+			if self.player.inventaire[article] > 0:
+				bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+				self.inventaire_show.addItem(bouton)
 		taskMgr.add(self.update_invent, "update_invent")
 
 

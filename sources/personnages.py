@@ -17,7 +17,7 @@ class Player(Actor):
 		self.nom = "Link"
 		self.vies = 3
 		self.maxvies = 3
-		self.inventaire = []
+		self.inventaire = {}
 		self.sexe = "masculin"
 		#--------------------Quelques paramètres simples-----------------------------------
 		self.vitesse = 2.5
@@ -44,7 +44,18 @@ class Player(Actor):
 		return -> None
 		"""
 		self.vies -= degats
-		
+	
+	def ajoute_item(self, item="Vodka"):
+		"""
+		Méthode permettant d'ajouter un item dans l'inventaire.
+		--------------------------------------------------------
+		item -> str
+		return -> None
+		"""	
+		if item in self.inventaire:
+			self.inventaire[item] += 1
+		else:
+			self.inventaire[item] = 1	
 		
 	def create_camera(self):
 		"""

@@ -42,16 +42,18 @@ class Coffre:
 	"""
 	Un coffre avec une animation.
 	"""
-	def __init__(self):
+	def __init__(self, id=0):
 		"""
 		Méthode constructeur.
 		-------------------------
 		return -> Coffre
 		"""
+		self.nom = "coffre"
+		self.id = id
 		self.object = Actor("coffre.egg", {"anim":"coffre-Coffre_ouverture.egg"})
-		self.object.setScale(100)
-		self.col = CollisionNode("coffre")
-		self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
+		self.object.setScale(20)
+		self.col = CollisionNode("coffre_"+str(id))
+		self.col.addSolid(CollisionBox((0, 0, 2), 2, 4, 2))
 		self.col.setFromCollideMask(BitMask32.allOff())
 		self.col.setIntoCollideMask(BitMask32.bit(0)) 
 		self.col_np = self.object.attachNewNode(self.col)
