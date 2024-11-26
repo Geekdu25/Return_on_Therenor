@@ -1131,10 +1131,17 @@ class SetLevel(FSM):
 		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
-			self.music = base.loader.loadSfx("legende.ogg")
-			self.music.setLoop(True)
-			self.music.play()
-			self.set_text(0, ["Fini"])
+			self.verif = False
+			cm = CardMaker("plan")
+			cm.setFrame(-1, 1, -1, 1)
+			self.plane = render2d.attachNewNode(cm.generate())
+			texture = loader.loadTexture("test.mp4")
+			self.son = loader.loadSfx("test.mp4")
+			self.plane.setTexture(texture)
+			self.plane.setTexScale(TextureStage.getDefault(), texture.getTexScale())
+			texture.setLoop(0)
+			texture.synchronizeTo(self.son)
+			self.son.play()
 			self.accept("Fini", self.fade_out, extraArgs=["Map"])
 		#---------------------------Cinématique du magicien----------------------------------
 		elif self.chapitre == 3:
@@ -1182,15 +1189,10 @@ class SetLevel(FSM):
 		"""
 		dt = globalClock.getDt()
 		if self.chapitre == 1:
-			if self.text_index == 8:
-				if not hasattr(self, "image"):
-					self.image = OnscreenImage("la_legende.png", scale=Vec3(1.5, 0, 1), pos=Vec3(0, 0, 0))
-			if self.text_index == 11:
-				if hasattr(self, "image"):
-					self.image.removeNode()
-					del self.image
-			if self.text_index > 11:
-				return task.done
+			if self.son.getTime() > 65 and not self.verif:
+				self.chapitre = 3
+				self.fade_out("Cinematique")
+				self.verif = True
 		elif self.chapitre == 3:
 			if self.text_index	<= 4:
 				if base.cam.getY() < 200:
@@ -1202,7 +1204,8 @@ class SetLevel(FSM):
 				if base.cam.getY() > -100:
 					base.cam.setY(base.cam, dt*25)
 		return task.cont
-
+		
+		
 	def exitCinematique(self):
 		"""
 		Méthode de sortie du state cinématique.
@@ -1216,8 +1219,8 @@ class SetLevel(FSM):
 		taskMgr.remove("update_cinematique")
 		self.ignore("Fini")
 		if self.chapitre == 1:
-			self.music.stop()
-			self.chapitre = 2
+			self.son.stop()
+			self.plane.removeNode()
 		if self.chapitre == 3:
 			self.magicien.delete()
 			del self.magicien
