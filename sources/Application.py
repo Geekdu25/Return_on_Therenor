@@ -1131,54 +1131,66 @@ class SetLevel(FSM):
 		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
-			self.verif = False
+			self.video = True
 			cm = CardMaker("plan")
 			cm.setFrame(-1, 1, -1, 1)
 			self.plane = render2d.attachNewNode(cm.generate())
-			texture = loader.loadTexture("test.mp4")
+			self.texture = loader.loadTexture("test.mp4")
 			self.son = loader.loadSfx("test.mp4")
-			self.plane.setTexture(texture)
-			self.plane.setTexScale(TextureStage.getDefault(), texture.getTexScale())
-			texture.setLoop(0)
-			texture.synchronizeTo(self.son)
+			self.plane.setTexture(self.texture)
+			self.plane.setTexScale(TextureStage.getDefault(), self.texture.getTexScale())
+			self.texture.setLoop(0)
+			self.texture.synchronizeTo(self.son)
 			self.son.play()
-			self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		#---------------------------Cinématique du magicien----------------------------------
-		elif self.chapitre == 3:
-			if hasattr(self.player, "followcam"):
-				self.player.followcam.set_active(False)
-			self.player.show()
-			self.player.setPos(200, -400, 0)
-			self.player.setH(180)
-			self.player.setScale(110)
-			if hasattr(self, "map"):
-				self.map.removeNode()
-			self.move_camera = 0
-			point_light = PointLight("point_light")
-			point_light.setColor((0.85, 0.8, 0.5, 1))
-			point_light_np = render.attachNewNode(point_light)
-			point_light_np.setPos(200, 0, 50)
-			self.actuals_light.append(point_light_np)
-			render.setLight(point_light_np)
-			render.setShaderAuto()
-			self.map = loader.loadModel("salle_du_sacrifice.bam")
-			self.map.reparentTo(render)
-			self.map.setPos(500, 500, 0)
-			self.map.setHpr(270, 0, 0)
-			self.magicien = Magicien()
-			self.magicien.setScale(60)
-			self.magicien.setPos(200, 200, 0)
-			self.magicien.loop("Immobile")
-			self.magicien.reparentTo(render)
-			base.cam.setPos(200, -550, 250)
-			self.music.stop()
-			self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
-			self.music.setLoop(True)
-			self.music.play()
-			self.transition.fadeIn(2)
-			self.set_text(1, ["Fini"])
-			self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		taskMgr.add(self.update_cinematique, "update_cinematique")
+			self.ignore(self.keys_data["Interagir"])
+			self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
+		taskMgr.add(self.update_cinematique, "update cinematique")	
+		
+		
+	def magicien_cine(self, task):
+		"""
+		Méthode permettant de faire apparaître la cinématique du magicien.
+		------------------------------------------------------------------
+		task -> task
+		return -> None
+		"""	
+		self.son.stop()
+		self.plane.removeNode()
+		del self.plane
+		if hasattr(self.player, "followcam"):
+			self.player.followcam.set_active(False)
+		self.player.show()
+		self.player.setPos(200, -400, 0)
+		self.player.setH(180)
+		self.player.setScale(110)
+		if hasattr(self, "map"):
+			self.map.removeNode()
+		self.move_camera = 0
+		point_light = PointLight("point_light")
+		point_light.setColor((0.85, 0.8, 0.5, 1))
+		point_light_np = render.attachNewNode(point_light)
+		point_light_np.setPos(200, 0, 50)
+		self.actuals_light.append(point_light_np)
+		render.setLight(point_light_np)
+		render.setShaderAuto()
+		self.map = loader.loadModel("salle_du_sacrifice.bam")
+		self.map.reparentTo(render)
+		self.map.setPos(500, 500, 0)
+		self.map.setHpr(270, 0, 0)
+		self.magicien = Magicien()
+		self.magicien.setScale(60)
+		self.magicien.setPos(200, 200, 0)
+		self.magicien.loop("Immobile")
+		self.magicien.reparentTo(render)
+		base.cam.setPos(200, -550, 250)
+		self.music.stop()
+		self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+		self.music.setLoop(True)
+		self.music.play()
+		self.transition.fadeIn(2)
+		self.set_text(1, ["Fini"])
+		self.accept("Fini", self.fade_out, extraArgs=["Map"])
+		return task.done
 
 	def update_cinematique(self, task):
 		"""
@@ -1189,20 +1201,22 @@ class SetLevel(FSM):
 		"""
 		dt = globalClock.getDt()
 		if self.chapitre == 1:
-			if self.son.getTime() > 65 and not self.verif:
-				self.chapitre = 3
-				self.fade_out("Cinematique")
-				self.verif = True
-		elif self.chapitre == 3:
-			if self.text_index	<= 4:
-				if base.cam.getY() < 200:
-					base.cam.setY(base.cam, dt*60)
-			elif self.text_index <= 6:
-				if self.move_camera == 0:
-					self.move_camera = 1
-					base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
-				if base.cam.getY() > -100:
-					base.cam.setY(base.cam, dt*25)
+			if self.texture.getTime() > 64 and self.video:
+				self.video = False
+				self.transition.fadeOut(2)
+				self.ignore(self.keys_data["Interagir"])
+				self.accept(self.keys_data["Interagir"], self.check_interact)
+				taskMgr.doMethodLater(2, self.magicien_cine, "magic_cine")
+			elif self.chapitre == 1 and not self.video:
+				if self.text_index	<= 4:
+					if base.cam.getY() < 200:
+						base.cam.setY(base.cam, dt*60)
+				elif self.text_index <= 6:
+					if self.move_camera == 0:
+						self.move_camera = 1
+						base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
+					if base.cam.getY() > -100:
+						base.cam.setY(base.cam, dt*25)
 		return task.cont
 		
 		
@@ -1220,8 +1234,6 @@ class SetLevel(FSM):
 		self.ignore("Fini")
 		if self.chapitre == 1:
 			self.son.stop()
-			self.plane.removeNode()
-		if self.chapitre == 3:
 			self.magicien.delete()
 			del self.magicien
 			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
