@@ -1144,7 +1144,7 @@ class SetLevel(FSM):
 			self.son.play()
 			self.ignore(self.keys_data["Interagir"])
 			self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
-		taskMgr.add(self.update_cinematique, "update cinematique")	
+		taskMgr.add(self.update_cinematique, "update_cinematique")	
 		
 		
 	def magicien_cine(self, task):
@@ -1231,15 +1231,16 @@ class SetLevel(FSM):
 			light.removeNode()
 		del self.actuals_light
 		taskMgr.remove("update_cinematique")
-		self.ignore("Fini")
 		if self.chapitre == 1:
 			self.son.stop()
+			self.map.removeNode()
+			del self.map
 			self.magicien.delete()
 			del self.magicien
 			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
 			self.player.setScale(70)
 			self.music.stop()
-			self.chaptre = 2
+			self.chapitre = 2
 
 	#-----------------------------Map (chargement et state)--------------------------------
 	def load_map(self, map="village_pecheurs_maison_heros.bam", task=None):
