@@ -1310,11 +1310,11 @@ class SetLevel(FSM):
 		n_coffre = 0
 		if self.current_map in data:
 			for object in data[self.current_map]:
-				if object == "lit.bam":
+				if object == "lit":
 					objet = Lit()
-				elif object == "bateau.bam":
+				elif object == "bateau":
 					objet = Bateau()
-				elif object == "coffre.egg":
+				elif object == "coffre":
 					objet = Coffre(n_coffre)
 					n_coffre += 1	
 				objet.object.reparentTo(render)
