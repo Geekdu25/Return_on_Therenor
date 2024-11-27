@@ -318,17 +318,24 @@ class SetLevel(FSM):
 			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
 			self.ignore("out")
 		if self.actual_coffre is not None:
-			taskMgr.remove("update")
-			properties = WindowProperties()
-			properties.setCursorHidden(False)
-			base.win.requestProperties(properties)
+			a = False
 			for objet in self.objects:
-					if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
-						objet.object.play("anim")
-			if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
-				item = "Vodka"
-			self.player.ajoute_item(item)
-			self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)	
+				if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
+					if not objet.ouvert:
+							objet.ouvert = True
+							a = True
+							objet.object.play("anim")
+							taskMgr.remove("update")
+							properties = WindowProperties()
+							properties.setCursorHidden(False)
+							base.win.requestProperties(properties)
+			if a:								
+				if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
+					item = "Vodka"
+				self.player.ajoute_item(item)
+				self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
+				self.dialog.hide()
+				taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])	
 				
 
 	def accept_trigger(self, clickedYes):
@@ -617,7 +624,6 @@ class SetLevel(FSM):
 		self.epee = loader.loadModel("sword.bam")
 		self.epee.reparentTo(base.cam)
 		#--------------On modifie la caméra (position, lentille)-------------
-		base.cam.setPos(0, 0, 0)
 		base.cam.node().getLens().setFov(70)
 		base.cam.lookAt(self.epee)
 		#-------------On fait tourner cette épée---------------------------
@@ -1608,6 +1614,8 @@ class SetLevel(FSM):
 			self.pnjs[pnj].cleanup()
 			self.pnjs[pnj].removeNode()
 		for objet in self.objects:
+			if type(objet) is Coffre:
+				objet.object.cleanup()
 			objet.object.removeNode()
 		for statue in self.save_statues:
 			self.save_statues[statue][0].removeNode()
@@ -1630,7 +1638,8 @@ class SetLevel(FSM):
 		self.ignoreAll()
 		self.accept("escape", self.all_close)
 		self.player.stop()
-		self.player.followcam.set_active(False)		
+		self.player.followcam.set_active(False)
+		del self.player.followcam		
 
 	#----------------------Méthodes de collisions-----------------------------------------
 	def into(self, a):

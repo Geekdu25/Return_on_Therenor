@@ -79,6 +79,7 @@ class ManetteCam():
 			self.camera.setPos(self.camera, Vec3(0, -2, 0))
 		else:
 			taskMgr.remove("updateCamera")
+			self.camera.setPos(self.camera, Vec3(0, 2, 0))
 			self.camera.reparentTo(render)		
 			
 	def	update_camera(self, task):
@@ -103,12 +104,12 @@ class ManetteCam():
 		if self.vue:
 			self.dummy.setPos((0, 0, 0.25))
 			self.dummy.setHpr((180, 0, 0))
-			self.camera.setPos((0, -2, 0))	
+			self.camera.setPos(self.camera, (0, -2, 0))	
 			self.camera.setHpr((0, 0, 0))
 		else:
 			self.dummy.setPos((0, 0, 0.25))
 			self.dummy.setHpr((180, 0, 0))
-			self.camera.setPos((0, 0, 0))	
+			self.camera.setPos(self.camera, (0, 2, 0))	
 			self.camera.setHpr((0, 0, 0))	
 		
 	def move(self, direction="up", time=0.1):
