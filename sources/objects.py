@@ -50,7 +50,7 @@ class Coffre:
 		"""
 		self.nom = "coffre"
 		self.id = id
-		self.object = Actor("coffre.egg", {"anim":"coffre-Coffre_ouverture.egg"})
+		self.object = Actor("coffre.bam", {"anim":"coffre-ouverture.bam"})
 		self.object.setScale(20)
 		self.col = CollisionNode("coffre_"+str(id))
 		self.col.addSolid(CollisionBox((0, 0, 2), 2, 4, 2))
