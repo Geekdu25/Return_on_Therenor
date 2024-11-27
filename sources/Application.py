@@ -509,7 +509,10 @@ class SetLevel(FSM):
 			self.reading = True
 			self.termine = False
 			#On va chercher dans le fichier json, à la langue séléctionnée, le numéro de dialogue demandé
-			self.texts = self.story[str(numero)]
+			if type(numero) is int:
+				self.texts = self.story[str(numero)]
+			else:
+				self.texts = numero	
 			self.text_index = 0
 			self.letter_index = 0
 			self.sons_messages = []
@@ -1131,7 +1134,7 @@ class SetLevel(FSM):
 		self.actuals_light = []
 		#------------------------Légende-------------------------------------------------------
 		if self.chapitre == 1:
-			self.video = True
+			self.chapitre_step = 0
 			cm = CardMaker("plan")
 			cm.setFrame(-1, 1, -1, 1)
 			self.plane = render2d.attachNewNode(cm.generate())
@@ -1147,50 +1150,95 @@ class SetLevel(FSM):
 		taskMgr.add(self.update_cinematique, "update_cinematique")	
 		
 		
-	def magicien_cine(self, task):
+	def change_cine(self, cine=0, task=None):
 		"""
 		Méthode permettant de faire apparaître la cinématique du magicien.
 		------------------------------------------------------------------
-		task -> task
+		task -> task ou None
 		return -> None
 		"""	
-		self.son.stop()
-		self.plane.removeNode()
-		del self.plane
-		if hasattr(self.player, "followcam"):
-			self.player.followcam.set_active(False)
-		self.player.show()
-		self.player.setPos(200, -400, 0)
-		self.player.setH(180)
-		self.player.setScale(110)
-		if hasattr(self, "map"):
+		if cine == 0:
+			self.son.stop()
+			self.plane.removeNode()
+			del self.plane
+			if hasattr(self.player, "followcam"):
+				self.player.followcam.set_active(False)
+			self.player.show()
+			self.player.setPos(200, -400, 0)
+			self.player.setH(180)
+			self.player.setScale(110)
+			if hasattr(self, "map"):
+				self.map.removeNode()
+			self.move_camera = 0
+			point_light = PointLight("point_light")
+			point_light.setColor((0.85, 0.8, 0.5, 1))
+			point_light_np = render.attachNewNode(point_light)
+			point_light_np.setPos(200, 0, 50)
+			self.actuals_light.append(point_light_np)
+			render.setLight(point_light_np)
+			self.map = loader.loadModel("salle_du_sacrifice.bam")
+			self.map.reparentTo(render)
+			self.map.setPos(500, 500, 0)
+			self.map.setHpr(270, 0, 0)
+			self.magicien = Magicien()
+			self.magicien.setScale(60)
+			self.magicien.setPos(200, 200, 0)
+			self.magicien.loop("Immobile")
+			self.magicien.reparentTo(render)
+			base.cam.setPos(200, -550, 250)
+			self.music.stop()
+			self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+			self.music.setLoop(True)
+			self.music.play()
+			self.transition.fadeIn(2)
+			self.set_text(1, ["Fini"])
+			self.accept("Fini", self.change_cine, extraArgs=[1])
+		elif cine == 1:
+			self.transition.fadeOut(2)
+			self.son.stop()
 			self.map.removeNode()
-		self.move_camera = 0
-		point_light = PointLight("point_light")
-		point_light.setColor((0.85, 0.8, 0.5, 1))
-		point_light_np = render.attachNewNode(point_light)
-		point_light_np.setPos(200, 0, 50)
-		self.actuals_light.append(point_light_np)
-		render.setLight(point_light_np)
-		render.setShaderAuto()
-		self.map = loader.loadModel("salle_du_sacrifice.bam")
-		self.map.reparentTo(render)
-		self.map.setPos(500, 500, 0)
-		self.map.setHpr(270, 0, 0)
-		self.magicien = Magicien()
-		self.magicien.setScale(60)
-		self.magicien.setPos(200, 200, 0)
-		self.magicien.loop("Immobile")
-		self.magicien.reparentTo(render)
-		base.cam.setPos(200, -550, 250)
-		self.music.stop()
-		self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		self.transition.fadeIn(2)
-		self.set_text(1, ["Fini"])
-		self.accept("Fini", self.fade_out, extraArgs=["Map"])
-		return task.done
+			del self.map
+			self.magicien.delete()
+			del self.magicien
+			taskMgr.doMethodLater(2, self.change_cine, "change cine", extraArgs=[2])
+		elif cine == 2:
+			for light in self.actuals_light:
+				render.clearLight(light)
+				light.removeNode()
+			light = AmbientLight("ambient light")
+			light_np = render.attachNewNode(light)
+			render.setLight(light_np)
+			self.actuals_light = [light_np]	
+			base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
+			self.player.setScale(70)
+			self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
+			self.map.reparentTo(render)
+			self.map.setScale(10)
+			self.lit = loader.loadModel("lit.bam")
+			self.lit.reparentTo(render)
+			self.lit.setPos((-290, 120, 10))
+			self.lit.setHpr((270, 0, 0))
+			self.lit.setScale(15)
+			self.player.setPosHpr(-282, 50, 50, 0, 270, 0)
+			self.transition.fadeIn(2)
+			self.chapitre_step = 2
+			s = Sequence(Parallel(base.cam.posInterval(7, Vec3(-270, 120, 150), startPos=Vec3(0, 10, 90)), base.cam.hprInterval(7, Vec3(0, -70, 0), startHpr=Vec3(55, 0, 0))), Func(self.set_text, 3, ["texte_ok"]))
+			s.start()
+			self.accept("texte_ok", self.change_cine, extraArgs=[3])
+		elif cine == 3:
+			if self.langue == "francais":
+				texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
+			elif self.langue == "deutsch":
+				texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"]	
+			s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
+			s.start()	
+			self.ignore("texte_ok")
+			self.accept("texte_ok", self.change_cine, extraArgs=[4])
+		elif cine == 4:
+			self.ignore("texte_ok")	
+			self.fade_out("Map")
+		if task is not None:		
+			return task.done
 
 	def update_cinematique(self, task):
 		"""
@@ -1201,13 +1249,13 @@ class SetLevel(FSM):
 		"""
 		dt = globalClock.getDt()
 		if self.chapitre == 1:
-			if self.texture.getTime() > 64 and self.video:
-				self.video = False
+			if self.texture.getTime() > 64 and self.chapitre_step == 0:
+				self.chapitre_step = 1
 				self.transition.fadeOut(2)
 				self.ignore(self.keys_data["Interagir"])
 				self.accept(self.keys_data["Interagir"], self.check_interact)
-				taskMgr.doMethodLater(2, self.magicien_cine, "magic_cine")
-			elif self.chapitre == 1 and not self.video:
+				taskMgr.doMethodLater(2, self.change_cine, "magic_cine", extraArgs=[0], appendTask=True)
+			elif self.chapitre == 1 and self.chapitre_step == 1:
 				if self.text_index	<= 4:
 					if base.cam.getY() < 200:
 						base.cam.setY(base.cam, dt*60)
@@ -1232,14 +1280,10 @@ class SetLevel(FSM):
 		del self.actuals_light
 		taskMgr.remove("update_cinematique")
 		if self.chapitre == 1:
-			self.son.stop()
-			self.map.removeNode()
-			del self.map
-			self.magicien.delete()
-			del self.magicien
-			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
-			self.player.setScale(70)
+			self.lit.removeNode()
 			self.music.stop()
+			self.player.setHpr(0, 0, 0)
+			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
 			self.chapitre = 2
 
 	#-----------------------------Map (chargement et state)--------------------------------
@@ -1819,7 +1863,7 @@ class SetLevel(FSM):
 		sphere_sword.setIntoCollideMask(BitMask32.allOff()) 
 		sphere_sword_np = render.attachNewNode(sphere_sword)
 		self.player.liste_spheres.append({sphere_sword_np:time.time()})
-		sphere_sword_np.show()
+		#sphere_sword_np.show()
 		
 	#--------------------------Pop-ups----------------------------------------
 	def confirm_quit(self):
