@@ -1472,6 +1472,11 @@ class SetLevel(FSM):
 		else:
 			base.disableMouse()
 		#-------------Lumière----------------------------
+		if hasattr(self, "actuals_light"):
+			for light in self.actuals_light:
+				render.clearLight(light)
+				light.removeNode()
+		self.actuals_light = []		
 		light = AmbientLight("Lumière ambiante")
 		light_np = render.attachNewNode(light)
 		self.actuals_light.append(light_np)
@@ -1606,6 +1611,10 @@ class SetLevel(FSM):
 		----------------------------------------
 		return -> None
 		"""
+		for light in self.actuals_light:
+			render.clearLight(light)
+			light.removeNode()
+		self.actuals_light = []	
 		render.clearFog()
 		self.music.stop()
 		self.map.removeNode()
