@@ -1174,7 +1174,8 @@ class SetLevel(FSM):
 			self.player.setH(180)
 			self.player.setScale(110)
 			if hasattr(self, "map"):
-				self.map.removeNode()
+				if self.map is not None:
+					self.map.removeNode()
 			self.move_camera = 0
 			point_light = PointLight("point_light")
 			point_light.setColor((0.85, 0.8, 0.5, 1))
