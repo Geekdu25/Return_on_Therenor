@@ -10,6 +10,7 @@
 "village_pecheurs_port.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-50, 52, 6], 5, 25, 50, [100, -285, 300]]}, {}, 3, "Faux", []],
 "village_pecheurs_reserve.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [4, 0.3, 0], 0.7, 1, 5, [-600, 20, 300]]}, {}, 35, "Faux", []],
 "village_pecheurs_maison_pote.bam":["Marelys.ogg", {}, {"village_pecheurs.bam":["porte", [-37, 23, 6], 3, 8.5, 15, [-120, 300, 300]]}, {}, 8, "Faux", []],
-"Marelys.bam":["Marelys.ogg", {}, {}, {}, 10, "Vrai", []],
-"pyramide.bam":["Arduny.ogg", {}, {}, {"save_pyramide" : [18, 5, 0, "derriere"]}, 9, "Faux", [[[0, 20, 100], [500, 10, 500]]]]
+"Marelys.bam":["Marelys.ogg", {}, {"Arduny.bam":["portail", [-415, 0, 0], 10, 70, 10, [0, 0, 300]]}, {}, 10, "Vrai", [[[-420, 0, 100], [10, 500, 300]], [[0, 0, 100], [10, 500, 300]], [[200, -75, 100], [800, 10, 300]], [[200, 75, 100], [800, 10, 300]]]],
+"pyramide.bam":["Arduny.ogg", {}, {}, {"save_pyramide" : [18, 5, 0, "derriere"]}, 9, "Faux", [[[0, 20, 100], [500, 10, 500]]]],
+"Arduny.bam":["Arduny.ogg", {}, {}, {}, 50, "Faux", []]
 }
