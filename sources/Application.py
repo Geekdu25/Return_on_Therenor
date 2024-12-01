@@ -299,8 +299,7 @@ class SetLevel(FSM):
 				self.ignore(self.keys_data[event])
 			self.ignore("into")
 			self.ignore("out")
-			taskMgr.doMethodLater(0.48, self.player.setPos, "new_player_pos", extraArgs=[self.portails[self.current_porte].newpos])
-			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte])
+			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte].newpos])
 		if self.actual_statue is not None:
 			taskMgr.remove("update")
 			properties = WindowProperties()
@@ -1294,7 +1293,7 @@ class SetLevel(FSM):
 			self.chapitre = 2
 
 	#-----------------------------Map (chargement et state)--------------------------------
-	def load_map(self, map="village_pecheurs_maison_heros.bam", task=None):
+	def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
 		"""
 		Méthode qui nous permet de charger une map.
 		--------------------------------------------
@@ -1342,10 +1341,7 @@ class SetLevel(FSM):
 		self.antimur.addCollider(self.player.col_np, self.player)
 		base.cTrav.addCollider(self.player.col_np, self.antimur)
 		#-----------------------Fumée---------------------
-		fummee = Fog("Brume")
-		fummee.setColor(0.5, 0.5, 0.55)
-		fummee.setExpDensity(0.02)
-		render.setFog(fummee)
+		self.load_fog()
 		#--------------La skybox----------------------------
 		if self.skybox is not None:
 			self.skybox.removeNode()
@@ -1477,15 +1473,53 @@ class SetLevel(FSM):
 				render.clearLight(light)
 				light.removeNode()
 		self.actuals_light = []		
-		light = AmbientLight("Lumière ambiante")
-		light_np = render.attachNewNode(light)
-		self.actuals_light.append(light_np)
-		render.setLight(light_np)
+		self.load_light()
+		if position is not None:
+			self.player.setPos(position)
 		self.transition.fadeIn(2)
 		self.accept_touches()
 		if task is not None:
 			return task.done
 
+
+	def load_light(self):
+		"""
+		Méthode permettant de générr une lumière spécifique pour chaque map.
+		----------------------------------------------------------------------
+		return -> None
+		"""
+		if self.map == "Arduny.bam":
+			light = DirectionalLight("dlight")
+			light.color = (0.9, 0.9, 0.8, 1)
+			light_np = render.attachNewNode(light)
+			render.setLight(light_np)
+			self.actuals_light.append(light_np)
+		else:
+			light = AmbientLight("Lumière ambiante")
+			light_np = render.attachNewNode(light)
+			self.actuals_light.append(light_np)
+			render.setLight(light_np)
+			
+	def load_fog(self):
+		"""
+		Méthode permettant de générer une fummée spécifique pour chaque map.
+		-----------------------------------------------------------------------
+		return -> None
+		"""
+		if self.current_map == "village_pecheurs.bam":
+			fummee = Fog("Brume")
+			fummee.setColor(0.5, 0.5, 0.55)
+			fummee.setExpDensity(0.02)
+			render.setFog(fummee)
+		elif self.current_map == "Arduny.bam":
+			fummee = Fog("Sable")
+			fummee.setColor(0.4, 0.4, 0.05)
+			fummee.setExpDensity(0.01)
+			render.setFog(fummee)	
+		else:
+			pass	
+			
+			
 	def return_pnj(self, pnj="magicien"):
 		"""
 		Méthode permettant de renvoyer la bonne classe en fonction du PNJ choisi.
@@ -1669,8 +1703,7 @@ class SetLevel(FSM):
 			elif b in self.portails:
 				if type(self.portails[b]) is Portail:
 					self.transition.fadeOut(0.5)
-					self.player.setPos(self.portails[b].newpos)
-					taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b])
+					taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b].newpos])
 				elif type(self.portails[b]) is Porte:
 					self.current_porte = b
 			elif b.isdigit(): #Trigger
