@@ -1594,7 +1594,6 @@ class SetLevel(FSM):
 		self.accept(self.keys_data["Interagir"], self.check_interact)
 		self.accept("into", self.into)
 		self.accept("out", self.out)
-		self.accept("mouse1", self.active_epee)
 		taskMgr.remove("update")
 		taskMgr.add(self.update, "update")
 	
@@ -1885,37 +1884,8 @@ class SetLevel(FSM):
 		if self.player.vies <= 0:
 			self.transition.fadeOut(0.5)
 			taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")
-			return task.done
-		#------------------Section de gestion de l'épée-----------------------------
-		l = []
-		i = 0
-		for sphere in self.player.liste_spheres:
-			for dico in sphere:
-				if time.time() - sphere[dico] > 1:
-					dico.removeNode()
-					l.append(i)
-			i += 1				
-		for indice in l:
-			del self.player.liste_spheres[indice]		
-		del l, i		
+			return task.done		
 		return task.cont
-
-
-	def active_epee(self):
-		"""
-		Méthode qui s'active lorsque le joueur donne un coup d'épée.
-		-------------------------------------------------------------
-		return -> None
-		"""
-		sphere_sword = CollisionNode('sphere_sword')
-		solid = CollisionSphere((self.player.getX(), self.player.getY(), 50), 70)
-		solid.setTangible(False)
-		sphere_sword.addSolid(solid) 
-		sphere_sword.setFromCollideMask(BitMask32.bit(0))
-		sphere_sword.setIntoCollideMask(BitMask32.allOff()) 
-		sphere_sword_np = render.attachNewNode(sphere_sword)
-		self.player.liste_spheres.append({sphere_sword_np:time.time()})
-		#sphere_sword_np.show()
 		
 	#--------------------------Pop-ups----------------------------------------
 	def confirm_quit(self):

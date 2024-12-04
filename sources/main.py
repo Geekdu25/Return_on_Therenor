@@ -1,8 +1,8 @@
 """
 Return on Therenor
----------------------------------------
-Date de sortie prévue : Fin janvier 2025
----------------------------------------
+--------------------------------------------
+| Date de sortie prévue : Fin janvier 2025 |
+--------------------------------------------
 Créateurs :
 Tyméo Bonvicini-Renaud
 Alexandrine Charette
