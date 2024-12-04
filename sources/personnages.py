@@ -27,7 +27,7 @@ class Player(Actor):
 		self.left = False
 		self.setHpr(90, 0, 0)
 		self.setScale(70)
-		self.gravite = 0.3
+		self.gravite = 2
 		#---------------Section de gestion des collisions------------------
 		self.col = CollisionNode('player_sphere')
 		self.col.addSolid(CollisionSphere((0, 0, 0.65), 0.65)) 
