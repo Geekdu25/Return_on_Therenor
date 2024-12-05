@@ -174,7 +174,7 @@ class SetLevel(FSM):
         base.taskMgr.add(self.update_text, "update_text")
         self.accept("escape", self.all_close)
         base.win.setCloseRequestEvent("escape")
-    
+
     def __str__(self):
         """
         Méthode permettant d'afficher quelque chose lorsque l'on appelle print().
@@ -241,13 +241,13 @@ class SetLevel(FSM):
         self.map_image.hide()
         self.croix_image.hide()
         self.lieu_text.hide()
-        
+
     def genere_liste_defilement(self):
         """
         Méthode permettant de générer une liste de défilement, ce qui est utile pour la vente et l'inventaire.
         ------------------------------------------------------------------------------------------------------
         return -> DirectScrolledList
-        """ 
+        """
         a = DirectScrolledList(
         decButton_pos=(0, 0, 0.7),
         decButton_text="+",
@@ -265,8 +265,8 @@ class SetLevel(FSM):
         forceHeight = 0.15,
         itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
         itemFrame_pos=(0, 0, 0))
-        return a    
-        
+        return a
+
     #-----------------------Méthodes d'interactions (triggers, PNJS, vente...)----------------------------------
     def check_interact(self):
         """
@@ -328,14 +328,14 @@ class SetLevel(FSM):
                             properties = WindowProperties()
                             properties.setCursorHidden(False)
                             base.win.requestProperties(properties)
-            if a:                               
+            if a:
                 if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
                     item = "Vodka"
                 self.player.ajoute_item(item)
                 self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
                 self.dialog.hide()
-                taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])   
-                
+                taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
+
 
     def accept_trigger(self, clickedYes):
         self.triggerDlg.cleanup()
@@ -355,7 +355,7 @@ class SetLevel(FSM):
                 taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
         self.accept("escape", self.confirm_quit)
         taskMgr.add(self.update, "update")
-        
+
 
     def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
         """
@@ -518,7 +518,7 @@ class SetLevel(FSM):
             if type(numero) is int:
                 self.texts = self.story[str(numero)]
             else:
-                self.texts = numero 
+                self.texts = numero
             self.text_index = 0
             self.letter_index = 0
             self.sons_messages = []
@@ -565,7 +565,7 @@ class SetLevel(FSM):
             if self.letter_index < len(self.texts[self.text_index]):
                 self.letter_index += 1
         return task.cont
-        
+
     #---------------------------Méthodes de changement de state--------------------------------------
     def fade_out(self, state="Menu"):
         """
@@ -777,8 +777,8 @@ class SetLevel(FSM):
         #------------Générique---------------------------
         else:
             self.request("Generique")
-            
-            
+
+
     #--------------------------------Gestion du changement de langue-----------------------------------------------
     def enterLanguage(self):
         """
@@ -1152,16 +1152,16 @@ class SetLevel(FSM):
             self.son.play()
             self.ignore(self.keys_data["Interagir"])
             self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
-        taskMgr.add(self.update_cinematique, "update_cinematique")  
-        
-        
+        taskMgr.add(self.update_cinematique, "update_cinematique")
+
+
     def change_cine(self, cine=0, task=None):
         """
         Méthode permettant de faire apparaître la cinématique du magicien.
         ------------------------------------------------------------------
         task -> task ou None
         return -> None
-        """ 
+        """
         if cine == 0:
             self.son.stop()
             self.plane.removeNode()
@@ -1214,7 +1214,7 @@ class SetLevel(FSM):
             light = AmbientLight("ambient light")
             light_np = render.attachNewNode(light)
             render.setLight(light_np)
-            self.actuals_light = [light_np] 
+            self.actuals_light = [light_np]
             base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
             self.player.setScale(70)
             self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
@@ -1235,15 +1235,15 @@ class SetLevel(FSM):
             if self.langue == "francais":
                 texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
             elif self.langue == "deutsch":
-                texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"] 
+                texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"]
             s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
-            s.start()   
+            s.start()
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[4])
         elif cine == 4:
-            self.ignore("texte_ok") 
+            self.ignore("texte_ok")
             self.fade_out("Map")
-        if task is not None:        
+        if task is not None:
             return task.done
 
     def update_cinematique(self, task):
@@ -1272,8 +1272,8 @@ class SetLevel(FSM):
                     if base.cam.getY() > -100:
                         base.cam.setY(base.cam, dt*25)
         return task.cont
-        
-        
+
+
     def exitCinematique(self):
         """
         Méthode de sortie du state cinématique.
@@ -1311,7 +1311,7 @@ class SetLevel(FSM):
             mur.removeNode()
         for statue in self.save_statues:
             self.save_statues[statue][0].removeNode()
-            self.save_statues[statue][1].removeNode()   
+            self.save_statues[statue][1].removeNode()
         self.objects = []
         self.murs = []
         self.current_pnj = None
@@ -1354,21 +1354,25 @@ class SetLevel(FSM):
         #--------------------Chargement du premier fichier json (objets)---------------
         objects_file = open("../data/json/objects.json")
         data = json.load(objects_file)
+        objects_file.close()
         n_coffre = 0
         if self.current_map in data:
-            for object in data[self.current_map]:
-                if object == "lit":
+            i = 0
+            for cle in data[self.current_map]:
+                if cle[0] == "lit":
                     objet = Lit()
-                elif object == "bateau":
+                elif cle[0] == "bateau":
                     objet = Bateau()
-                elif object == "coffre":
+                elif cle[0] == "coffre":
                     objet = Coffre(n_coffre)
-                    n_coffre += 1   
+                    n_coffre += 1
+                elif cle[0] == "sapin":
+                    objet = Sapin()
                 objet.object.reparentTo(render)
-                objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
-                objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
+                objet.object.setPos((data[self.current_map][i][1][0][0], data[self.current_map][i][1][0][1], data[self.current_map][i][1][0][2]))
+                objet.object.setHpr((data[self.current_map][i][1][1][0], data[self.current_map][i][1][1][1], data[self.current_map][i][1][1][2]))
                 self.objects.append(objet)
-        objects_file.close()        
+                i += 1
         #--------------------Chargement du deuxième fichier json-------------
         pnj_file = open("../data/json/data.json")
         data = json.load(pnj_file)
@@ -1433,8 +1437,8 @@ class SetLevel(FSM):
                 elif data[self.current_map][3][save][3] == "devant":
                     model_save.setH(180)
                 else:
-                    model_save.setH(270)        
-            model_save.setScale(18.5)           
+                    model_save.setH(270)
+            model_save.setScale(18.5)
             self.save_statues[save] = [noeud_np, model_save]
         self.load_triggers(map)
         self.map.setScale(data[self.current_map][4])
@@ -1472,7 +1476,7 @@ class SetLevel(FSM):
             for light in self.actuals_light:
                 render.clearLight(light)
                 light.removeNode()
-        self.actuals_light = []     
+        self.actuals_light = []
         self.load_light()
         if position is not None:
             self.player.setPos(position)
@@ -1499,7 +1503,7 @@ class SetLevel(FSM):
             light_np = render.attachNewNode(light)
             self.actuals_light.append(light_np)
             render.setLight(light_np)
-            
+
     def load_fog(self):
         """
         Méthode permettant de générer une fummée spécifique pour chaque map.
@@ -1515,11 +1519,11 @@ class SetLevel(FSM):
             fummee = Fog("Sable")
             fummee.setColor(0.4, 0.4, 0.05)
             fummee.setExpDensity(0.01)
-            render.setFog(fummee)   
+            render.setFog(fummee)
         else:
-            pass    
-            
-            
+            pass
+
+
     def return_pnj(self, pnj="magicien"):
         """
         Méthode permettant de renvoyer la bonne classe en fonction du PNJ choisi.
@@ -1596,7 +1600,7 @@ class SetLevel(FSM):
         self.accept("out", self.out)
         taskMgr.remove("update")
         taskMgr.add(self.update, "update")
-    
+
     def ignore_touches(self):
         """
         Méthode permettant d'ignorer les évènements liés à des touches.
@@ -1615,7 +1619,7 @@ class SetLevel(FSM):
         self.ignore("out")
         self.ignore("mouse1")
         taskMgr.remove("update")
-        
+
     def load_save(self, task=None):
         """
         Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
@@ -1628,16 +1632,16 @@ class SetLevel(FSM):
             self.player.setPos(0, 30, 6)
         elif self.current_point == "save_village": #Dans le village des pecheurs
             self.current_map = "village_pecheurs.bam"
-            self.player.setPos(-380, 220, 250)  
+            self.player.setPos(-380, 220, 250)
         elif self.current_point == "save_pyramide": #Dans la pyramide
             self.current_map = "pyramide.bam"
-            self.player.setPos(150, -50, 0) 
+            self.player.setPos(150, -50, 0)
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)
         if task != None:
             return task.done
-            
+
     def exitMap(self):
         """
         Méthode pour sortir du state map.
@@ -1647,7 +1651,7 @@ class SetLevel(FSM):
         for light in self.actuals_light:
             render.clearLight(light)
             light.removeNode()
-        self.actuals_light = [] 
+        self.actuals_light = []
         render.clearFog()
         self.music.stop()
         self.map.removeNode()
@@ -1682,7 +1686,7 @@ class SetLevel(FSM):
         self.accept("escape", self.all_close)
         self.player.stop()
         self.player.followcam.set_active(False)
-        del self.player.followcam       
+        del self.player.followcam
 
     #----------------------Méthodes de collisions-----------------------------------------
     def into(self, a):
@@ -1712,11 +1716,11 @@ class SetLevel(FSM):
             elif b in self.save_statues: #Statue de sauvegarde
                 self.actual_statue = b
             elif "coffre" in b:
-                self.actual_coffre = b.split("_")[len(b.split("_"))-1]  
+                self.actual_coffre = b.split("_")[len(b.split("_"))-1]
         elif c == "sphere_sword":
             if b in self.pnjs:
-                self.set_text(3)        
-                
+                self.set_text(3)
+
     def out(self, a):
         """
         Méthode s'activant quand un objet from qitte un objet into.
@@ -1736,9 +1740,9 @@ class SetLevel(FSM):
             elif b in self.save_statues:
                 self.actual_statue = None
             elif b.isdigit():
-                self.actual_trigger = None  
+                self.actual_trigger = None
             elif "coffre" in b:
-                self.actual_coffre = None           
+                self.actual_coffre = None
 
 
     def change_vitesse(self, touche="b"):
@@ -1884,9 +1888,9 @@ class SetLevel(FSM):
         if self.player.vies <= 0:
             self.transition.fadeOut(0.5)
             taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")
-            return task.done        
+            return task.done
         return task.cont
-        
+
     #--------------------------Pop-ups----------------------------------------
     def confirm_quit(self):
         """
@@ -2011,7 +2015,7 @@ class SetLevel(FSM):
         elif self.current_map == "Marelys.bam":
             return Vec3(0.2, 0, 0), "Marelys, région océanique"
         elif self.current_map == "pyramide.bam":
-            return Vec3(0, 0, 0.6), "Pyramide antique"  
+            return Vec3(0, 0, 0.6), "Pyramide antique"
         return Vec3(0, 0, 0), "???"
 
     def change_index_invent(self, dir="left"):
@@ -2083,7 +2087,7 @@ class SetLevel(FSM):
         self.music.setVolume(1)
         taskMgr.remove("update_invent")
         self.accept_touches()
-        
+
     #----------------------------------Partie pour le generique--------------------------------------------------------------------------
     def enterGenerique(self):
         """
@@ -2251,7 +2255,7 @@ class SetLevel(FSM):
             self.save(file=self.actual_file)
             self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
         else:
-            self.reupdate(False)    
+            self.reupdate(False)
 
     def reupdate(self, inutile):
         """
@@ -2296,7 +2300,7 @@ class SetLevel(FSM):
             elif i == 7:
                 self.player.sexe = truc
         fichier.close()
-        
+
     def init_fichiers(self):
         """
         Fonction qui permet de créer les fichiers de jeu.
@@ -2356,8 +2360,8 @@ class SetLevel(FSM):
         file = open(self.get_path()+"/global.txt", "wt")
         info = [self.langue]
         file.writelines([donnee +"|" for donnee in info])
-        file.close()    
-        
+        file.close()
+
     def get_path(self):
         """
         Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
@@ -2371,7 +2375,7 @@ class SetLevel(FSM):
                 return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
         else:
             return f"/home/{os.getlogin()}/.Therenor"
-                
+
     #-------------------------------Méthodes spécifiques à la manette (je ne pense pas qu'il y en aura beaucoup)---------------------------
     def wait_for_gamepad(self, task):
         """
