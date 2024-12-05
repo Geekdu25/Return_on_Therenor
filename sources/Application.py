@@ -22,2394 +22,2394 @@ import os, sys, json, platform, random, time
 
 #----------------------------Création de certaines classes dont nous aurons besoin (en particulier des solide de collisions.)--------------------------
 class YesNoDialog(DirectDialog):
-	"""
-	Il s'agit de la même classe que celle présente avec Panda3d, mais on traduit Yes et No par Oui et Non.
-	"""
-	def __init__(self, parent = None, **kw):
-		optiondefs = (('buttonTextList',  ['Oui', 'Non'],       DGG.INITOPT), ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),)
-		self.defineoptions(kw, optiondefs)
-		DirectDialog.__init__(self, parent)
-		self.initialiseoptions(YesNoDialog)
+    """
+    Il s'agit de la même classe que celle présente avec Panda3d, mais on traduit Yes et No par Oui et Non.
+    """
+    def __init__(self, parent = None, **kw):
+        optiondefs = (('buttonTextList',  ['Oui', 'Non'],       DGG.INITOPT), ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),)
+        self.defineoptions(kw, optiondefs)
+        DirectDialog.__init__(self, parent)
+        self.initialiseoptions(YesNoDialog)
 
 class Portail(CollisionBox):
-	"""
-	Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
-	"""
-	def __init__(self, center=(1320, -1000, 6), sx=40, sy=4, sz=150, newpos=(830, -470, 6)):
-		"""
-		Méthode constructeur.
-		-------------------------
-		center -> tuple
-		sx -> int
-		sy -> int
-		sz -> int
-		newpos -> int
-		return -> Portail
-		"""
-		CollisionBox.__init__(self, center, sx, sy, sz)
-		self.newpos = newpos
-		self.setTangible(False) #On peut traverser un portail
+    """
+    Pour faire simple, un portail est un solide de collision invisible qui téléporte le joueur dès qu'il le touche.
+    """
+    def __init__(self, center=(1320, -1000, 6), sx=40, sy=4, sz=150, newpos=(830, -470, 6)):
+        """
+        Méthode constructeur.
+        -------------------------
+        center -> tuple
+        sx -> int
+        sy -> int
+        sz -> int
+        newpos -> int
+        return -> Portail
+        """
+        CollisionBox.__init__(self, center, sx, sy, sz)
+        self.newpos = newpos
+        self.setTangible(False) #On peut traverser un portail
 
 
 class Porte(CollisionBox):
-	"""
-	Contrairement à un portail, une porte doit être ouverte par le joueur en appuyant sur espace pour le téléporter.
-	"""
-	def __init__(self, center=(1320, -1000, 6), sx=50, sy=10, sz=150, newpos=(830, -460, 6)):
-		"""
-		Méthode constructeur.
-		-------------------------
-		center -> tuple
-		sx -> int
-		sy -> int
-		sz -> int
-		newpos -> int
-		return -> Porte
-		"""
-		CollisionBox.__init__(self, center, sx, sy, sz)
-		self.newpos = newpos
+    """
+    Contrairement à un portail, une porte doit être ouverte par le joueur en appuyant sur espace pour le téléporter.
+    """
+    def __init__(self, center=(1320, -1000, 6), sx=50, sy=10, sz=150, newpos=(830, -460, 6)):
+        """
+        Méthode constructeur.
+        -------------------------
+        center -> tuple
+        sx -> int
+        sy -> int
+        sz -> int
+        newpos -> int
+        return -> Porte
+        """
+        CollisionBox.__init__(self, center, sx, sy, sz)
+        self.newpos = newpos
 
 class Save_bloc(CollisionBox):
-	"""
-	Ce type de collision sera utilisé pour sauvegarder.
-	"""
-	def __init__(self, nom=1, center=(0, 0, 0)):
-		"""
-		Méthode constructeur.
-		------------------------
-		nom -> int
-		center -> tuple
-		return -> Save_bloc
-		"""
-		CollisionBox.__init__(self, (center[0], center[1], center[2]), 1.5, 1.5, 3)
-		self.nom = nom #Un nom lui est attribué pour se repérer.
+    """
+    Ce type de collision sera utilisé pour sauvegarder.
+    """
+    def __init__(self, nom=1, center=(0, 0, 0)):
+        """
+        Méthode constructeur.
+        ------------------------
+        nom -> int
+        center -> tuple
+        return -> Save_bloc
+        """
+        CollisionBox.__init__(self, (center[0], center[1], center[2]), 1.5, 1.5, 3)
+        self.nom = nom #Un nom lui est attribué pour se repérer.
 
 
 class SetLevel(FSM):
-	"""
-	Partez du principe que cette classe sera le coeur du jeu.
-	Tout le script principal s'y trouvera.
-	-------------------------------------------------------------
-	Catégories dans lesquelles sont classées les méthodes :
-	- Méthodes spéciales
-	- GUI
-	- Méthodes d'interactions
-	- Changement de states
-	- Hors catégorie
-	- Ecran titre
-	- Section de gestion des trois fichiers de sauvegarde
-	- Gestion du menu pour changer la langue
-	- Gestion du mappage de touches
-	- Début de partie
-	- Cinémtiques
-	- Map
-	- Collisions
-	- Mise à jour
-	- Pop-ups
-	- Inventaire
-	- Générique
-	- Game over
-	- Sauvegardes
-	- Manette
-	"""
-	#-----------------------Méthodes spéciales----------------------------------
-	def __init__(self):
-		"""
-		Métohde constructeur.
-		----------------------
-		return -> SetLevel
-		"""
-		FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
-		self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
-		#-----------------Variables nécessaires au fonctionnement de la boîte de dialogue----------------
-		self.ok = False
-		self.reading = False
-		self.termine = True
-		self.messages = []
-		self.sons_messages = []
-		#------------Section sons (musique, dialogues...)--------------------
-		self.music = None
-		self.son = None
-		#-----------------------Varibles de collisions (pnj touché, liste de pnjs, porte touchée...)-------------------
-		self.current_pnj = None
-		self.pnjs = {}
-		self.current_porte = None
-		self.actual_trigger = None
-		self.actual_coffre = None
-		base.cTrav = CollisionTraverser() #Le CollisionTraverser, gestionnaire de toutes les collisions.
-		if self.debug:
-			base.cTrav.showCollisions(render)
-		self.skybox = None
-		self.portails = {}
-		self.triggers = []
-		self.murs = []
-		self.save_statues = {}
-		self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
-		#-----------------Autres variables-----------------------
-		self.chapitre = 0
-		self.player = Player()
-		self.player.reparentTo(render)
-		self.player.hide()
-		self.current_map = "village_pecheurs_maison_heros.bam"
-		self.texts = ["It's a secret to everybody."]
-		self.text_index = 0
-		self.letter_index = 0
-		self.objects = []
-		self.keys_data = {}
-		self.current_point = 1
-		self.actual_statue = None
-		self.actual_file = 1
-		self.manette = False
-		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
-			self.manette = True
-			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
-		self.quitDlg = None
-		self.load_gui()
-		self.transition = Transitions(loader)
-		self.clavier_rep = base.win.get_keyboard_map()
-		self.init_fichiers()
-		self.read_global()
-		with open("../data/json/texts.json", encoding="utf-8") as texts:
-				self.story = json.load(texts)[self.langue]
-		base.taskMgr.add(self.update_text, "update_text")
-		self.accept("escape", self.all_close)
-		base.win.setCloseRequestEvent("escape")
-	
-	def __str__(self):
-		"""
-		Méthode permettant d'afficher quelque chose lorsque l'on appelle print().
-		-----------------------------------------------------------------------------
-		return -> str
-		"""
-		return "Ca n'a aucun, mais alors aucun interet de faire cela.\nPourquoi cette fonction existe-t-elle alors ?\nEtre ou ne pas être, telle est la question."
+    """
+    Partez du principe que cette classe sera le coeur du jeu.
+    Tout le script principal s'y trouvera.
+    -------------------------------------------------------------
+    Catégories dans lesquelles sont classées les méthodes :
+    - Méthodes spéciales
+    - GUI
+    - Méthodes d'interactions
+    - Changement de states
+    - Hors catégorie
+    - Ecran titre
+    - Section de gestion des trois fichiers de sauvegarde
+    - Gestion du menu pour changer la langue
+    - Gestion du mappage de touches
+    - Début de partie
+    - Cinémtiques
+    - Map
+    - Collisions
+    - Mise à jour
+    - Pop-ups
+    - Inventaire
+    - Générique
+    - Game over
+    - Sauvegardes
+    - Manette
+    """
+    #-----------------------Méthodes spéciales----------------------------------
+    def __init__(self):
+        """
+        Métohde constructeur.
+        ----------------------
+        return -> SetLevel
+        """
+        FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
+        self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
+        #-----------------Variables nécessaires au fonctionnement de la boîte de dialogue----------------
+        self.ok = False
+        self.reading = False
+        self.termine = True
+        self.messages = []
+        self.sons_messages = []
+        #------------Section sons (musique, dialogues...)--------------------
+        self.music = None
+        self.son = None
+        #-----------------------Varibles de collisions (pnj touché, liste de pnjs, porte touchée...)-------------------
+        self.current_pnj = None
+        self.pnjs = {}
+        self.current_porte = None
+        self.actual_trigger = None
+        self.actual_coffre = None
+        base.cTrav = CollisionTraverser() #Le CollisionTraverser, gestionnaire de toutes les collisions.
+        if self.debug:
+            base.cTrav.showCollisions(render)
+        self.skybox = None
+        self.portails = {}
+        self.triggers = []
+        self.murs = []
+        self.save_statues = {}
+        self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
+        #-----------------Autres variables-----------------------
+        self.chapitre = 0
+        self.player = Player()
+        self.player.reparentTo(render)
+        self.player.hide()
+        self.current_map = "village_pecheurs_maison_heros.bam"
+        self.texts = ["It's a secret to everybody."]
+        self.text_index = 0
+        self.letter_index = 0
+        self.objects = []
+        self.keys_data = {}
+        self.current_point = 1
+        self.actual_statue = None
+        self.actual_file = 1
+        self.manette = False
+        if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+            self.manette = True
+            base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+        self.quitDlg = None
+        self.load_gui()
+        self.transition = Transitions(loader)
+        self.clavier_rep = base.win.get_keyboard_map()
+        self.init_fichiers()
+        self.read_global()
+        with open("../data/json/texts.json", encoding="utf-8") as texts:
+                self.story = json.load(texts)[self.langue]
+        base.taskMgr.add(self.update_text, "update_text")
+        self.accept("escape", self.all_close)
+        base.win.setCloseRequestEvent("escape")
+    
+    def __str__(self):
+        """
+        Méthode permettant d'afficher quelque chose lorsque l'on appelle print().
+        -----------------------------------------------------------------------------
+        return -> str
+        """
+        return "Ca n'a aucun, mais alors aucun interet de faire cela.\nPourquoi cette fonction existe-t-elle alors ?\nEtre ou ne pas être, telle est la question."
 
-	#--------------------------------------GUI------------------------------
-	def load_gui(self):
-		"""
-		Fonction qui nous permet de charger les éléments 2D (car on n'a besoin de les charger qu'une fois)
-		--------------------------------------------------
-		return -> None
-		"""
-		self.myOkDialog = None
-		self.coeurs_vides = []
-		self.coeurs_moitie = []
-		self.coeurs_pleins = []
-		#------------------------Les coeurs vides-------------------------------------
-		x = -1.2
-		for loop in range(10):
-			a = OnscreenImage("vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_vides.append(a)
-			x += 0.12
-		#-------------------------Les coeurs pleins---------------------------------
-		x = -1.2
-		for loop in range(10):
-			a = OnscreenImage("vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_pleins.append(a)
-			x += 0.12
-		#--------------------Les coeurs à moitié pleins-------------------------------------
-		x = -1.2
-		for loop in range(10):
-			a = OnscreenImage("vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-			a.setTransparency(TransparencyAttrib.MAlpha)
-			self.coeurs_moitie.append(a)
-			x+= 0.12
-		self.noai_text = OnscreenText(text=f"Noaïs : {self.player.noais}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
-		self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
-		self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
-		self.croix_image = OnscreenImage("croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
-		self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
-		self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
-		self.hide_gui()
+    #--------------------------------------GUI------------------------------
+    def load_gui(self):
+        """
+        Fonction qui nous permet de charger les éléments 2D (car on n'a besoin de les charger qu'une fois)
+        --------------------------------------------------
+        return -> None
+        """
+        self.myOkDialog = None
+        self.coeurs_vides = []
+        self.coeurs_moitie = []
+        self.coeurs_pleins = []
+        #------------------------Les coeurs vides-------------------------------------
+        x = -1.2
+        for loop in range(10):
+            a = OnscreenImage("vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+            a.setTransparency(TransparencyAttrib.MAlpha)
+            self.coeurs_vides.append(a)
+            x += 0.12
+        #-------------------------Les coeurs pleins---------------------------------
+        x = -1.2
+        for loop in range(10):
+            a = OnscreenImage("vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+            a.setTransparency(TransparencyAttrib.MAlpha)
+            self.coeurs_pleins.append(a)
+            x += 0.12
+        #--------------------Les coeurs à moitié pleins-------------------------------------
+        x = -1.2
+        for loop in range(10):
+            a = OnscreenImage("vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
+            a.setTransparency(TransparencyAttrib.MAlpha)
+            self.coeurs_moitie.append(a)
+            x+= 0.12
+        self.noai_text = OnscreenText(text=f"Noaïs : {self.player.noais}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
+        self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
+        self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+        self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
+        self.croix_image = OnscreenImage("croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
+        self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
+        self.lieu_text = OnscreenText(text="???", pos=(0, 0.65), scale=0.1, fg=(1, 1, 1, 1))
+        self.hide_gui()
 
-	def hide_gui(self):
-		"""
-  		Fonction permettant de cacher la GUI (utile lors des cinématiques, ou lors d'un tuto).
-    	--------------------------------------------------------------------------------------
-      	return -> None
-  		"""
-		for a in self.coeurs_pleins:
-			a.hide()
-		for a in self.coeurs_moitie:
-			a.hide()
-		for a in self.coeurs_vides:
-			a.hide()
-		self.noai_text.hide()
-		self.noai_image.hide()
-		self.map_image.hide()
-		self.croix_image.hide()
-		self.lieu_text.hide()
-		
-	def genere_liste_defilement(self):
-		"""
-		Méthode permettant de générer une liste de défilement, ce qui est utile pour la vente et l'inventaire.
-		------------------------------------------------------------------------------------------------------
-		return -> DirectScrolledList
-		"""	
-		a = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
-		return a	
-		
-	#-----------------------Méthodes d'interactions (triggers, PNJS, vente...)----------------------------------
-	def check_interact(self):
-		"""
-		Fonction appelée chaque fois que le joueur appuie sur espace.
-		Cela aura pour conséquences de vérifier les portes, les pnjs touchés, ou encore de passer les dialogues.
-		----------------------------------------------------------------------------------------------
-		return -> None
-		"""
-		reussi = self.check_interact_dial()
-		if self.current_pnj is not None:
-			taskMgr.remove("update")
-			self.ignore("out")
-			self.ignore("into")
-			if not self.reading and not reussi:
-				if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
-					self.text_index = 0
-					self.letter_index = 0
-					self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
-				elif self.pnjs[self.current_pnj].commercant:
-					self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
-					self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
-		if self.current_porte is not None:
-			self.transition.fadeOut(0.5)
-			taskMgr.remove("update")
-			self.player.walk = False
-			self.player.reverse = False
-			self.player.left = False
-			self.player.right = False
-			for event in self.keys_data:
-				self.ignore(self.keys_data[event])
-			self.ignore("into")
-			self.ignore("out")
-			taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte].newpos])
-		if self.actual_statue is not None:
-			taskMgr.remove("update")
-			properties = WindowProperties()
-			properties.setCursorHidden(False)
-			base.win.requestProperties(properties)
-			self.ignore("escape")
-			self.current_point = self.actual_statue
-			self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save) #Voulez-vous sauvegarder ?
-		if self.actual_trigger is not None:
-			taskMgr.remove("update")
-			properties = WindowProperties()
-			properties.setCursorHidden(False)
-			base.win.requestProperties(properties)
-			self.ignore("escape")
-			self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
-			self.ignore("out")
-		if self.actual_coffre is not None:
-			a = False
-			for objet in self.objects:
-				if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
-					if not objet.ouvert:
-							objet.ouvert = True
-							a = True
-							objet.object.play("anim")
-							taskMgr.remove("update")
-							properties = WindowProperties()
-							properties.setCursorHidden(False)
-							base.win.requestProperties(properties)
-			if a:								
-				if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
-					item = "Vodka"
-				self.player.ajoute_item(item)
-				self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
-				self.dialog.hide()
-				taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])	
-				
+    def hide_gui(self):
+        """
+        Fonction permettant de cacher la GUI (utile lors des cinématiques, ou lors d'un tuto).
+        --------------------------------------------------------------------------------------
+        return -> None
+        """
+        for a in self.coeurs_pleins:
+            a.hide()
+        for a in self.coeurs_moitie:
+            a.hide()
+        for a in self.coeurs_vides:
+            a.hide()
+        self.noai_text.hide()
+        self.noai_image.hide()
+        self.map_image.hide()
+        self.croix_image.hide()
+        self.lieu_text.hide()
+        
+    def genere_liste_defilement(self):
+        """
+        Méthode permettant de générer une liste de défilement, ce qui est utile pour la vente et l'inventaire.
+        ------------------------------------------------------------------------------------------------------
+        return -> DirectScrolledList
+        """ 
+        a = DirectScrolledList(
+        decButton_pos=(0, 0, 0.7),
+        decButton_text="+",
+        decButton_text_scale=0.07,
+        decButton_borderWidth=(0.005, 0.005),
+        incButton_pos=(0, 0, -0.7),
+        incButton_text="-",
+        incButton_text_scale=0.07,
+        incButton_borderWidth=(0.005, 0.005),
+        frameSize=(-0.7, 0.7, -0.8, 0.8),
+        frameColor=(0.1, 0.1, 0.1, 0.8),
+        pos=(0, 0, 0),
+        items=[],
+        numItemsVisible = 7,
+        forceHeight = 0.15,
+        itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+        itemFrame_pos=(0, 0, 0))
+        return a    
+        
+    #-----------------------Méthodes d'interactions (triggers, PNJS, vente...)----------------------------------
+    def check_interact(self):
+        """
+        Fonction appelée chaque fois que le joueur appuie sur espace.
+        Cela aura pour conséquences de vérifier les portes, les pnjs touchés, ou encore de passer les dialogues.
+        ----------------------------------------------------------------------------------------------
+        return -> None
+        """
+        reussi = self.check_interact_dial()
+        if self.current_pnj is not None:
+            taskMgr.remove("update")
+            self.ignore("out")
+            self.ignore("into")
+            if not self.reading and not reussi:
+                if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
+                    self.text_index = 0
+                    self.letter_index = 0
+                    self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
+                elif self.pnjs[self.current_pnj].commercant:
+                    self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
+                    self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
+        if self.current_porte is not None:
+            self.transition.fadeOut(0.5)
+            taskMgr.remove("update")
+            self.player.walk = False
+            self.player.reverse = False
+            self.player.left = False
+            self.player.right = False
+            for event in self.keys_data:
+                self.ignore(self.keys_data[event])
+            self.ignore("into")
+            self.ignore("out")
+            taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte].newpos])
+        if self.actual_statue is not None:
+            taskMgr.remove("update")
+            properties = WindowProperties()
+            properties.setCursorHidden(False)
+            base.win.requestProperties(properties)
+            self.ignore("escape")
+            self.current_point = self.actual_statue
+            self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save) #Voulez-vous sauvegarder ?
+        if self.actual_trigger is not None:
+            taskMgr.remove("update")
+            properties = WindowProperties()
+            properties.setCursorHidden(False)
+            base.win.requestProperties(properties)
+            self.ignore("escape")
+            self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
+            self.ignore("out")
+        if self.actual_coffre is not None:
+            a = False
+            for objet in self.objects:
+                if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
+                    if not objet.ouvert:
+                            objet.ouvert = True
+                            a = True
+                            objet.object.play("anim")
+                            taskMgr.remove("update")
+                            properties = WindowProperties()
+                            properties.setCursorHidden(False)
+                            base.win.requestProperties(properties)
+            if a:                               
+                if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
+                    item = "Vodka"
+                self.player.ajoute_item(item)
+                self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
+                self.dialog.hide()
+                taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])   
+                
 
-	def accept_trigger(self, clickedYes):
-		self.triggerDlg.cleanup()
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		self.accept("out", self.out)
-		if self.actual_trigger == 0: #Voulez-vous vous rendre à Marelys ?
-			if clickedYes:
-				self.transition.fadeOut(1)
-				taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(-1000, 650, 50)])
-				taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["Marelys.bam"])
-		elif self.actual_trigger == 1: #Voulez-vous vous rendre au village des pêcheurs ?
-			if clickedYes:
-				self.transition.fadeOut(1)
-				taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
-				taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
-		self.accept("escape", self.confirm_quit)
-		taskMgr.add(self.update, "update")
-		
+    def accept_trigger(self, clickedYes):
+        self.triggerDlg.cleanup()
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        self.accept("out", self.out)
+        if self.actual_trigger == 0: #Voulez-vous vous rendre à Marelys ?
+            if clickedYes:
+                self.transition.fadeOut(1)
+                taskMgr.doMethodLater(0.95, self.player.setPos, "new_player_pos", extraArgs=[(-1000, 650, 50)])
+                taskMgr.doMethodLater(1, self.load_map, "loadmap", extraArgs=["Marelys.bam"])
+        elif self.actual_trigger == 1: #Voulez-vous vous rendre au village des pêcheurs ?
+            if clickedYes:
+                self.transition.fadeOut(1)
+                taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
+                taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
+        self.accept("escape", self.confirm_quit)
+        taskMgr.add(self.update, "update")
+        
 
-	def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
-		"""
-		Fonction qui s'active lorsqu'un pnj commercant est interrogé.
-		---------------------------------------------------------------
-		articles -> dict
-		return -> None
-		"""
-		self.d_actif = False
-		self.hide_gui()
-		taskMgr.add(self.update_vente, "update vente")
-		properties = WindowProperties()
-		properties.setCursorHidden(False)
-		base.win.requestProperties(properties)
-		self.ignore(self.keys_data["Interagir"])
-		self.ignore("escape")
-		self.accept("escape", self.exit_vente)
-		self.ignore(self.keys_data["Inventaire"])
-		self.articles = self.genere_liste_defilement()
-		for article in articles:
-			bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
-			self.articles.addItem(bouton)
+    def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
+        """
+        Fonction qui s'active lorsqu'un pnj commercant est interrogé.
+        ---------------------------------------------------------------
+        articles -> dict
+        return -> None
+        """
+        self.d_actif = False
+        self.hide_gui()
+        taskMgr.add(self.update_vente, "update vente")
+        properties = WindowProperties()
+        properties.setCursorHidden(False)
+        base.win.requestProperties(properties)
+        self.ignore(self.keys_data["Interagir"])
+        self.ignore("escape")
+        self.accept("escape", self.exit_vente)
+        self.ignore(self.keys_data["Inventaire"])
+        self.articles = self.genere_liste_defilement()
+        for article in articles:
+            bouton = DirectButton(text=article + " : " + str(articles[article]) + " noaïs",  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.add_article, extraArgs=[article, articles[article]])
+            self.articles.addItem(bouton)
 
-	def add_article(self, article="Vodka", prix=30):
-		"""
-		Méthode permettant d'ajouter à l'inventaire du joueur un article acheté.
-		-------------------------------------------------------------------------
-		article -> str
-		return -> None
-		"""
-		if not self.d_actif:
-			self.d_actif = True
-			if self.player.noais >= prix:
-				self.player.noais -= prix #On retire de l'argent au joueur $$$$
-				self.player.inventaire.ajoute_item(article)
-				self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
-			else:
-				self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
-
-
-	def cleanup_dialog_vente(self, inutile):
-		"""
-		Méthode permettant d'effacer un pop-up de la vente.
-		----------------------------------------------------
-		inutile -> bool
-		return -> None
-		"""
-		self.dialog.cleanup()
-		self.d_actif = False
-
-	def cleanup_dialog_tresor(self, inutile):
-		"""
-		Méthode permettant d'enlever le dialogue de découverte d'un trésor.
-		----------------------------------------------------------------------
-		inutile -> bool
-		return -> None
-		"""
-		self.dialog.cleanup()
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		taskMgr.add(self.update, "update")
-
-	def exit_vente(self):
-		"""
-		Méthode s'activant quand la transaction avec un pnj est finie.
-		----------------------------------------------------------------
-		return -> None
-		"""
-		if not self.d_actif:
-			properties = WindowProperties()
-			properties.setCursorHidden(True)
-			base.win.requestProperties(properties)
-			taskMgr.add(self.update, "update")
-			self.ignore("escape")
-			self.accept("escape", self.confirm_quit)
-			self.accept(self.keys_data["Inventaire"], self.inventaire)
-			self.accept(self.keys_data["Interagir"], self.check_interact)
-			self.articles.removeNode()
-			self.accept("into", self.into)
-			self.accept("out", self.out)
-			self.current_pnj = None
-
-	def update_vente(self, task=None):
-		"""
-		Méthode permettant de mettre à jour la vente.
-		-----------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
-		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
-		return task.cont
+    def add_article(self, article="Vodka", prix=30):
+        """
+        Méthode permettant d'ajouter à l'inventaire du joueur un article acheté.
+        -------------------------------------------------------------------------
+        article -> str
+        return -> None
+        """
+        if not self.d_actif:
+            self.d_actif = True
+            if self.player.noais >= prix:
+                self.player.noais -= prix #On retire de l'argent au joueur $$$$
+                self.player.inventaire.ajoute_item(article)
+                self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
+            else:
+                self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
 
 
-	def reupdate(self):
-		"""
-		Méthode permettant de réactiver la méthode update.
-		----------------------------------------------------
-		return -> None
-		"""
-		taskMgr.remove("update vente")
-		taskMgr.add(self.update, "update")
-		self.accept("out", self.out)
-		self.accept("into", self.into)
+    def cleanup_dialog_vente(self, inutile):
+        """
+        Méthode permettant d'effacer un pop-up de la vente.
+        ----------------------------------------------------
+        inutile -> bool
+        return -> None
+        """
+        self.dialog.cleanup()
+        self.d_actif = False
 
-	def check_interact_dial(self):
-		"""
-		"Petite" fonction qui permet de passer les dialogues.
-		------------------------------------------------------
-		return -> bool
-		"""
-		if not self.reading and not self.termine:
-			self.reading = True
-			return False
-		elif self.reading:
-			if self.letter_index >= len(self.texts[self.text_index]):
-				self.text_index += 1
-				if self.son is not None:
-					self.son.stop()
-					if len(self.sons_messages) > self.text_index:
-						try:
-							self.son = loader.loadSfx(self.sons_messages[self.text_index])
-							self.son.play()
-						except:
-							print("Pas de fichier son valide.")
-				if self.text_index >= len(self.texts):
-					self.reading = False
-					self.termine = True
-					self.ok = False
-					self.text_index = 0
-					self.textObject.removeNode()
-					self.dialog_box.removeNode()
-					del self.textObject
-					del self.dialog_box
-					for message in self.messages:
-						base.messenger.send(message)
-					return True
-				else:
-					self.letter_index = 0
-					return False
-			else:
-				self.letter_index = len(self.texts[self.text_index])
-				return False
+    def cleanup_dialog_tresor(self, inutile):
+        """
+        Méthode permettant d'enlever le dialogue de découverte d'un trésor.
+        ----------------------------------------------------------------------
+        inutile -> bool
+        return -> None
+        """
+        self.dialog.cleanup()
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        taskMgr.add(self.update, "update")
 
-	def set_text(self, numero=0, messages=[]):
-		"""
-		Fonction qui permet d'afficher un texte.
-		--------------------------------------------------
-		numero -> int
-		messages -> list[str]
-		return -> None
-		"""
-		if not hasattr(self, "story"):
-			with open("../data/json/texts.json", encoding="utf-8") as texts:
-				self.story = json.load(texts)[self.langue]
-		if not self.reading:
-			self.reading = True
-			self.termine = False
-			#On va chercher dans le fichier json, à la langue séléctionnée, le numéro de dialogue demandé
-			if type(numero) is int:
-				self.texts = self.story[str(numero)]
-			else:
-				self.texts = numero	
-			self.text_index = 0
-			self.letter_index = 0
-			self.sons_messages = []
-			if os.path.exists(f"../data/sounds/dialogues/{numero}"):
-				r = os.listdir(f"../data/sounds/dialogues/{numero}").copy()
-				r.sort()
-				for truc in r:
-					if truc.endswith(".ogg"):
-						self.sons_messages.append(f"../data/sounds/dialogues/{numero}/"+truc)
-					if len(self.sons_messages) == len(self.story[str(numero)]):
-						break
-				if len(self.sons_messages) < len(self.story[str(numero)]):
-					while len(self.sons_messages) < len(self.story[str(numero)]):
-						self.sons_messages.append("../data/sounds/dialogues/blank.ogg")
-			self.messages = messages
-			#-------------Partie de chargement des fichiers audios de dialogue------------
-			if len(self.sons_messages) > 0:
-				print(self.sons_messages)
-				try:
-					self.son = loader.loadSfx(self.sons_messages[0])
-					self.son.play()
-				except:
-					print("Pas de fichier son valide.")
+    def exit_vente(self):
+        """
+        Méthode s'activant quand la transaction avec un pnj est finie.
+        ----------------------------------------------------------------
+        return -> None
+        """
+        if not self.d_actif:
+            properties = WindowProperties()
+            properties.setCursorHidden(True)
+            base.win.requestProperties(properties)
+            taskMgr.add(self.update, "update")
+            self.ignore("escape")
+            self.accept("escape", self.confirm_quit)
+            self.accept(self.keys_data["Inventaire"], self.inventaire)
+            self.accept(self.keys_data["Interagir"], self.check_interact)
+            self.articles.removeNode()
+            self.accept("into", self.into)
+            self.accept("out", self.out)
+            self.current_pnj = None
 
-	def update_text(self, task):
-		"""
-		Fonction qui met à jour le texte affiché à l'écran.
-		(Il y a sans doute une meilleure solution, mais comme celle-ci fonctionne on la garde)
-		---------------------------------------------------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
-		if self.reading:
-			if self.ok:
-				self.textObject.removeNode()
-				self.dialog_box.removeNode()
-				del self.textObject
-				del self.dialog_box
-			else:
-				self.ok = True
-			self.dialog_box = OnscreenImage("dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
-			self.dialog_box.setTransparency(TransparencyAttrib.MAlpha)
-			self.textObject = OnscreenText(text=self.texts[self.text_index][0:self.letter_index], pos=(0, -0.75), scale=0.07)
-			if self.letter_index < len(self.texts[self.text_index]):
-				self.letter_index += 1
-		return task.cont
-		
-	#---------------------------Méthodes de changement de state--------------------------------------
-	def fade_out(self, state="Menu"):
-		"""
-		Fonction qui permet au FSM de changer de state avec un fade out visuel et sonore.
-		----------------------------------------------------------------------------------
-		state -> str
-		return None
-		"""
-		self.transition.fadeOut(1)
-		self.ignore("f1")
-		Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 1)).start()
-		taskMgr.doMethodLater(1, self.change_state, "requete", extraArgs=[state])
-
-	def change_state(self, state):
-		"""
-		Fonction qui fonctionne avec la fonction fade_out.
-		------------------------------------------------------
-		state -> str
-		return -> None
-		"""
-		self.request(state)
-
-	#------------------------Méthodes n'entrant dans aucune catégorie--------------------------
-	def all_close(self):
-		"""
-		Fonction pour fermer la fenêtre et quitter le programme.
-		----------------------------------------------------------
-		return -> None
-		"""
-		base.destroy()
-		os._exit(0)
-
-	#---------------------------Ecran titre--------------------------------
-	def enterMenu(self):
-		"""
-		Fonction qui prépare l'écran titre.
-		------------------------------------------
-		return -> None
-		"""
-		#--------------Petit fade in visuel et sonore-----------------
-		self.transition.fadeIn(1)
-		self.music = base.loader.loadSfx("menu.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		if hasattr(self, "player"):
-			if hasattr(self.player, "followcam"):
-				self.player.followcam.set_active(False)
-		self.hide_gui()
-		self.menu = True
-		#-----------------------On charge les textes------------------------------------
-		self.textObject1 = OnscreenText(text='Return on Therenor', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
-		self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
-		#--------------------L'épée--------------------------------------
-		self.epee = loader.loadModel("sword.bam")
-		self.epee.reparentTo(base.cam)
-		#--------------On modifie la caméra (position, lentille)-------------
-		base.cam.node().getLens().setFov(70)
-		base.cam.lookAt(self.epee)
-		#-------------On fait tourner cette épée---------------------------
-		self.epee.setPosHprScale(0.00, 5.00, 0.00, 0.00, 270, 90.00, 1.00, 1.00, 1.00)
-		interval = self.epee.hprInterval(2, Vec3(0, 270, 90), startHpr = Vec3(0, 270, 0))
-		interval2 = self.epee.hprInterval(2, Vec3(0, 270, 180), startHpr = Vec3(0, 270, 90))
-		interval3 = self.epee.hprInterval(2, Vec3(0, 270, 270), startHpr = Vec3(0, 270, 180))
-		interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
-		s = Sequence(interval, interval2, interval3, interval4)
-		s.loop()
-		#--------------------Gestion des touches----------------------------
-		self.accept("escape", self.all_close)
-		self.acceptOnce("f1", self.fade_out, extraArgs=["Trois_fichiers"])
+    def update_vente(self, task=None):
+        """
+        Méthode permettant de mettre à jour la vente.
+        -----------------------------------------------
+        task -> task
+        return -> task.cont
+        """
+        self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
+        return task.cont
 
 
+    def reupdate(self):
+        """
+        Méthode permettant de réactiver la méthode update.
+        ----------------------------------------------------
+        return -> None
+        """
+        taskMgr.remove("update vente")
+        taskMgr.add(self.update, "update")
+        self.accept("out", self.out)
+        self.accept("into", self.into)
 
-	def exitMenu(self):
-		"""
-		Fonction qui s'acive quand on quitte l'écran titre.
-		-----------------------------------------------------
-		return -> None
-		"""
-		self.textObject1.remove_node()
-		self.textObject2.remove_node()
-		self.epee.removeNode()
-		del self.epee
+    def check_interact_dial(self):
+        """
+        "Petite" fonction qui permet de passer les dialogues.
+        ------------------------------------------------------
+        return -> bool
+        """
+        if not self.reading and not self.termine:
+            self.reading = True
+            return False
+        elif self.reading:
+            if self.letter_index >= len(self.texts[self.text_index]):
+                self.text_index += 1
+                if self.son is not None:
+                    self.son.stop()
+                    if len(self.sons_messages) > self.text_index:
+                        try:
+                            self.son = loader.loadSfx(self.sons_messages[self.text_index])
+                            self.son.play()
+                        except:
+                            print("Pas de fichier son valide.")
+                if self.text_index >= len(self.texts):
+                    self.reading = False
+                    self.termine = True
+                    self.ok = False
+                    self.text_index = 0
+                    self.textObject.removeNode()
+                    self.dialog_box.removeNode()
+                    del self.textObject
+                    del self.dialog_box
+                    for message in self.messages:
+                        base.messenger.send(message)
+                    return True
+                else:
+                    self.letter_index = 0
+                    return False
+            else:
+                self.letter_index = len(self.texts[self.text_index])
+                return False
 
-	#-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
-	def enterTrois_fichiers(self):
-		"""
-		Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
-		------------------------------------------------------------------------------------
-		return -> None
-		"""
-		self.ignoreAll()
-		self.accept("escape", self.all_close)
-		self.music = loader.loadSfx("para.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-		#-------------------On met la skybox en arrière-plan (on pourra mettre d'autres modèles 3d plus tard)----------------------
-		self.skybox = loader.loadModel("skybox.bam")
-		self.skybox.setScale(10000)
-		self.skybox.setBin('background', 1)
-		self.skybox.setDepthWrite(0)
-		self.skybox.setLightOff()
-		self.skybox.reparentTo(render)
-		#--------------On charge une image pour chaque fichier--------------------------------
-		self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
-		noms = []
-		path = self.get_path()
-		for loop in range(3):
-			self.read(file=loop+1)
-			if self.player.nom != "_":
-				noms.append(self.player.nom)
-			else:
-				noms.append(self.story["gui"][2]) #Fichier vide
-		self.player.nom = "Link"
-		file = open(path+"/keys.json", "rt")
-		self.keys_data = json.load(file)[0]
-		file.close()
-		self.buttons_continue = [DirectButton(text=self.story["gui"][3], scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)] #Commencer
-		self.buttons_erase = [DirectButton(text=self.story["gui"][4], scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)] #Effacer
-		self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
-		self.button_mapping = DirectButton(text=self.story["gui"][5], scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"]) #Mappage de touches
-		self.button_langue = DirectButton(text=self.story["gui"][6], scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"]) #Changer la langue
-		self.transition.fadeIn(1)
+    def set_text(self, numero=0, messages=[]):
+        """
+        Fonction qui permet d'afficher un texte.
+        --------------------------------------------------
+        numero -> int
+        messages -> list[str]
+        return -> None
+        """
+        if not hasattr(self, "story"):
+            with open("../data/json/texts.json", encoding="utf-8") as texts:
+                self.story = json.load(texts)[self.langue]
+        if not self.reading:
+            self.reading = True
+            self.termine = False
+            #On va chercher dans le fichier json, à la langue séléctionnée, le numéro de dialogue demandé
+            if type(numero) is int:
+                self.texts = self.story[str(numero)]
+            else:
+                self.texts = numero 
+            self.text_index = 0
+            self.letter_index = 0
+            self.sons_messages = []
+            if os.path.exists(f"../data/sounds/dialogues/{numero}"):
+                r = os.listdir(f"../data/sounds/dialogues/{numero}").copy()
+                r.sort()
+                for truc in r:
+                    if truc.endswith(".ogg"):
+                        self.sons_messages.append(f"../data/sounds/dialogues/{numero}/"+truc)
+                    if len(self.sons_messages) == len(self.story[str(numero)]):
+                        break
+                if len(self.sons_messages) < len(self.story[str(numero)]):
+                    while len(self.sons_messages) < len(self.story[str(numero)]):
+                        self.sons_messages.append("../data/sounds/dialogues/blank.ogg")
+            self.messages = messages
+            #-------------Partie de chargement des fichiers audios de dialogue------------
+            if len(self.sons_messages) > 0:
+                print(self.sons_messages)
+                try:
+                    self.son = loader.loadSfx(self.sons_messages[0])
+                    self.son.play()
+                except:
+                    print("Pas de fichier son valide.")
 
-	def confirm_erase(self, file=1):
-		"""
-		Fonction qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
-		----------------------------------------------------------------------------------------------------
-		file -> int
-		return -> None
-		"""
-		self.eraseDlg = YesNoDialog(text=self.story["gui"][7], command=self.erase_file, extraArgs=[file]) #Voulez-vous vraiment effacer les données de sauvegarde ?
+    def update_text(self, task):
+        """
+        Fonction qui met à jour le texte affiché à l'écran.
+        (Il y a sans doute une meilleure solution, mais comme celle-ci fonctionne on la garde)
+        ---------------------------------------------------------------------------------------
+        task -> task
+        return -> task.cont
+        """
+        if self.reading:
+            if self.ok:
+                self.textObject.removeNode()
+                self.dialog_box.removeNode()
+                del self.textObject
+                del self.dialog_box
+            else:
+                self.ok = True
+            self.dialog_box = OnscreenImage("dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
+            self.dialog_box.setTransparency(TransparencyAttrib.MAlpha)
+            self.textObject = OnscreenText(text=self.texts[self.text_index][0:self.letter_index], pos=(0, -0.75), scale=0.07)
+            if self.letter_index < len(self.texts[self.text_index]):
+                self.letter_index += 1
+        return task.cont
+        
+    #---------------------------Méthodes de changement de state--------------------------------------
+    def fade_out(self, state="Menu"):
+        """
+        Fonction qui permet au FSM de changer de state avec un fade out visuel et sonore.
+        ----------------------------------------------------------------------------------
+        state -> str
+        return None
+        """
+        self.transition.fadeOut(1)
+        self.ignore("f1")
+        Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 1)).start()
+        taskMgr.doMethodLater(1, self.change_state, "requete", extraArgs=[state])
 
+    def change_state(self, state):
+        """
+        Fonction qui fonctionne avec la fonction fade_out.
+        ------------------------------------------------------
+        state -> str
+        return -> None
+        """
+        self.request(state)
 
-	def erase_file(self, clickedYes, file):
-		"""
-		Fonction qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
-		---------------------------------------------------------------------------------------------
-		clickedYes -> bool
-		file -> int
-		return -> None
-		"""
-		self.eraseDlg.cleanup()
-		if clickedYes:
-			fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
-			fichier.writelines(["_|0|1|3|3"])
-			fichier.close()
-			for button in self.buttons_erase:
-				button.removeNode()
-			for button in self.buttons_continue:
-				button.removeNode()
-			self.fade_out()
+    #------------------------Méthodes n'entrant dans aucune catégorie--------------------------
+    def all_close(self):
+        """
+        Fonction pour fermer la fenêtre et quitter le programme.
+        ----------------------------------------------------------
+        return -> None
+        """
+        base.destroy()
+        os._exit(0)
+
+    #---------------------------Ecran titre--------------------------------
+    def enterMenu(self):
+        """
+        Fonction qui prépare l'écran titre.
+        ------------------------------------------
+        return -> None
+        """
+        #--------------Petit fade in visuel et sonore-----------------
+        self.transition.fadeIn(1)
+        self.music = base.loader.loadSfx("menu.ogg")
+        self.music.setLoop(True)
+        self.music.play()
+        Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
+        if hasattr(self, "player"):
+            if hasattr(self.player, "followcam"):
+                self.player.followcam.set_active(False)
+        self.hide_gui()
+        self.menu = True
+        #-----------------------On charge les textes------------------------------------
+        self.textObject1 = OnscreenText(text='Return on Therenor', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
+        self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
+        #--------------------L'épée--------------------------------------
+        self.epee = loader.loadModel("sword.bam")
+        self.epee.reparentTo(base.cam)
+        #--------------On modifie la caméra (position, lentille)-------------
+        base.cam.node().getLens().setFov(70)
+        base.cam.lookAt(self.epee)
+        #-------------On fait tourner cette épée---------------------------
+        self.epee.setPosHprScale(0.00, 5.00, 0.00, 0.00, 270, 90.00, 1.00, 1.00, 1.00)
+        interval = self.epee.hprInterval(2, Vec3(0, 270, 90), startHpr = Vec3(0, 270, 0))
+        interval2 = self.epee.hprInterval(2, Vec3(0, 270, 180), startHpr = Vec3(0, 270, 90))
+        interval3 = self.epee.hprInterval(2, Vec3(0, 270, 270), startHpr = Vec3(0, 270, 180))
+        interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
+        s = Sequence(interval, interval2, interval3, interval4)
+        s.loop()
+        #--------------------Gestion des touches----------------------------
+        self.accept("escape", self.all_close)
+        self.acceptOnce("f1", self.fade_out, extraArgs=["Trois_fichiers"])
 
 
 
-	def exitTrois_fichiers(self):
-		"""
-		Fonction qui s'active lorsque l'on quitte l'état trois_fichiers.
-		----------------------------------------------------------------------
-		return -> None
-		"""
-		self.music.stop()
-		self.accept(self.keys_data["Interagir"], self.check_interact)
-		self.accept("escape", self.all_close)
-		base.win.setCloseRequestEvent("escape")
-		self.skybox.removeNode()
-		for file in self.files:
-			file.removeNode()
-		del self.files
-		for button in self.buttons_continue:
-			button.removeNode()
-		del self.buttons_continue
-		for button in self.buttons_erase:
-			button.removeNode()
-		del self.buttons_erase
-		for name in self.names:
-			name.removeNode()
-		del self.names
-		self.button_mapping.removeNode()
-		del self.button_mapping
-		self.button_langue.removeNode()
-		del self.button_langue
+    def exitMenu(self):
+        """
+        Fonction qui s'acive quand on quitte l'écran titre.
+        -----------------------------------------------------
+        return -> None
+        """
+        self.textObject1.remove_node()
+        self.textObject2.remove_node()
+        self.epee.removeNode()
+        del self.epee
 
-	def verify(self, file):
-		"""
-		Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
-		On agira de différentes manières selon le chapitre auquel le joueur est rendu.
-		---------------------------------------------------------------------------
-		return -> None
-		"""
-		self.actual_file = file
-		self.read(file=file)
-		with open("../data/json/texts.json", encoding="utf-8") as texts:
-			self.story = json.load(texts)
-		self.story = self.story[self.langue]
-		#--------------Initialisation-----------------
-		if self.chapitre == 0:
-			self.request("Init")
-		#----------------La légende------------------------
-		elif self.chapitre == 1:
-			self.request("Cinematique")
-		#-----------------On charge la map-----------------------------------
-		elif self.chapitre == 2:
-			Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
-			self.fade_out("Map")
-		elif self.chapitre == 3:
-			self.fade_out("Cinematique")
-		#------------Générique---------------------------
-		else:
-			self.request("Generique")
-			
-			
-	#--------------------------------Gestion du changement de langue-----------------------------------------------
-	def enterLanguage(self):
-		"""
-		Fonction qui s'active lorsque l'on entre dans l'état de changement de langue.
-		-------------------------------------------------------------------------------
-		return -> None
-		"""
-		self.transition.fadeIn(1)
-		self.skybox = loader.loadModel("skybox.bam")
-		self.skybox.setScale(10000)
-		self.skybox.setBin('background', 1)
-		self.skybox.setDepthWrite(0)
-		self.skybox.setLightOff()
-		self.skybox.reparentTo(render)
-		dico = {"francais":0, "deutsch":1}
-		self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
-		self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "deutsch"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
-		self.exit_button = DirectButton(text="Retour", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Trois_fichiers"])
-		if self.langue == "deutsch":
-			self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
-			self.exit_button.setText("Zurück")
+    #-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
+    def enterTrois_fichiers(self):
+        """
+        Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
+        ------------------------------------------------------------------------------------
+        return -> None
+        """
+        self.ignoreAll()
+        self.accept("escape", self.all_close)
+        self.music = loader.loadSfx("para.ogg")
+        self.music.setLoop(True)
+        self.music.play()
+        Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
+        #-------------------On met la skybox en arrière-plan (on pourra mettre d'autres modèles 3d plus tard)----------------------
+        self.skybox = loader.loadModel("skybox.bam")
+        self.skybox.setScale(10000)
+        self.skybox.setBin('background', 1)
+        self.skybox.setDepthWrite(0)
+        self.skybox.setLightOff()
+        self.skybox.reparentTo(render)
+        #--------------On charge une image pour chaque fichier--------------------------------
+        self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
+        noms = []
+        path = self.get_path()
+        for loop in range(3):
+            self.read(file=loop+1)
+            if self.player.nom != "_":
+                noms.append(self.player.nom)
+            else:
+                noms.append(self.story["gui"][2]) #Fichier vide
+        self.player.nom = "Link"
+        file = open(path+"/keys.json", "rt")
+        self.keys_data = json.load(file)[0]
+        file.close()
+        self.buttons_continue = [DirectButton(text=self.story["gui"][3], scale=0.07, pos=(-0.8+0.8*i, 1, -0.08), command=self.verify, extraArgs=[i+1]) for i in range(3)] #Commencer
+        self.buttons_erase = [DirectButton(text=self.story["gui"][4], scale=0.07, pos=(-0.8+0.8*i, 1, -0.18), command=self.confirm_erase, extraArgs=[i+1]) for i in range(3)] #Effacer
+        self.names = [OnscreenText(text=noms[i], pos=(-0.8+0.8*i, 0.08), scale=0.07) for i in range(3)]
+        self.button_mapping = DirectButton(text=self.story["gui"][5], scale=0.07, pos=(0.8, 1, -0.7), command=self.fade_out, extraArgs=["Mapping"]) #Mappage de touches
+        self.button_langue = DirectButton(text=self.story["gui"][6], scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Language"]) #Changer la langue
+        self.transition.fadeIn(1)
 
-	def itemSel(self, arg):
-		"""
-		Fonction qui s'active dès que l'utilisateur change de langue.
-		----------------------------------------------------------------
-		arg -> str
-		return -> None
-		"""
-		self.langue = arg
-		if self.langue == "francais":
-			self.textObject.setText("Veuillez choisir votre langue.")
-			self.exit_button.setText("Retour")
-		elif self.langue == "deutsch":
-			self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
-			self.exit_button.setText("Zurück")
+    def confirm_erase(self, file=1):
+        """
+        Fonction qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
+        ----------------------------------------------------------------------------------------------------
+        file -> int
+        return -> None
+        """
+        self.eraseDlg = YesNoDialog(text=self.story["gui"][7], command=self.erase_file, extraArgs=[file]) #Voulez-vous vraiment effacer les données de sauvegarde ?
 
 
-	def exitLanguage(self):
-		"""
-		Fonction qui s'active lorsque l'on quitte l'état pour changer de langue.
-		---------------------------------------------------------------------------
-		return -> None
-		"""
-		self.save_global()
-		with open("../data/json/texts.json", encoding="utf-8") as texts:
-			self.story = json.load(texts)[self.langue]
-		self.skybox.removeNode()
-		del self.skybox
-		self.textObject.removeNode()
-		del self.textObject
-		self.menu.removeNode()
-		del self.menu
-		self.exit_button.removeNode()
-		del self.exit_button
+    def erase_file(self, clickedYes, file):
+        """
+        Fonction qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
+        ---------------------------------------------------------------------------------------------
+        clickedYes -> bool
+        file -> int
+        return -> None
+        """
+        self.eraseDlg.cleanup()
+        if clickedYes:
+            fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
+            fichier.writelines(["_|0|1|3|3"])
+            fichier.close()
+            for button in self.buttons_erase:
+                button.removeNode()
+            for button in self.buttons_continue:
+                button.removeNode()
+            self.fade_out()
 
-	#-------------------------------Gestion du mappage de touches--------------------------------------------------
-	def enterMapping(self):
-		"""
-		Fonction inspirée du script mappingGUI des samples de panda3d.
-		----------------------------------------------------------------
-		Elle se déclenche lorsque l'on entre dans l'état Mapping.
-		-------------------------------------------------------------
-		return -> None
-		"""
-		file = open(self.get_path()+"/keys.json", "rt")
-		keys_data = json.load(file)
-		file.close()
-		keys_data = keys_data[0]
-		liste_axe = ["left y 1", "right y 1", "right y -1", "right x 1", "right x -1"]
-		self.mapping = InputMapping(keys_data) #On crée une instnce de la classe InputMapping.
-		i = 0
-		for key in keys_data:
-			if not self.manette:
-				self.mapping.mapButton(key, keys_data[key])
-			else:
-				if i < 5:
-					self.mapping.mapAxis(key, liste_axe[i])
-				else:
-					self.mapping.mapButton(key, keys_data[key])
-			i += 1
+
+
+    def exitTrois_fichiers(self):
+        """
+        Fonction qui s'active lorsque l'on quitte l'état trois_fichiers.
+        ----------------------------------------------------------------------
+        return -> None
+        """
+        self.music.stop()
+        self.accept(self.keys_data["Interagir"], self.check_interact)
+        self.accept("escape", self.all_close)
+        base.win.setCloseRequestEvent("escape")
+        self.skybox.removeNode()
+        for file in self.files:
+            file.removeNode()
+        del self.files
+        for button in self.buttons_continue:
+            button.removeNode()
+        del self.buttons_continue
+        for button in self.buttons_erase:
+            button.removeNode()
+        del self.buttons_erase
+        for name in self.names:
+            name.removeNode()
+        del self.names
+        self.button_mapping.removeNode()
+        del self.button_mapping
+        self.button_langue.removeNode()
+        del self.button_langue
+
+    def verify(self, file):
+        """
+        Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
+        On agira de différentes manières selon le chapitre auquel le joueur est rendu.
+        ---------------------------------------------------------------------------
+        return -> None
+        """
+        self.actual_file = file
+        self.read(file=file)
+        with open("../data/json/texts.json", encoding="utf-8") as texts:
+            self.story = json.load(texts)
+        self.story = self.story[self.langue]
+        #--------------Initialisation-----------------
+        if self.chapitre == 0:
+            self.request("Init")
+        #----------------La légende------------------------
+        elif self.chapitre == 1:
+            self.request("Cinematique")
+        #-----------------On charge la map-----------------------------------
+        elif self.chapitre == 2:
+            Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
+            self.fade_out("Map")
+        elif self.chapitre == 3:
+            self.fade_out("Cinematique")
+        #------------Générique---------------------------
+        else:
+            self.request("Generique")
+            
+            
+    #--------------------------------Gestion du changement de langue-----------------------------------------------
+    def enterLanguage(self):
+        """
+        Fonction qui s'active lorsque l'on entre dans l'état de changement de langue.
+        -------------------------------------------------------------------------------
+        return -> None
+        """
+        self.transition.fadeIn(1)
+        self.skybox = loader.loadModel("skybox.bam")
+        self.skybox.setScale(10000)
+        self.skybox.setBin('background', 1)
+        self.skybox.setDepthWrite(0)
+        self.skybox.setLightOff()
+        self.skybox.reparentTo(render)
+        dico = {"francais":0, "deutsch":1}
+        self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
+        self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "deutsch"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
+        self.exit_button = DirectButton(text="Retour", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Trois_fichiers"])
+        if self.langue == "deutsch":
+            self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
+            self.exit_button.setText("Zurück")
+
+    def itemSel(self, arg):
+        """
+        Fonction qui s'active dès que l'utilisateur change de langue.
+        ----------------------------------------------------------------
+        arg -> str
+        return -> None
+        """
+        self.langue = arg
+        if self.langue == "francais":
+            self.textObject.setText("Veuillez choisir votre langue.")
+            self.exit_button.setText("Retour")
+        elif self.langue == "deutsch":
+            self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
+            self.exit_button.setText("Zurück")
+
+
+    def exitLanguage(self):
+        """
+        Fonction qui s'active lorsque l'on quitte l'état pour changer de langue.
+        ---------------------------------------------------------------------------
+        return -> None
+        """
+        self.save_global()
+        with open("../data/json/texts.json", encoding="utf-8") as texts:
+            self.story = json.load(texts)[self.langue]
+        self.skybox.removeNode()
+        del self.skybox
+        self.textObject.removeNode()
+        del self.textObject
+        self.menu.removeNode()
+        del self.menu
+        self.exit_button.removeNode()
+        del self.exit_button
+
+    #-------------------------------Gestion du mappage de touches--------------------------------------------------
+    def enterMapping(self):
+        """
+        Fonction inspirée du script mappingGUI des samples de panda3d.
+        ----------------------------------------------------------------
+        Elle se déclenche lorsque l'on entre dans l'état Mapping.
+        -------------------------------------------------------------
+        return -> None
+        """
+        file = open(self.get_path()+"/keys.json", "rt")
+        keys_data = json.load(file)
+        file.close()
+        keys_data = keys_data[0]
+        liste_axe = ["left y 1", "right y 1", "right y -1", "right x 1", "right x -1"]
+        self.mapping = InputMapping(keys_data) #On crée une instnce de la classe InputMapping.
+        i = 0
+        for key in keys_data:
+            if not self.manette:
+                self.mapping.mapButton(key, keys_data[key])
+            else:
+                if i < 5:
+                    self.mapping.mapAxis(key, liste_axe[i])
+                else:
+                    self.mapping.mapButton(key, keys_data[key])
+            i += 1
         #Ici, on crée un titre
-		self.textscale = 0.1
-		self.title = DirectLabel(
-		scale=self.textscale,
-		pos=(base.a2dLeft + 0.05, 0.0, base.a2dTop - (self.textscale + 0.05)),
-		frameColor=VBase4(0, 0, 0, 0),
-		text="Paramétrage des touches",
-		text_align=TextNode.ALeft,
-		text_fg=VBase4(1, 1, 1, 1),
-		text_shadow=VBase4(0, 0, 0, 0.75),
-		text_shadowOffset=Vec2(0.05, 0.05))
-		self.title.setTransparency(1)
+        self.textscale = 0.1
+        self.title = DirectLabel(
+        scale=self.textscale,
+        pos=(base.a2dLeft + 0.05, 0.0, base.a2dTop - (self.textscale + 0.05)),
+        frameColor=VBase4(0, 0, 0, 0),
+        text="Paramétrage des touches",
+        text_align=TextNode.ALeft,
+        text_fg=VBase4(1, 1, 1, 1),
+        text_shadow=VBase4(0, 0, 0, 0.75),
+        text_shadowOffset=Vec2(0.05, 0.05))
+        self.title.setTransparency(1)
         #On crée le menu qui contiendra notre liste
-		self.lstActionMap = DirectScrolledFrame(
-		#On lui fait prendre toute la taille de la fenêtre
-		frameSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 1.55),
-		#On fait en sorte que le canevas soit aussi grand que le menu
-		canvasSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 0.0),
-		#Et on change la couleur du menu en blanc.
-		frameColor=VBase4(0, 0, 0.25, 0.75),
-		pos=(0, 0, -0.8),
-		verticalScroll_scrollSize=0.2,
-		verticalScroll_frameColor=VBase4(0.02, 0.02, 0.02, 1),
-		verticalScroll_thumb_relief=1,
-		verticalScroll_thumb_pressEffect=False,
-		verticalScroll_thumb_frameColor=VBase4(0, 0, 0, 0),
-		verticalScroll_incButton_relief=1,
-		verticalScroll_incButton_pressEffect=False,
-		verticalScroll_incButton_frameColor=VBase4(0, 0, 0, 0),
-		verticalScroll_decButton_relief=1,
-		verticalScroll_decButton_pressEffect=False,
-		verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
-		idx = 0
-		self.actionLabels = {}
-		for action in self.mapping.actions:
-			mapped = self.mapping.formatMapping(action)
-			item = self.__makeListItem(action, mapped, idx)
-			item.reparentTo(self.lstActionMap.getCanvas())
-			idx += 1
-		self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
-		self.lstActionMap.setCanvasSize()
-		self.button_retour = DirectButton(text=self.story["gui"][8], pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"]) #Retour
-		self.transition.fadeIn(2)
+        self.lstActionMap = DirectScrolledFrame(
+        #On lui fait prendre toute la taille de la fenêtre
+        frameSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 1.55),
+        #On fait en sorte que le canevas soit aussi grand que le menu
+        canvasSize=VBase4(base.a2dLeft, base.a2dRight, 0.0, 0.0),
+        #Et on change la couleur du menu en blanc.
+        frameColor=VBase4(0, 0, 0.25, 0.75),
+        pos=(0, 0, -0.8),
+        verticalScroll_scrollSize=0.2,
+        verticalScroll_frameColor=VBase4(0.02, 0.02, 0.02, 1),
+        verticalScroll_thumb_relief=1,
+        verticalScroll_thumb_pressEffect=False,
+        verticalScroll_thumb_frameColor=VBase4(0, 0, 0, 0),
+        verticalScroll_incButton_relief=1,
+        verticalScroll_incButton_pressEffect=False,
+        verticalScroll_incButton_frameColor=VBase4(0, 0, 0, 0),
+        verticalScroll_decButton_relief=1,
+        verticalScroll_decButton_pressEffect=False,
+        verticalScroll_decButton_frameColor=VBase4(0, 0, 0, 0),)
+        idx = 0
+        self.actionLabels = {}
+        for action in self.mapping.actions:
+            mapped = self.mapping.formatMapping(action)
+            item = self.__makeListItem(action, mapped, idx)
+            item.reparentTo(self.lstActionMap.getCanvas())
+            idx += 1
+        self.lstActionMap["canvasSize"] = (base.a2dLeft+0.05, base.a2dRight-0.05, -(len(self.mapping.actions)*0.1), 0.09)
+        self.lstActionMap.setCanvasSize()
+        self.button_retour = DirectButton(text=self.story["gui"][8], pos=(0.8, 1, -0.7), scale=0.07, command=self.fade_out, extraArgs=["Trois_fichiers"]) #Retour
+        self.transition.fadeIn(2)
 
-	def closeDialog(self, action, newInputType, newInput):
-		"""
-		Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue
-		qui s'affiche quand on change les touches.
-		-------------------------------------------------------------
-		action -> str
-		newInputType -> str
-		newInput -> str
-		return -> None
-		"""
-		self.dlgInput = None
-		if newInputType is not None:
+    def closeDialog(self, action, newInputType, newInput):
+        """
+        Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue
+        qui s'affiche quand on change les touches.
+        -------------------------------------------------------------
+        action -> str
+        newInputType -> str
+        newInput -> str
+        return -> None
+        """
+        self.dlgInput = None
+        if newInputType is not None:
             #On change l'évènement pour l'action donnée.
-			if newInputType == "axis":
-				self.mapping.mapAxis(action, newInput)
-			else:
-				self.mapping.mapButton(action, newInput)
+            if newInputType == "axis":
+                self.mapping.mapAxis(action, newInput)
+            else:
+                self.mapping.mapButton(action, newInput)
             #On met à jour la taille du texte dns la liste.
-			self.actionLabels[action]["text"] = self.mapping.formatMapping(action)
+            self.actionLabels[action]["text"] = self.mapping.formatMapping(action)
         #On efface ce qui n'est pas nécessaire.
-		for bt in base.buttonThrowers:
-			bt.node().setSpecificFlag(True)
-			bt.node().setButtonDownEvent("")
-		for bt in base.deviceButtonThrowers:
-			bt.node().setSpecificFlag(True)
-			bt.node().setButtonDownEvent("")
-		taskMgr.remove("checkControls")
+        for bt in base.buttonThrowers:
+            bt.node().setSpecificFlag(True)
+            bt.node().setButtonDownEvent("")
+        for bt in base.deviceButtonThrowers:
+            bt.node().setSpecificFlag(True)
+            bt.node().setButtonDownEvent("")
+        taskMgr.remove("checkControls")
 
-	def changeMapping(self, action):
-		"""
-		Fonction qui permet d'afficher le dialogue pour changer les touches.
-		----------------------------------------------------------------------
-		action -> str
-		return -> None
-		"""
-		liste_interdite = ["Avancer", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
-		if self.manette and action in liste_interdite:
-			return None
-		else:
-			#On crée notre fenêtre de dialogue.
-			self.dlgInput = ChangeActionDialog(action, command=self.closeDialog)
-			#On attache les périphériques d'entrée
-			devices = base.devices.getDevices()
-			self.attachedDevices = devices
-			# Disable regular button events on all button event throwers, and
-			# instead broadcast a generic event.
-			for bt in base.buttonThrowers:
-				bt.node().setSpecificFlag(False)
-				bt.node().setButtonDownEvent("keyListenEvent")
-			for bt in base.deviceButtonThrowers:
-				bt.node().setSpecificFlag(False)
-				bt.node().setButtonDownEvent("deviceListenEvent")
-			self.accept("keyListenEvent", self.dlgInput.buttonPressed)
-			self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
-			self.axisStates = {None: {}}
-			for device in devices:
-				for axis in device.axes:
-					if device not in self.axisStates.keys():
-						self.axisStates.update({device: {axis.axis: axis.value}})
-					else:
-						self.axisStates[device].update({axis.axis: axis.value})
-			taskMgr.add(self.watchControls, "checkControls")
+    def changeMapping(self, action):
+        """
+        Fonction qui permet d'afficher le dialogue pour changer les touches.
+        ----------------------------------------------------------------------
+        action -> str
+        return -> None
+        """
+        liste_interdite = ["Avancer", "Monter la camera", "Descendre la camera", "Camera a droite", "Camera a gauche"]
+        if self.manette and action in liste_interdite:
+            return None
+        else:
+            #On crée notre fenêtre de dialogue.
+            self.dlgInput = ChangeActionDialog(action, command=self.closeDialog)
+            #On attache les périphériques d'entrée
+            devices = base.devices.getDevices()
+            self.attachedDevices = devices
+            # Disable regular button events on all button event throwers, and
+            # instead broadcast a generic event.
+            for bt in base.buttonThrowers:
+                bt.node().setSpecificFlag(False)
+                bt.node().setButtonDownEvent("keyListenEvent")
+            for bt in base.deviceButtonThrowers:
+                bt.node().setSpecificFlag(False)
+                bt.node().setButtonDownEvent("deviceListenEvent")
+            self.accept("keyListenEvent", self.dlgInput.buttonPressed)
+            self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
+            self.axisStates = {None: {}}
+            for device in devices:
+                for axis in device.axes:
+                    if device not in self.axisStates.keys():
+                        self.axisStates.update({device: {axis.axis: axis.value}})
+                    else:
+                        self.axisStates[device].update({axis.axis: axis.value})
+            taskMgr.add(self.watchControls, "checkControls")
 
-	def watchControls(self, task):
-		"""
-		Fonction qui vérifie si l'on touche à quelque chose.
-		-------------------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
-		for device in self.attachedDevices:
-			if device.device_class == InputDevice.DeviceClass.mouse:
-				continue
-			for axis in device.axes:
-				if self.axisStates[device][axis.axis] + DEAD_ZONE < axis.value or \
-					self.axisStates[device][axis.axis] - DEAD_ZONE > axis.value:
-					self.axisStates[device][axis.axis] = axis.value
-					if axis.axis != InputDevice.Axis.none:
-						self.dlgInput.axisMoved(axis.axis)
+    def watchControls(self, task):
+        """
+        Fonction qui vérifie si l'on touche à quelque chose.
+        -------------------------------------------------------
+        task -> task
+        return -> task.cont
+        """
+        for device in self.attachedDevices:
+            if device.device_class == InputDevice.DeviceClass.mouse:
+                continue
+            for axis in device.axes:
+                if self.axisStates[device][axis.axis] + DEAD_ZONE < axis.value or \
+                    self.axisStates[device][axis.axis] - DEAD_ZONE > axis.value:
+                    self.axisStates[device][axis.axis] = axis.value
+                    if axis.axis != InputDevice.Axis.none:
+                        self.dlgInput.axisMoved(axis.axis)
 
-		return task.cont
+        return task.cont
 
-	def __makeListItem(self, action, event, index):
-		"""
-		Fonction appelée pour créer un contenu.
-		------------------------------------------
-		action -> str
-		event -> str
-		index -> int
-		return -> DrectFrame
-		"""
-		def dummy(): pass
-		item = DirectFrame(
-		text=action,
-		geom_scale=(base.a2dRight-0.05, 1, 0.1),
-		frameSize=VBase4(base.a2dLeft+0.05, base.a2dRight-0.05, -0.05, 0.05),
-		frameColor=VBase4(1,0,0,0),
-		text_align=TextNode.ALeft,
-		text_scale=0.05,
-		text_fg=VBase4(1,1,1,1),
-		text_pos=(base.a2dLeft + 0.3, -0.015),
-		text_shadow=VBase4(0, 0, 0, 0.35),
-		text_shadowOffset=Vec2(-0.05, -0.05),
-		pos=(0.05, 0, -(0.10 * index)))
-		item.setTransparency(True)
-		lbl = DirectLabel(
-		text=event,
-		text_fg=VBase4(1, 1, 1, 1),
-		text_scale=0.05,
-		text_pos=Vec2(0, -0.015),
-		frameColor=VBase4(0, 0, 0, 0),
-		)
-		lbl.reparentTo(item)
-		lbl.setTransparency(True)
-		self.actionLabels[action] = lbl
+    def __makeListItem(self, action, event, index):
+        """
+        Fonction appelée pour créer un contenu.
+        ------------------------------------------
+        action -> str
+        event -> str
+        index -> int
+        return -> DrectFrame
+        """
+        def dummy(): pass
+        item = DirectFrame(
+        text=action,
+        geom_scale=(base.a2dRight-0.05, 1, 0.1),
+        frameSize=VBase4(base.a2dLeft+0.05, base.a2dRight-0.05, -0.05, 0.05),
+        frameColor=VBase4(1,0,0,0),
+        text_align=TextNode.ALeft,
+        text_scale=0.05,
+        text_fg=VBase4(1,1,1,1),
+        text_pos=(base.a2dLeft + 0.3, -0.015),
+        text_shadow=VBase4(0, 0, 0, 0.35),
+        text_shadowOffset=Vec2(-0.05, -0.05),
+        pos=(0.05, 0, -(0.10 * index)))
+        item.setTransparency(True)
+        lbl = DirectLabel(
+        text=event,
+        text_fg=VBase4(1, 1, 1, 1),
+        text_scale=0.05,
+        text_pos=Vec2(0, -0.015),
+        frameColor=VBase4(0, 0, 0, 0),
+        )
+        lbl.reparentTo(item)
+        lbl.setTransparency(True)
+        self.actionLabels[action] = lbl
 
-		buttonScale = 0.15
-		btn = DirectButton(
-		text="Modifier",
-		scale=buttonScale,
-		text_scale=0.25,
-		text_align=TextNode.ALeft,
-		text_fg=VBase4(0.898, 0.839, 0.730, 1.0),
-		text_pos=Vec2(-0.9, -0.085),
-		relief=1,
-		pad=Vec2(0.01, 0.01),
-		frameColor=VBase4(0, 0, 0, 0),
-		frameSize=VBase4(-1.0, 1.0, -0.25, 0.25),
-		pos=(base.a2dRight-(0.898*buttonScale+0.3), 0, 0),
-		pressEffect=False,
-		command=self.changeMapping,
-		extraArgs=[action])
-		btn.setTransparency(True)
-		btn.reparentTo(item)
-		return item
+        buttonScale = 0.15
+        btn = DirectButton(
+        text="Modifier",
+        scale=buttonScale,
+        text_scale=0.25,
+        text_align=TextNode.ALeft,
+        text_fg=VBase4(0.898, 0.839, 0.730, 1.0),
+        text_pos=Vec2(-0.9, -0.085),
+        relief=1,
+        pad=Vec2(0.01, 0.01),
+        frameColor=VBase4(0, 0, 0, 0),
+        frameSize=VBase4(-1.0, 1.0, -0.25, 0.25),
+        pos=(base.a2dRight-(0.898*buttonScale+0.3), 0, 0),
+        pressEffect=False,
+        command=self.changeMapping,
+        extraArgs=[action])
+        btn.setTransparency(True)
+        btn.reparentTo(item)
+        return item
 
-	def exitMapping(self):
-		"""
-		Fonction qui s'active lorsque l'on quitte le mappage de touches.
-		---------------------------------------------------------------
-		return -> None
-		"""
-		if self.manette:
-			file = open(self.get_path()+"/keys.json", "rt")
-			data = json.load(file)[0]
-			file.close()
-			dico = self.mapping.get_map()
-			for action in dico:
-				if "face" in dico[action] or "shoulder" in dico[action]:
-					if not dico[action].startswith("manette"):
-						dico[action] = "manette-" + dico[action]
-			dico["Avancer"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
-			file = open(self.get_path()+"/keys.json", "wt")
-			file.writelines([json.dumps([dico])])
-			file.close()
-		else:
-			file = open(self.get_path()+"/keys.json", "wt")
-			file.writelines([json.dumps([self.mapping.get_map()])])
-			file.close()
-		self.title.removeNode()
-		self.lstActionMap.removeNode()
-		del self.lstActionMap
-		del self.title
-		self.button_retour.removeNode()
-		del self.button_retour
+    def exitMapping(self):
+        """
+        Fonction qui s'active lorsque l'on quitte le mappage de touches.
+        ---------------------------------------------------------------
+        return -> None
+        """
+        if self.manette:
+            file = open(self.get_path()+"/keys.json", "rt")
+            data = json.load(file)[0]
+            file.close()
+            dico = self.mapping.get_map()
+            for action in dico:
+                if "face" in dico[action] or "shoulder" in dico[action]:
+                    if not dico[action].startswith("manette"):
+                        dico[action] = "manette-" + dico[action]
+            dico["Avancer"], dico["Monter la camera"], dico["Descendre la camera"], dico["Camera a gauche"], dico["Camera a droite"] = data["Avancer"], data["Monter la camera"], data["Descendre la camera"], data["Camera a gauche"], data["Camera a droite"]
+            file = open(self.get_path()+"/keys.json", "wt")
+            file.writelines([json.dumps([dico])])
+            file.close()
+        else:
+            file = open(self.get_path()+"/keys.json", "wt")
+            file.writelines([json.dumps([self.mapping.get_map()])])
+            file.close()
+        self.title.removeNode()
+        self.lstActionMap.removeNode()
+        del self.lstActionMap
+        del self.title
+        self.button_retour.removeNode()
+        del self.button_retour
 
-	#-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
-	def enterInit(self):
-		"""
-		Fonction qui s'active quand on entre dans les paramètres en début de partie.
-		----------------------------------------------------------------------------
-		return -> None
-		"""
-		self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
-		self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1)) #Salutations jeune aventurier, quel est ton nom ?
-		self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1)) #Confirmer
-		self.gender = [0]
-		self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)), #Homme
-		DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))] #Femme
-		for btn in self.genderRdos:
-			btn.setOthers(self.genderRdos)
+    #-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
+    def enterInit(self):
+        """
+        Fonction qui s'active quand on entre dans les paramètres en début de partie.
+        ----------------------------------------------------------------------------
+        return -> None
+        """
+        self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
+        self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1)) #Salutations jeune aventurier, quel est ton nom ?
+        self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1)) #Confirmer
+        self.gender = [0]
+        self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)), #Homme
+        DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))] #Femme
+        for btn in self.genderRdos:
+            btn.setOthers(self.genderRdos)
 
-	def exitInit(self):
-		"""
-		Fonction qui s'active quand on quitte ces paramètres.
-		--------------------------------------------------------
-		return -> None
-		"""
-		if self.gender[0]:
-			self.player.sexe = "feminin"
-		else:
-			self.player.sexe = "masculin"
-		del self.gender
-		for btn in self.genderRdos:
-			btn.removeNode()
-		del self.genderRdos
-		self.music.stop()
-		self.chapitre = 1
+    def exitInit(self):
+        """
+        Fonction qui s'active quand on quitte ces paramètres.
+        --------------------------------------------------------
+        return -> None
+        """
+        if self.gender[0]:
+            self.player.sexe = "feminin"
+        else:
+            self.player.sexe = "masculin"
+        del self.gender
+        for btn in self.genderRdos:
+            btn.removeNode()
+        del self.genderRdos
+        self.music.stop()
+        self.chapitre = 1
 
-	def setName(self):
-		"""
-		Petit pop-up de vérification.
-		--------------------------------
-		return -> None
-		"""
-		self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName) #C'est tout bon ?
+    def setName(self):
+        """
+        Petit pop-up de vérification.
+        --------------------------------
+        return -> None
+        """
+        self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName) #C'est tout bon ?
 
-	def acceptName(self, clickedYes):
-		"""
-		Fonction qui en fonction de la rééponse du joueur commence le jeu ou reste dans les paramètres.
-		--------------------------------------------------------------------------------------------
-		clickedYes -> bool
-		return -> None
-		"""
-		self.acceptDlg.cleanup()
-		if clickedYes:
-			self.player.nom = self.nameEnt.get()
-			self.nameLbl.removeNode()
-			del self.nameLbl
-			self.helloBtn.removeNode()
-			del self.helloBtn
-			self.nameEnt.removeNode()
-			del self.nameEnt
-			self.request("Cinematique")
+    def acceptName(self, clickedYes):
+        """
+        Fonction qui en fonction de la rééponse du joueur commence le jeu ou reste dans les paramètres.
+        --------------------------------------------------------------------------------------------
+        clickedYes -> bool
+        return -> None
+        """
+        self.acceptDlg.cleanup()
+        if clickedYes:
+            self.player.nom = self.nameEnt.get()
+            self.nameLbl.removeNode()
+            del self.nameLbl
+            self.helloBtn.removeNode()
+            del self.helloBtn
+            self.nameEnt.removeNode()
+            del self.nameEnt
+            self.request("Cinematique")
 
-	#-------------------------------Cinématiques--------------------------------------
-	def enterCinematique(self):
-		"""
-		Fonction d'entrée dans le state Cinématique.
-		-----------------------------------------------------------------
-		return -> None
-		"""
-		self.actuals_light = []
-		#------------------------Légende-------------------------------------------------------
-		if self.chapitre == 1:
-			self.chapitre_step = 0
-			cm = CardMaker("plan")
-			cm.setFrame(-1, 1, -1, 1)
-			self.plane = render2d.attachNewNode(cm.generate())
-			self.texture = loader.loadTexture("test.mp4")
-			self.son = loader.loadSfx("test.mp4")
-			self.plane.setTexture(self.texture)
-			self.plane.setTexScale(TextureStage.getDefault(), self.texture.getTexScale())
-			self.texture.setLoop(0)
-			self.texture.synchronizeTo(self.son)
-			self.son.play()
-			self.ignore(self.keys_data["Interagir"])
-			self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
-		taskMgr.add(self.update_cinematique, "update_cinematique")	
-		
-		
-	def change_cine(self, cine=0, task=None):
-		"""
-		Méthode permettant de faire apparaître la cinématique du magicien.
-		------------------------------------------------------------------
-		task -> task ou None
-		return -> None
-		"""	
-		if cine == 0:
-			self.son.stop()
-			self.plane.removeNode()
-			del self.plane
-			if hasattr(self.player, "followcam"):
-				self.player.followcam.set_active(False)
-			self.player.show()
-			self.player.setPos(200, -400, 0)
-			self.player.setH(180)
-			self.player.setScale(110)
-			if hasattr(self, "map"):
-				if self.map is not None:
-					self.map.removeNode()
-			self.move_camera = 0
-			point_light = PointLight("point_light")
-			point_light.setColor((0.85, 0.8, 0.5, 1))
-			point_light_np = render.attachNewNode(point_light)
-			point_light_np.setPos(200, 0, 50)
-			self.actuals_light.append(point_light_np)
-			render.setLight(point_light_np)
-			self.map = loader.loadModel("salle_du_sacrifice.bam")
-			self.map.reparentTo(render)
-			self.map.setPos(500, 500, 0)
-			self.map.setHpr(270, 0, 0)
-			self.magicien = Magicien()
-			self.magicien.setScale(60)
-			self.magicien.setPos(200, 200, 0)
-			self.magicien.loop("Immobile")
-			self.magicien.reparentTo(render)
-			base.cam.setPos(200, -550, 250)
-			self.music.stop()
-			self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
-			self.music.setLoop(True)
-			self.music.play()
-			self.transition.fadeIn(2)
-			self.set_text(1, ["Fini"])
-			self.accept("Fini", self.change_cine, extraArgs=[1])
-		elif cine == 1:
-			self.transition.fadeOut(2)
-			self.son.stop()
-			self.map.removeNode()
-			del self.map
-			self.magicien.delete()
-			del self.magicien
-			taskMgr.doMethodLater(2, self.change_cine, "change cine", extraArgs=[2])
-		elif cine == 2:
-			for light in self.actuals_light:
-				render.clearLight(light)
-				light.removeNode()
-			light = AmbientLight("ambient light")
-			light_np = render.attachNewNode(light)
-			render.setLight(light_np)
-			self.actuals_light = [light_np]	
-			base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
-			self.player.setScale(70)
-			self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
-			self.map.reparentTo(render)
-			self.map.setScale(10)
-			self.lit = loader.loadModel("lit.bam")
-			self.lit.reparentTo(render)
-			self.lit.setPos((-290, 120, 10))
-			self.lit.setHpr((270, 0, 0))
-			self.lit.setScale(15)
-			self.player.setPosHpr(-282, 50, 50, 0, 270, 0)
-			self.transition.fadeIn(2)
-			self.chapitre_step = 2
-			s = Sequence(Parallel(base.cam.posInterval(7, Vec3(-270, 120, 150), startPos=Vec3(0, 10, 90)), base.cam.hprInterval(7, Vec3(0, -70, 0), startHpr=Vec3(55, 0, 0))), Func(self.set_text, 3, ["texte_ok"]))
-			s.start()
-			self.accept("texte_ok", self.change_cine, extraArgs=[3])
-		elif cine == 3:
-			if self.langue == "francais":
-				texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
-			elif self.langue == "deutsch":
-				texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"]	
-			s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
-			s.start()	
-			self.ignore("texte_ok")
-			self.accept("texte_ok", self.change_cine, extraArgs=[4])
-		elif cine == 4:
-			self.ignore("texte_ok")	
-			self.fade_out("Map")
-		if task is not None:		
-			return task.done
+    #-------------------------------Cinématiques--------------------------------------
+    def enterCinematique(self):
+        """
+        Fonction d'entrée dans le state Cinématique.
+        -----------------------------------------------------------------
+        return -> None
+        """
+        self.actuals_light = []
+        #------------------------Légende-------------------------------------------------------
+        if self.chapitre == 1:
+            self.chapitre_step = 0
+            cm = CardMaker("plan")
+            cm.setFrame(-1, 1, -1, 1)
+            self.plane = render2d.attachNewNode(cm.generate())
+            self.texture = loader.loadTexture("test.mp4")
+            self.son = loader.loadSfx("test.mp4")
+            self.plane.setTexture(self.texture)
+            self.plane.setTexScale(TextureStage.getDefault(), self.texture.getTexScale())
+            self.texture.setLoop(0)
+            self.texture.synchronizeTo(self.son)
+            self.son.play()
+            self.ignore(self.keys_data["Interagir"])
+            self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
+        taskMgr.add(self.update_cinematique, "update_cinematique")  
+        
+        
+    def change_cine(self, cine=0, task=None):
+        """
+        Méthode permettant de faire apparaître la cinématique du magicien.
+        ------------------------------------------------------------------
+        task -> task ou None
+        return -> None
+        """ 
+        if cine == 0:
+            self.son.stop()
+            self.plane.removeNode()
+            del self.plane
+            if hasattr(self.player, "followcam"):
+                self.player.followcam.set_active(False)
+            self.player.show()
+            self.player.setPos(200, -400, 0)
+            self.player.setH(180)
+            self.player.setScale(110)
+            if hasattr(self, "map"):
+                if self.map is not None:
+                    self.map.removeNode()
+            self.move_camera = 0
+            point_light = PointLight("point_light")
+            point_light.setColor((0.85, 0.8, 0.5, 1))
+            point_light_np = render.attachNewNode(point_light)
+            point_light_np.setPos(200, 0, 50)
+            self.actuals_light.append(point_light_np)
+            render.setLight(point_light_np)
+            self.map = loader.loadModel("salle_du_sacrifice.bam")
+            self.map.reparentTo(render)
+            self.map.setPos(500, 500, 0)
+            self.map.setHpr(270, 0, 0)
+            self.magicien = Magicien()
+            self.magicien.setScale(60)
+            self.magicien.setPos(200, 200, 0)
+            self.magicien.loop("Immobile")
+            self.magicien.reparentTo(render)
+            base.cam.setPos(200, -550, 250)
+            self.music.stop()
+            self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+            self.music.setLoop(True)
+            self.music.play()
+            self.transition.fadeIn(2)
+            self.set_text(1, ["Fini"])
+            self.accept("Fini", self.change_cine, extraArgs=[1])
+        elif cine == 1:
+            self.transition.fadeOut(2)
+            self.son.stop()
+            self.map.removeNode()
+            del self.map
+            self.magicien.delete()
+            del self.magicien
+            taskMgr.doMethodLater(2, self.change_cine, "change cine", extraArgs=[2])
+        elif cine == 2:
+            for light in self.actuals_light:
+                render.clearLight(light)
+                light.removeNode()
+            light = AmbientLight("ambient light")
+            light_np = render.attachNewNode(light)
+            render.setLight(light_np)
+            self.actuals_light = [light_np] 
+            base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
+            self.player.setScale(70)
+            self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
+            self.map.reparentTo(render)
+            self.map.setScale(10)
+            self.lit = loader.loadModel("lit.bam")
+            self.lit.reparentTo(render)
+            self.lit.setPos((-290, 120, 10))
+            self.lit.setHpr((270, 0, 0))
+            self.lit.setScale(15)
+            self.player.setPosHpr(-282, 50, 50, 0, 270, 0)
+            self.transition.fadeIn(2)
+            self.chapitre_step = 2
+            s = Sequence(Parallel(base.cam.posInterval(7, Vec3(-270, 120, 150), startPos=Vec3(0, 10, 90)), base.cam.hprInterval(7, Vec3(0, -70, 0), startHpr=Vec3(55, 0, 0))), Func(self.set_text, 3, ["texte_ok"]))
+            s.start()
+            self.accept("texte_ok", self.change_cine, extraArgs=[3])
+        elif cine == 3:
+            if self.langue == "francais":
+                texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
+            elif self.langue == "deutsch":
+                texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"] 
+            s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
+            s.start()   
+            self.ignore("texte_ok")
+            self.accept("texte_ok", self.change_cine, extraArgs=[4])
+        elif cine == 4:
+            self.ignore("texte_ok") 
+            self.fade_out("Map")
+        if task is not None:        
+            return task.done
 
-	def update_cinematique(self, task):
-		"""
-		Méthode qui permet de mettre à jour la cinématique.
-		-----------------------------------------------------------------------------------
-		task -> task
-		return -> task.cont ou task.done
-		"""
-		dt = globalClock.getDt()
-		if self.chapitre == 1:
-			if self.texture.getTime() > 64 and self.chapitre_step == 0:
-				self.chapitre_step = 1
-				self.transition.fadeOut(2)
-				self.ignore(self.keys_data["Interagir"])
-				self.accept(self.keys_data["Interagir"], self.check_interact)
-				taskMgr.doMethodLater(2, self.change_cine, "magic_cine", extraArgs=[0], appendTask=True)
-			elif self.chapitre == 1 and self.chapitre_step == 1:
-				if self.text_index	<= 4:
-					if base.cam.getY() < 200:
-						base.cam.setY(base.cam, dt*60)
-				elif self.text_index <= 6:
-					if self.move_camera == 0:
-						self.move_camera = 1
-						base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
-					if base.cam.getY() > -100:
-						base.cam.setY(base.cam, dt*25)
-		return task.cont
-		
-		
-	def exitCinematique(self):
-		"""
-		Méthode de sortie du state cinématique.
-		------------------------------------------
-		return -> None
-		"""
-		for light in self.actuals_light:
-			render.clearLight(light)
-			light.removeNode()
-		del self.actuals_light
-		taskMgr.remove("update_cinematique")
-		if self.chapitre == 1:
-			self.lit.removeNode()
-			self.music.stop()
-			self.player.setHpr(0, 0, 0)
-			base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
-			self.chapitre = 2
+    def update_cinematique(self, task):
+        """
+        Méthode qui permet de mettre à jour la cinématique.
+        -----------------------------------------------------------------------------------
+        task -> task
+        return -> task.cont ou task.done
+        """
+        dt = globalClock.getDt()
+        if self.chapitre == 1:
+            if self.texture.getTime() > 64 and self.chapitre_step == 0:
+                self.chapitre_step = 1
+                self.transition.fadeOut(2)
+                self.ignore(self.keys_data["Interagir"])
+                self.accept(self.keys_data["Interagir"], self.check_interact)
+                taskMgr.doMethodLater(2, self.change_cine, "magic_cine", extraArgs=[0], appendTask=True)
+            elif self.chapitre == 1 and self.chapitre_step == 1:
+                if self.text_index  <= 4:
+                    if base.cam.getY() < 200:
+                        base.cam.setY(base.cam, dt*60)
+                elif self.text_index <= 6:
+                    if self.move_camera == 0:
+                        self.move_camera = 1
+                        base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
+                    if base.cam.getY() > -100:
+                        base.cam.setY(base.cam, dt*25)
+        return task.cont
+        
+        
+    def exitCinematique(self):
+        """
+        Méthode de sortie du state cinématique.
+        ------------------------------------------
+        return -> None
+        """
+        for light in self.actuals_light:
+            render.clearLight(light)
+            light.removeNode()
+        del self.actuals_light
+        taskMgr.remove("update_cinematique")
+        if self.chapitre == 1:
+            self.lit.removeNode()
+            self.music.stop()
+            self.player.setHpr(0, 0, 0)
+            base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
+            self.chapitre = 2
 
-	#-----------------------------Map (chargement et state)--------------------------------
-	def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
-		"""
-		Méthode qui nous permet de charger une map.
-		--------------------------------------------
-		map -> str
-		task -> None (ou task)
-		return -> None
-		"""
-		render.clearFog()
-		for pnj in self.pnjs:
-			self.pnjs[pnj].cleanup()
-			self.pnjs[pnj].removeNode()
-		for objet in self.objects:
-			objet.object.removeNode()
-		for mur in self.murs:
-			mur.removeNode()
-		for statue in self.save_statues:
-			self.save_statues[statue][0].removeNode()
-			self.save_statues[statue][1].removeNode()	
-		self.objects = []
-		self.murs = []
-		self.current_pnj = None
-		self.current_porte = None
-		self.pnjs = {}
-		self.portails = {}
-		self.save_statues = {}
-		if hasattr(self, "actuals_light"):
-			for light in self.actuals_light:
-				render.clearLight()
-				light.removeNode()
-		self.actuals_light = []
-		#-------Chargement du modèle de la map------------
-		self.current_map = map
-		if hasattr(self, "map"):
-			if self.map is not None:
-				self.map.removeNode()
-			del self.map
-		self.map = loader.loadModel(map)
-		self.map.reparentTo(render)
-		#---------------------------Collisions de la map------------------
-		self.antimur.addInPattern("into")
-		self.antimur.addOutPattern("out")
-		self.map.setCollideMask(BitMask32.bit(0))
-		if self.debug:
-			base.cTrav.showCollisions(render)
-		self.antimur.addCollider(self.player.col_np, self.player)
-		base.cTrav.addCollider(self.player.col_np, self.antimur)
-		#-----------------------Fumée---------------------
-		self.load_fog()
-		#--------------La skybox----------------------------
-		if self.skybox is not None:
-			self.skybox.removeNode()
-		self.skybox = loader.loadModel("skybox.bam")
-		self.skybox.setScale(10000)
-		self.skybox.setBin('background', 1)
-		self.skybox.setDepthWrite(0)
-		self.skybox.setLightOff()
-		self.skybox.reparentTo(render)
-		#--------------------Chargement du premier fichier json (objets)---------------
-		objects_file = open("../data/json/objects.json")
-		data = json.load(objects_file)
-		n_coffre = 0
-		if self.current_map in data:
-			for object in data[self.current_map]:
-				if object == "lit":
-					objet = Lit()
-				elif object == "bateau":
-					objet = Bateau()
-				elif object == "coffre":
-					objet = Coffre(n_coffre)
-					n_coffre += 1	
-				objet.object.reparentTo(render)
-				objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
-				objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
-				self.objects.append(objet)
-		objects_file.close()		
-		#--------------------Chargement du deuxième fichier json-------------
-		pnj_file = open("../data/json/data.json")
-		data = json.load(pnj_file)
-		pnj_file.close()
-		#-----Section de gestion de la musique------
-		if not hasattr(self, "music_name"):
-			self.music_name = data[self.current_map][0]
-			self.music = base.loader.loadSfx(data[self.current_map][0])
-			self.music.setLoop(True)
-			self.music.play()
-		if self.music is not None and self.music_name != data[self.current_map][0]:
-			self.music.stop()
-			self.music = None
-		if self.music_name != data[self.current_map][0]:
-			self.music_name = data[self.current_map][0]
-			self.music = base.loader.loadSfx(data[self.current_map][0])
-			self.music.setLoop(True)
-			self.music.play()
-		#---------------------Gestion de la caméra du joueur----------------
-		if not hasattr(self.player, "followcam"):
-				self.player.create_camera()
-		if not self.player.followcam.active:
-			self.player.followcam.set_active(True)
-		self.player.followcam.dummy.setHpr(180, 0, 0)
-		self.player.followcam.camera.setHpr(0, 0, 0)
-		self.player.followcam.camera.setPos(0, 0, 0)
-		self.player.followcam.camera.setPos(0, -2, 0)
-		#----------Les portes-----------------------
-		for portail in data[self.current_map][2]:
-			noeud = CollisionNode(portail)
-			info = data[self.current_map][2][portail]
-			if info[0] == "porte":
-				solid = Porte(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
-			else:
-				solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
-			noeud.addSolid(solid)
-			self.portails[portail] = solid
-			noeud.setCollideMask(BitMask32.bit(0))
-			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les portes et les portails.
-		#------------------Les pnjs--------------------------------
-		for pnj in data[self.current_map][1]:
-			info = data[self.current_map][1][pnj]
-			a = self.return_pnj(pnj)
-			a.setPos(info[0], info[1], info[2])
-			self.pnjs[pnj] = a
-		for pnj in self.pnjs:
-			self.pnjs[pnj].reparentTo(render)
+    #-----------------------------Map (chargement et state)--------------------------------
+    def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
+        """
+        Méthode qui nous permet de charger une map.
+        --------------------------------------------
+        map -> str
+        task -> None (ou task)
+        return -> None
+        """
+        render.clearFog()
+        for pnj in self.pnjs:
+            self.pnjs[pnj].cleanup()
+            self.pnjs[pnj].removeNode()
+        for objet in self.objects:
+            objet.object.removeNode()
+        for mur in self.murs:
+            mur.removeNode()
+        for statue in self.save_statues:
+            self.save_statues[statue][0].removeNode()
+            self.save_statues[statue][1].removeNode()   
+        self.objects = []
+        self.murs = []
+        self.current_pnj = None
+        self.current_porte = None
+        self.pnjs = {}
+        self.portails = {}
+        self.save_statues = {}
+        if hasattr(self, "actuals_light"):
+            for light in self.actuals_light:
+                render.clearLight()
+                light.removeNode()
+        self.actuals_light = []
+        #-------Chargement du modèle de la map------------
+        self.current_map = map
+        if hasattr(self, "map"):
+            if self.map is not None:
+                self.map.removeNode()
+            del self.map
+        self.map = loader.loadModel(map)
+        self.map.reparentTo(render)
+        #---------------------------Collisions de la map------------------
+        self.antimur.addInPattern("into")
+        self.antimur.addOutPattern("out")
+        self.map.setCollideMask(BitMask32.bit(0))
+        if self.debug:
+            base.cTrav.showCollisions(render)
+        self.antimur.addCollider(self.player.col_np, self.player)
+        base.cTrav.addCollider(self.player.col_np, self.antimur)
+        #-----------------------Fumée---------------------
+        self.load_fog()
+        #--------------La skybox----------------------------
+        if self.skybox is not None:
+            self.skybox.removeNode()
+        self.skybox = loader.loadModel("skybox.bam")
+        self.skybox.setScale(10000)
+        self.skybox.setBin('background', 1)
+        self.skybox.setDepthWrite(0)
+        self.skybox.setLightOff()
+        self.skybox.reparentTo(render)
+        #--------------------Chargement du premier fichier json (objets)---------------
+        objects_file = open("../data/json/objects.json")
+        data = json.load(objects_file)
+        n_coffre = 0
+        if self.current_map in data:
+            for object in data[self.current_map]:
+                if object == "lit":
+                    objet = Lit()
+                elif object == "bateau":
+                    objet = Bateau()
+                elif object == "coffre":
+                    objet = Coffre(n_coffre)
+                    n_coffre += 1   
+                objet.object.reparentTo(render)
+                objet.object.setPos((data[self.current_map][object][0][0], data[self.current_map][object][0][1], data[self.current_map][object][0][2]))
+                objet.object.setHpr((data[self.current_map][object][1][0], data[self.current_map][object][1][1], data[self.current_map][object][1][2]))
+                self.objects.append(objet)
+        objects_file.close()        
+        #--------------------Chargement du deuxième fichier json-------------
+        pnj_file = open("../data/json/data.json")
+        data = json.load(pnj_file)
+        pnj_file.close()
+        #-----Section de gestion de la musique------
+        if not hasattr(self, "music_name"):
+            self.music_name = data[self.current_map][0]
+            self.music = base.loader.loadSfx(data[self.current_map][0])
+            self.music.setLoop(True)
+            self.music.play()
+        if self.music is not None and self.music_name != data[self.current_map][0]:
+            self.music.stop()
+            self.music = None
+        if self.music_name != data[self.current_map][0]:
+            self.music_name = data[self.current_map][0]
+            self.music = base.loader.loadSfx(data[self.current_map][0])
+            self.music.setLoop(True)
+            self.music.play()
+        #---------------------Gestion de la caméra du joueur----------------
+        if not hasattr(self.player, "followcam"):
+                self.player.create_camera()
+        if not self.player.followcam.active:
+            self.player.followcam.set_active(True)
+        self.player.followcam.dummy.setHpr(180, 0, 0)
+        self.player.followcam.camera.setHpr(0, 0, 0)
+        self.player.followcam.camera.setPos(0, 0, 0)
+        self.player.followcam.camera.setPos(0, -2, 0)
+        #----------Les portes-----------------------
+        for portail in data[self.current_map][2]:
+            noeud = CollisionNode(portail)
+            info = data[self.current_map][2][portail]
+            if info[0] == "porte":
+                solid = Porte(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
+            else:
+                solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
+            noeud.addSolid(solid)
+            self.portails[portail] = solid
+            noeud.setCollideMask(BitMask32.bit(0))
+            noeud_np = self.map.attachNewNode(noeud)
+            #noeud_np.show() #Décommentez pour voir les portes et les portails.
+        #------------------Les pnjs--------------------------------
+        for pnj in data[self.current_map][1]:
+            info = data[self.current_map][1][pnj]
+            a = self.return_pnj(pnj)
+            a.setPos(info[0], info[1], info[2])
+            self.pnjs[pnj] = a
+        for pnj in self.pnjs:
+            self.pnjs[pnj].reparentTo(render)
         #-------------Les points de sauvegardes------------------------
-		for save in data[self.current_map][3]:
-			noeud = CollisionNode(save)
-			noeud.addSolid(Save_bloc(save, data[self.current_map][3][save][0:3]))
-			noeud.setCollideMask(BitMask32.bit(0))
-			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les solides de collision de sauvegardes.
-			model_save = loader.loadModel("save_point.bam")
-			model_save.reparentTo(render)
-			model_save.setPos((data[self.current_map][3][save][0]*data[self.current_map][4], data[self.current_map][3][save][1]*data[self.current_map][4], data[self.current_map][3][save][2]*data[self.current_map][4]))
-			if len(data[self.current_map][3][save]) > 3:
-				if data[self.current_map][3][save][3] == "gauche":
-					model_save.setH(90)
-				elif data[self.current_map][3][save][3] == "devant":
-					model_save.setH(180)
-				else:
-					model_save.setH(270)		
-			model_save.setScale(18.5)			
-			self.save_statues[save] = [noeud_np, model_save]
-		self.load_triggers(map)
-		self.map.setScale(data[self.current_map][4])
-		#-----------------Eau--------------------------------------
-		if data[self.current_map][5] == "Vrai" and not hasattr(self, "eau"):
-			self.eau = loader.loadModel("eau.bam")
-			self.eau.reparentTo(render)
-			self.eau.setScale(3)
-			self.eau.setSx(10000)
-			self.eau.setSy(10000)
-			self.eau.setZ(self.eau, 10)
-		else:
-			if hasattr(self, "eau"):
-				self.eau.removeNode()
-				del self.eau
-		#--------------------Les murs (invisibles)-------------------------
-		i = 0
-		for mur in data[self.current_map][6]:
-			i += 1
-			noeud = CollisionNode("mur"+str(i))
-			a = (mur[0][0], mur[0][1], mur[0][2])
-			noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
-			noeud.setCollideMask(BitMask32.bit(0))
-			noeud_np = self.map.attachNewNode(noeud)
-			#noeud_np.show() #Décommentez pour voir les murs.
-			self.murs.append(noeud_np)
-		del data, i
-		#------------Mode debug------------------------
-		if self.debug:
-			base.enableMouse()
-		else:
-			base.disableMouse()
-		#-------------Lumière----------------------------
-		if hasattr(self, "actuals_light"):
-			for light in self.actuals_light:
-				render.clearLight(light)
-				light.removeNode()
-		self.actuals_light = []		
-		self.load_light()
-		if position is not None:
-			self.player.setPos(position)
-		self.transition.fadeIn(2)
-		self.accept_touches()
-		if task is not None:
-			return task.done
+        for save in data[self.current_map][3]:
+            noeud = CollisionNode(save)
+            noeud.addSolid(Save_bloc(save, data[self.current_map][3][save][0:3]))
+            noeud.setCollideMask(BitMask32.bit(0))
+            noeud_np = self.map.attachNewNode(noeud)
+            #noeud_np.show() #Décommentez pour voir les solides de collision de sauvegardes.
+            model_save = loader.loadModel("save_point.bam")
+            model_save.reparentTo(render)
+            model_save.setPos((data[self.current_map][3][save][0]*data[self.current_map][4], data[self.current_map][3][save][1]*data[self.current_map][4], data[self.current_map][3][save][2]*data[self.current_map][4]))
+            if len(data[self.current_map][3][save]) > 3:
+                if data[self.current_map][3][save][3] == "gauche":
+                    model_save.setH(90)
+                elif data[self.current_map][3][save][3] == "devant":
+                    model_save.setH(180)
+                else:
+                    model_save.setH(270)        
+            model_save.setScale(18.5)           
+            self.save_statues[save] = [noeud_np, model_save]
+        self.load_triggers(map)
+        self.map.setScale(data[self.current_map][4])
+        #-----------------Eau--------------------------------------
+        if data[self.current_map][5] == "Vrai" and not hasattr(self, "eau"):
+            self.eau = loader.loadModel("eau.bam")
+            self.eau.reparentTo(render)
+            self.eau.setScale(3)
+            self.eau.setSx(10000)
+            self.eau.setSy(10000)
+            self.eau.setZ(self.eau, 10)
+        else:
+            if hasattr(self, "eau"):
+                self.eau.removeNode()
+                del self.eau
+        #--------------------Les murs (invisibles)-------------------------
+        i = 0
+        for mur in data[self.current_map][6]:
+            i += 1
+            noeud = CollisionNode("mur"+str(i))
+            a = (mur[0][0], mur[0][1], mur[0][2])
+            noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
+            noeud.setCollideMask(BitMask32.bit(0))
+            noeud_np = self.map.attachNewNode(noeud)
+            #noeud_np.show() #Décommentez pour voir les murs.
+            self.murs.append(noeud_np)
+        del data, i
+        #------------Mode debug------------------------
+        if self.debug:
+            base.enableMouse()
+        else:
+            base.disableMouse()
+        #-------------Lumière----------------------------
+        if hasattr(self, "actuals_light"):
+            for light in self.actuals_light:
+                render.clearLight(light)
+                light.removeNode()
+        self.actuals_light = []     
+        self.load_light()
+        if position is not None:
+            self.player.setPos(position)
+        self.transition.fadeIn(2)
+        self.accept_touches()
+        if task is not None:
+            return task.done
 
 
-	def load_light(self):
-		"""
-		Méthode permettant de générr une lumière spécifique pour chaque map.
-		----------------------------------------------------------------------
-		return -> None
-		"""
-		if self.map == "Arduny.bam":
-			light = DirectionalLight("dlight")
-			light.color = (0.9, 0.9, 0.8, 1)
-			light_np = render.attachNewNode(light)
-			render.setLight(light_np)
-			self.actuals_light.append(light_np)
-		else:
-			light = AmbientLight("Lumière ambiante")
-			light_np = render.attachNewNode(light)
-			self.actuals_light.append(light_np)
-			render.setLight(light_np)
-			
-	def load_fog(self):
-		"""
-		Méthode permettant de générer une fummée spécifique pour chaque map.
-		-----------------------------------------------------------------------
-		return -> None
-		"""
-		if self.current_map == "village_pecheurs.bam":
-			fummee = Fog("Brume")
-			fummee.setColor(0.5, 0.5, 0.55)
-			fummee.setExpDensity(0.02)
-			render.setFog(fummee)
-		elif self.current_map == "Arduny.bam":
-			fummee = Fog("Sable")
-			fummee.setColor(0.4, 0.4, 0.05)
-			fummee.setExpDensity(0.01)
-			render.setFog(fummee)	
-		else:
-			pass	
-			
-			
-	def return_pnj(self, pnj="magicien"):
-		"""
-		Méthode permettant de renvoyer la bonne classe en fonction du PNJ choisi.
-		----------------------------------------------------------------------
-		pnj -> str
-		return -> PNJ (ou classe qui en hérite)
-		"""
-		if pnj == "magicien":
-			return Magicien()
-		return PNJ()
+    def load_light(self):
+        """
+        Méthode permettant de générr une lumière spécifique pour chaque map.
+        ----------------------------------------------------------------------
+        return -> None
+        """
+        if self.map == "Arduny.bam":
+            light = DirectionalLight("dlight")
+            light.color = (0.9, 0.9, 0.8, 1)
+            light_np = render.attachNewNode(light)
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+        else:
+            light = AmbientLight("Lumière ambiante")
+            light_np = render.attachNewNode(light)
+            self.actuals_light.append(light_np)
+            render.setLight(light_np)
+            
+    def load_fog(self):
+        """
+        Méthode permettant de générer une fummée spécifique pour chaque map.
+        -----------------------------------------------------------------------
+        return -> None
+        """
+        if self.current_map == "village_pecheurs.bam":
+            fummee = Fog("Brume")
+            fummee.setColor(0.5, 0.5, 0.55)
+            fummee.setExpDensity(0.02)
+            render.setFog(fummee)
+        elif self.current_map == "Arduny.bam":
+            fummee = Fog("Sable")
+            fummee.setColor(0.4, 0.4, 0.05)
+            fummee.setExpDensity(0.01)
+            render.setFog(fummee)   
+        else:
+            pass    
+            
+            
+    def return_pnj(self, pnj="magicien"):
+        """
+        Méthode permettant de renvoyer la bonne classe en fonction du PNJ choisi.
+        ----------------------------------------------------------------------
+        pnj -> str
+        return -> PNJ (ou classe qui en hérite)
+        """
+        if pnj == "magicien":
+            return Magicien()
+        return PNJ()
 
-	def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
-		"""
-		Méthode dans laquelle on rentre toutes les instructions sur nos triggers.
-		C'est à dire les collisions "scénaristiques".
-		------------------------------------------------------------------------------
-		map -> str
-		return -> None
-		"""
-		if hasattr(self, "triggers"):
-			for trigger in self.triggers:
-				trigger.removeNode()
-		self.triggers = []
-		temp = []
-		self.actual_trigger = None
-		if map == "village_pecheurs.bam":
-			trigger = CollisionNode("0")
-			trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100))
-			temp.append(trigger)
-		elif map == "Marelys.bam":
-			trigger = CollisionNode("1")
-			trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
-			temp.append(trigger)
-		for trigger in temp:
-			trigger.setFromCollideMask(BitMask32.allOff())
-			trigger.setIntoCollideMask(BitMask32.bit(0))
-			trigger_chemin_de_noeud = render.attachNewNode(trigger)
-			#trigger_chemin_de_noeud.show() #Décommentez pour voir les triggers
-			self.triggers.append(trigger_chemin_de_noeud)
-		del temp
+    def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
+        """
+        Méthode dans laquelle on rentre toutes les instructions sur nos triggers.
+        C'est à dire les collisions "scénaristiques".
+        ------------------------------------------------------------------------------
+        map -> str
+        return -> None
+        """
+        if hasattr(self, "triggers"):
+            for trigger in self.triggers:
+                trigger.removeNode()
+        self.triggers = []
+        temp = []
+        self.actual_trigger = None
+        if map == "village_pecheurs.bam":
+            trigger = CollisionNode("0")
+            trigger.addSolid(CollisionBox((5, -1280, 300), 80, 100, 100))
+            temp.append(trigger)
+        elif map == "Marelys.bam":
+            trigger = CollisionNode("1")
+            trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
+            temp.append(trigger)
+        for trigger in temp:
+            trigger.setFromCollideMask(BitMask32.allOff())
+            trigger.setIntoCollideMask(BitMask32.bit(0))
+            trigger_chemin_de_noeud = render.attachNewNode(trigger)
+            #trigger_chemin_de_noeud.show() #Décommentez pour voir les triggers
+            self.triggers.append(trigger_chemin_de_noeud)
+        del temp
 
-	def enterMap(self):
-		"""
-		Méthode d'entrée dans le state map.
-		-----------------------------------------------------
-		return -> None
-		"""
-		#On montre le joueur.
-		self.player.show()
-		self.accept("t", self.player.degats)
-		#On cache le curseur de la souris.
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		self.load_save()
-		self.load_map(self.current_map)
+    def enterMap(self):
+        """
+        Méthode d'entrée dans le state map.
+        -----------------------------------------------------
+        return -> None
+        """
+        #On montre le joueur.
+        self.player.show()
+        self.accept("t", self.player.degats)
+        #On cache le curseur de la souris.
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        self.load_save()
+        self.load_map(self.current_map)
 
-	def accept_touches(self):
-		"""
-		Méthode permettant d'accepter les évènements liés à des touches.
-		----------------------------------------------------------------
-		return -> None
-		"""
-		self.accept("escape", self.confirm_quit)
-		if not self.manette:
-			self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
-			self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
-		self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
-		self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
-		self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
-		self.accept(self.keys_data["Inventaire"], self.inventaire)
-		self.accept(self.keys_data["Interagir"], self.check_interact)
-		self.accept("into", self.into)
-		self.accept("out", self.out)
-		taskMgr.remove("update")
-		taskMgr.add(self.update, "update")
-	
-	def ignore_touches(self):
-		"""
-		Méthode permettant d'ignorer les évènements liés à des touches.
-		----------------------------------------------------------------
-		return -> None
-		"""
-		self.ignore("escape")
-		self.ignore(self.keys_data["Avancer"])
-		self.ignore(self.keys_data["Avancer"]+"-up")
-		self.ignore(self.keys_data["Changer le point de vue"])
-		self.ignore(self.keys_data["Courir"])
-		self.ignore(self.keys_data["Courir"]+"-up")
-		self.ignore(self.keys_data["Inventaire"])
-		self.ignore(self.keys_data["Interagir"])
-		self.ignore("into")
-		self.ignore("out")
-		self.ignore("mouse1")
-		taskMgr.remove("update")
-		
-	def load_save(self, task=None):
-		"""
-		Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
-		--------------------------------------------------------------------------------------
-		task -> task
-		return -> None
-		"""
-		if self.current_point == "save_heros":#Maison du joueur.
-			self.current_map = "village_pecheurs_maison_heros.bam"
-			self.player.setPos(0, 30, 6)
-		elif self.current_point == "save_village": #Dans le village des pecheurs
-			self.current_map = "village_pecheurs.bam"
-			self.player.setPos(-380, 220, 250)	
-		elif self.current_point == "save_pyramide": #Dans la pyramide
-			self.current_map = "pyramide.bam"
-			self.player.setPos(150, -50, 0)	
-		else:#Le joueur se retrouve chez lui par défaut
-			self.current_map = "village_pecheurs_maison_heros.bam"
-			self.player.setPos(0, 30, 6)
-		if task != None:
-			return task.done
-			
-	def exitMap(self):
-		"""
-		Méthode pour sortir du state map.
-		----------------------------------------
-		return -> None
-		"""
-		for light in self.actuals_light:
-			render.clearLight(light)
-			light.removeNode()
-		self.actuals_light = []	
-		render.clearFog()
-		self.music.stop()
-		self.map.removeNode()
-		self.skybox.removeNode()
-		self.player.hide()
-		for pnj in self.pnjs:
-			self.pnjs[pnj].cleanup()
-			self.pnjs[pnj].removeNode()
-		for objet in self.objects:
-			if type(objet) is Coffre:
-				objet.object.cleanup()
-			objet.object.removeNode()
-		for statue in self.save_statues:
-			self.save_statues[statue][0].removeNode()
-			self.save_statues[statue][1].removeNode()
-		if hasattr(self, "eau"):
-			self.eau.removeNode()
-			del self.eau
-		self.save_statues = {}
-		self.antimur.clearInPatterns()
-		self.antimur.clearOutPatterns()
-		self.objects = []
-		self.pnjs = {}
-		self.map = None
-		self.player.left = False
-		self.player.right = False
-		self.player.reverse = False
-		self.player.walk = False
-		taskMgr.remove("update")
-		del self.music_name
-		self.ignoreAll()
-		self.accept("escape", self.all_close)
-		self.player.stop()
-		self.player.followcam.set_active(False)
-		del self.player.followcam		
+    def accept_touches(self):
+        """
+        Méthode permettant d'accepter les évènements liés à des touches.
+        ----------------------------------------------------------------
+        return -> None
+        """
+        self.accept("escape", self.confirm_quit)
+        if not self.manette:
+            self.accept(self.keys_data["Avancer"], self.touche_pave, extraArgs=["arrow_up"])
+            self.accept(self.keys_data["Avancer"]+"-up", self.touche_pave, extraArgs=["arrow_up-up"])
+        self.accept(self.keys_data["Changer le point de vue"], self.player.followcam.change_vue)
+        self.accept(self.keys_data["Courir"], self.change_vitesse, extraArgs=["b"])
+        self.accept(self.keys_data["Courir"]+"-up", self.change_vitesse, extraArgs=["b-up"])
+        self.accept(self.keys_data["Inventaire"], self.inventaire)
+        self.accept(self.keys_data["Interagir"], self.check_interact)
+        self.accept("into", self.into)
+        self.accept("out", self.out)
+        taskMgr.remove("update")
+        taskMgr.add(self.update, "update")
+    
+    def ignore_touches(self):
+        """
+        Méthode permettant d'ignorer les évènements liés à des touches.
+        ----------------------------------------------------------------
+        return -> None
+        """
+        self.ignore("escape")
+        self.ignore(self.keys_data["Avancer"])
+        self.ignore(self.keys_data["Avancer"]+"-up")
+        self.ignore(self.keys_data["Changer le point de vue"])
+        self.ignore(self.keys_data["Courir"])
+        self.ignore(self.keys_data["Courir"]+"-up")
+        self.ignore(self.keys_data["Inventaire"])
+        self.ignore(self.keys_data["Interagir"])
+        self.ignore("into")
+        self.ignore("out")
+        self.ignore("mouse1")
+        taskMgr.remove("update")
+        
+    def load_save(self, task=None):
+        """
+        Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
+        --------------------------------------------------------------------------------------
+        task -> task
+        return -> None
+        """
+        if self.current_point == "save_heros":#Maison du joueur.
+            self.current_map = "village_pecheurs_maison_heros.bam"
+            self.player.setPos(0, 30, 6)
+        elif self.current_point == "save_village": #Dans le village des pecheurs
+            self.current_map = "village_pecheurs.bam"
+            self.player.setPos(-380, 220, 250)  
+        elif self.current_point == "save_pyramide": #Dans la pyramide
+            self.current_map = "pyramide.bam"
+            self.player.setPos(150, -50, 0) 
+        else:#Le joueur se retrouve chez lui par défaut
+            self.current_map = "village_pecheurs_maison_heros.bam"
+            self.player.setPos(0, 30, 6)
+        if task != None:
+            return task.done
+            
+    def exitMap(self):
+        """
+        Méthode pour sortir du state map.
+        ----------------------------------------
+        return -> None
+        """
+        for light in self.actuals_light:
+            render.clearLight(light)
+            light.removeNode()
+        self.actuals_light = [] 
+        render.clearFog()
+        self.music.stop()
+        self.map.removeNode()
+        self.skybox.removeNode()
+        self.player.hide()
+        for pnj in self.pnjs:
+            self.pnjs[pnj].cleanup()
+            self.pnjs[pnj].removeNode()
+        for objet in self.objects:
+            if type(objet) is Coffre:
+                objet.object.cleanup()
+            objet.object.removeNode()
+        for statue in self.save_statues:
+            self.save_statues[statue][0].removeNode()
+            self.save_statues[statue][1].removeNode()
+        if hasattr(self, "eau"):
+            self.eau.removeNode()
+            del self.eau
+        self.save_statues = {}
+        self.antimur.clearInPatterns()
+        self.antimur.clearOutPatterns()
+        self.objects = []
+        self.pnjs = {}
+        self.map = None
+        self.player.left = False
+        self.player.right = False
+        self.player.reverse = False
+        self.player.walk = False
+        taskMgr.remove("update")
+        del self.music_name
+        self.ignoreAll()
+        self.accept("escape", self.all_close)
+        self.player.stop()
+        self.player.followcam.set_active(False)
+        del self.player.followcam       
 
-	#----------------------Méthodes de collisions-----------------------------------------
-	def into(self, a):
-		"""
-		Fonction s'activant quand le joueur ou un autre objet from, touche un objet into.
-		-----------------------------------------------------------------------------------
-		a -> entry (une info sur la collision)
-		return -> None
-		"""
-		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1] #L'objet Into
-		c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1] #L'objet From
-		if c == "player_sphere":#Si c'est le joueur qui touche
-			if b in self.pnjs:#PNJ
-				self.current_pnj = b
-				if self.pnjs[b].s is not None:
-					self.pnjs[b].s.pause()
-			elif b in self.portails:
-				if type(self.portails[b]) is Portail:
-					self.transition.fadeOut(0.5)
-					taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b].newpos])
-				elif type(self.portails[b]) is Porte:
-					self.current_porte = b
-			elif b.isdigit(): #Trigger
-				b = int(b)
-				if b == 0 or b == 1:
-					self.actual_trigger = b
-			elif b in self.save_statues: #Statue de sauvegarde
-				self.actual_statue = b
-			elif "coffre" in b:
-				self.actual_coffre = b.split("_")[len(b.split("_"))-1]	
-		elif c == "sphere_sword":
-			if b in self.pnjs:
-				self.set_text(3)		
-				
-	def out(self, a):
-		"""
-		Méthode s'activant quand un objet from qitte un objet into.
-		----------------------------------------------------------------
-		a -> entry (info sur la collision)
-		return -> None
-		"""
-		b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
-		c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1]
-		if c == "player_sphere":
-			if b in self.pnjs:
-				if self.pnjs[b].s is not None:
-					self.pnjs[b].s.resume()
-				self.current_pnj = None
-			elif b in self.portails:
-				self.current_porte = None
-			elif b in self.save_statues:
-				self.actual_statue = None
-			elif b.isdigit():
-				self.actual_trigger = None	
-			elif "coffre" in b:
-				self.actual_coffre = None			
-
-
-	def change_vitesse(self, touche="b"):
-		"""
-		Fonction qui change la vitesse du joueur si on appuie sur la touche b ou si on la relâche.
-		-------------------------------------------------
-		touche -> str
-		return -> None
-		"""
-		if touche == "b":
-			self.player.vitesse *= 2
-		else:
-			self.player.vitesse /=2
+    #----------------------Méthodes de collisions-----------------------------------------
+    def into(self, a):
+        """
+        Fonction s'activant quand le joueur ou un autre objet from, touche un objet into.
+        -----------------------------------------------------------------------------------
+        a -> entry (une info sur la collision)
+        return -> None
+        """
+        b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1] #L'objet Into
+        c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1] #L'objet From
+        if c == "player_sphere":#Si c'est le joueur qui touche
+            if b in self.pnjs:#PNJ
+                self.current_pnj = b
+                if self.pnjs[b].s is not None:
+                    self.pnjs[b].s.pause()
+            elif b in self.portails:
+                if type(self.portails[b]) is Portail:
+                    self.transition.fadeOut(0.5)
+                    taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b].newpos])
+                elif type(self.portails[b]) is Porte:
+                    self.current_porte = b
+            elif b.isdigit(): #Trigger
+                b = int(b)
+                if b == 0 or b == 1:
+                    self.actual_trigger = b
+            elif b in self.save_statues: #Statue de sauvegarde
+                self.actual_statue = b
+            elif "coffre" in b:
+                self.actual_coffre = b.split("_")[len(b.split("_"))-1]  
+        elif c == "sphere_sword":
+            if b in self.pnjs:
+                self.set_text(3)        
+                
+    def out(self, a):
+        """
+        Méthode s'activant quand un objet from qitte un objet into.
+        ----------------------------------------------------------------
+        a -> entry (info sur la collision)
+        return -> None
+        """
+        b = str(a.getIntoNodePath()).split("/")[len(str(a.getIntoNodePath()).split("/"))-1]
+        c = str(a.getFromNodePath()).split("/")[len(str(a.getFromNodePath()).split("/"))-1]
+        if c == "player_sphere":
+            if b in self.pnjs:
+                if self.pnjs[b].s is not None:
+                    self.pnjs[b].s.resume()
+                self.current_pnj = None
+            elif b in self.portails:
+                self.current_porte = None
+            elif b in self.save_statues:
+                self.actual_statue = None
+            elif b.isdigit():
+                self.actual_trigger = None  
+            elif "coffre" in b:
+                self.actual_coffre = None           
 
 
-
-	def touche_pave(self, message="arrow_up"):
-		"""
-  		Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
-  		Cette fonction pourrait être supprimée, vu que le joueur se dirige maintenant avec la souris.
-  		Mais on la garde pour ne pas avoir de bugs.
-  		----------------------------------------------------------------------------------------------
-  		message -> str
-  		return -> None
-  		"""
-		if message == "arrow_up":
-			self.player.walk = True
-		elif message == "arrow_up-up":
-			self.player.walk = False
-			self.player.stop()
-		elif message == "arrow_down":
-			self.player.reverse = True
-		elif message == "arrow_down-up":
-			self.player.reverse = False
-		elif message == "arrow_left":
-			self.player.left = True
-		elif message == "arrow_right":
-			self.player.right = True
-		elif message == "arrow_left-up":
-			self.player.left = False
-		elif message == "arrow_right-up":
-			self.player.right = False
-
-	#-------------------Méthode de mise à jour----------------------------------
-	def update(self, task):
-		"""
-		Fonction appelée à chaque frame pour mettre certaines choses à jour.
-		---------------------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
-		dt = globalClock.getDt() #L'horloge, le chronomètre...appelez ça comme
-		#vous voulez c'est ce qui permet de mesurer le temps écoulé entre chaque frame.
-		#---------------Section éléments 2D-------------------------------------------
-		self.noai_text.show()
-		self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
-		self.noai_image.show()
-		self.croix_image.hide()
-		self.lieu_text.hide()
-		self.map_image.hide()
-		for coeur in self.coeurs_vides:
-			coeur.hide()
-		for coeur in self.coeurs_moitie:
-			coeur.hide()
-		for coeur in self.coeurs_pleins:
-			coeur.hide()
-		for loop in range(self.player.maxvies):
-			self.coeurs_vides[loop].show()
-		if self.player.vies%1 != 0:
-			self.coeurs_moitie[int(self.player.vies)].show()
-		for loop in range(int(self.player.vies)):
-			self.coeurs_pleins[loop].show()
-		#-----------------------Section gestion de la manette-----------------
-		if self.manette:
-			base.devices.update()
-			if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
-				self.music.setVolume(0)
-				self.hide_gui()
-				self.transition.fadeScreenColor((0, 0, 0, 0.6))
-				self.transition.letterboxOn()
-				self.gamepad_text = OnscreenText(text=self.story["gui"][12], pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1)) #Veuillez reconnecter votre manette.
-				self.gamepad_text.setBin("gui-popup", 80)
-				taskMgr.remove("update")
-				taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
-				return None
-			gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]
-			left_x = gamepad.findAxis(InputDevice.Axis.left_x)
-			left_y = gamepad.findAxis(InputDevice.Axis.left_y)
-			right_x = gamepad.findAxis(InputDevice.Axis.right_x)
-			right_y = gamepad.findAxis(InputDevice.Axis.right_y)
-			if left_x.value > 0.5:
-				self.touche_pave(message="arrow_right")
-			elif left_x.value < -0.5:
-				self.touche_pave(message="arrow_left")
-			else:
-				self.touche_pave(message="arrow_right-up")
-				self.touche_pave(message="arrow_left-up")
-			if left_y.value > 0.5:
-				self.touche_pave(message="arrow_up")
-			elif left_y.value < -0.5:
-				self.touche_pave(message="arrow_down")
-			else:
-				self.touche_pave(message="arrow_up-up")
-				self.touche_pave(message="arrow_down-up")
-			if right_y.value > 0.5:
-				self.player.followcam.move("up", globalClock.getDt())
-			elif right_y.value < -0.5:
-				self.player.followcam.move("down", globalClock.getDt())
-			if right_x.value > 0.5:
-				self.player.followcam.move("right", globalClock.getDt())
-			elif right_x.value < -0.5:
-				self.player.followcam.move("left", globalClock.getDt())
-		#----------------------Section de gestion de la caméra si pas de manette----------------------
-		else:
-			haut_button = self.clavier_rep.get_mapped_button(self.keys_data["Monter la camera"])
-			if base.mouseWatcherNode.is_button_down(haut_button):
-				self.player.followcam.move("up", globalClock.getDt())
-			bas_button = self.clavier_rep.get_mapped_button(self.keys_data["Descendre la camera"])
-			if base.mouseWatcherNode.is_button_down(bas_button):
-				self.player.followcam.move("down", globalClock.getDt())
-			gauche_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a gauche"])
-			if base.mouseWatcherNode.is_button_down(gauche_button):
-				self.player.followcam.move("left", globalClock.getDt())
-			droite_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a droite"])
-			if base.mouseWatcherNode.is_button_down(droite_button):
-				self.player.followcam.move("right", globalClock.getDt())
-		#-----------------------Section souris---------------------------------------
-		if not self.manette:
-			if base.mouseWatcherNode.hasMouse():
-				self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
-		base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
-		#-----------------------Section mouvements du joueur------------------------
-		self.player.setZ(self.player, -self.player.gravite*dt)
-		if self.player.walk:
-			self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
-		if self.player.reverse:
-			self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
-		if self.player.right:
-			self.player.setH(self.player, -self.player.vitesse*20*globalClock.getDt())
-		if self.player.left:
-			self.player.setH(self.player, self.player.vitesse*20*globalClock.getDt())
-		#--------------------Section gestion des vies-----------------------------
-		if self.player.vies <= 0:
-			self.transition.fadeOut(0.5)
-			taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")
-			return task.done		
-		return task.cont
-		
-	#--------------------------Pop-ups----------------------------------------
-	def confirm_quit(self):
-		"""
-		Fonction qui s'active quand on joue, et que l'on appuie sur échap.
-		Une boîte de dialogue apparaît et nous demande si l'on est sûr de quitter.
-		------------------------------------------------------------------------------
-		return -> None
-		"""
-		taskMgr.remove("update")
-		properties = WindowProperties()
-		properties.setCursorHidden(False)
-		base.win.requestProperties(properties)
-		self.ignore(self.keys_data["Inventaire"])
-		self.ignore("escape")
-		if self.quitDlg is None:
-		  self.quitDlg = YesNoDialog(text = self.story["gui"][13], command = self.quit_confirm) #Voulez-vous vraiment quitter ?
-
-	def quit_confirm(self, clickedYes):
-		"""
-		Fonction qui se met en marche une fois que le joueur
-		a répondu à la boîte de dialogue pour quitter le jeu.
-		-----------------------------------------------------
-		clickedYes -> bool
-		return -> None
-		"""
-		self.quitDlg.cleanup()
-		self.quitDlg = None
-		taskMgr.add(self.update, "update")
-		if clickedYes:
-			self.fade_out()
-		else:
-			properties = WindowProperties()
-			properties.setCursorHidden(True)
-			base.win.requestProperties(properties)
-			self.accept("escape", self.confirm_quit)
-			self.accept(self.keys_data["Inventaire"], self.inventaire)
+    def change_vitesse(self, touche="b"):
+        """
+        Fonction qui change la vitesse du joueur si on appuie sur la touche b ou si on la relâche.
+        -------------------------------------------------
+        touche -> str
+        return -> None
+        """
+        if touche == "b":
+            self.player.vitesse *= 2
+        else:
+            self.player.vitesse /=2
 
 
-	#-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
-	def inventaire(self):
-		"""
-		Fonction utilisée pour ouvrir l'inventaire
-		-------------------------------------------
-		return -> None
-		"""
-		self.player.stop()
-		self.ignore_touches()
-		self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
-		self.index_invent = 0
-		self.accept("escape", self.exit_inventaire)
-		self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
-		if not self.manette:
-			self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
-			self.accept("arrow_left", self.change_index_invent)
-		taskMgr.add(self.update_invent, "update_invent")
-		self.inventaire_show = self.genere_liste_defilement()
-		for article in self.player.inventaire:
-			if self.player.inventaire[article] > 0:
-				bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
-				self.inventaire_show.addItem(bouton)
-		self.music.setVolume(0.6)
-		self.croix_image.setPos(self.get_pos_croix()[0])
-		self.lieu_text.setText(self.get_pos_croix()[1])
 
-	def active_article(self, article="Vodka"):
-		"""
-		Méthode s'activant quand on consomme un article.
-		-------------------------------------------------
-		return -> None
-		"""
-		taskMgr.remove("update_invent")
-		self.inventaire_show.removeNode()
-		self.player.inventaire[article] -= 1
-		if article == "Vodka":
-			self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
-			if self.player.vies + 3 > self.player.maxvies:
-				self.player.vies = self.player.maxvies
-			else:
-				self.player.vies += 3
+    def touche_pave(self, message="arrow_up"):
+        """
+        Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
+        Cette fonction pourrait être supprimée, vu que le joueur se dirige maintenant avec la souris.
+        Mais on la garde pour ne pas avoir de bugs.
+        ----------------------------------------------------------------------------------------------
+        message -> str
+        return -> None
+        """
+        if message == "arrow_up":
+            self.player.walk = True
+        elif message == "arrow_up-up":
+            self.player.walk = False
+            self.player.stop()
+        elif message == "arrow_down":
+            self.player.reverse = True
+        elif message == "arrow_down-up":
+            self.player.reverse = False
+        elif message == "arrow_left":
+            self.player.left = True
+        elif message == "arrow_right":
+            self.player.right = True
+        elif message == "arrow_left-up":
+            self.player.left = False
+        elif message == "arrow_right-up":
+            self.player.right = False
+
+    #-------------------Méthode de mise à jour----------------------------------
+    def update(self, task):
+        """
+        Fonction appelée à chaque frame pour mettre certaines choses à jour.
+        ---------------------------------------------------------
+        task -> task
+        return -> task.cont
+        """
+        dt = globalClock.getDt() #L'horloge, le chronomètre...appelez ça comme
+        #vous voulez c'est ce qui permet de mesurer le temps écoulé entre chaque frame.
+        #---------------Section éléments 2D-------------------------------------------
+        self.noai_text.show()
+        self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
+        self.noai_image.show()
+        self.croix_image.hide()
+        self.lieu_text.hide()
+        self.map_image.hide()
+        for coeur in self.coeurs_vides:
+            coeur.hide()
+        for coeur in self.coeurs_moitie:
+            coeur.hide()
+        for coeur in self.coeurs_pleins:
+            coeur.hide()
+        for loop in range(self.player.maxvies):
+            self.coeurs_vides[loop].show()
+        if self.player.vies%1 != 0:
+            self.coeurs_moitie[int(self.player.vies)].show()
+        for loop in range(int(self.player.vies)):
+            self.coeurs_pleins[loop].show()
+        #-----------------------Section gestion de la manette-----------------
+        if self.manette:
+            base.devices.update()
+            if not base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+                self.music.setVolume(0)
+                self.hide_gui()
+                self.transition.fadeScreenColor((0, 0, 0, 0.6))
+                self.transition.letterboxOn()
+                self.gamepad_text = OnscreenText(text=self.story["gui"][12], pos=(0, 0), scale=(0.15, 0.15), fg=(1, 1, 1, 1)) #Veuillez reconnecter votre manette.
+                self.gamepad_text.setBin("gui-popup", 80)
+                taskMgr.remove("update")
+                taskMgr.add(self.wait_for_gamepad, "wait_for_gamepad")
+                return None
+            gamepad = base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0]
+            left_x = gamepad.findAxis(InputDevice.Axis.left_x)
+            left_y = gamepad.findAxis(InputDevice.Axis.left_y)
+            right_x = gamepad.findAxis(InputDevice.Axis.right_x)
+            right_y = gamepad.findAxis(InputDevice.Axis.right_y)
+            if left_x.value > 0.5:
+                self.touche_pave(message="arrow_right")
+            elif left_x.value < -0.5:
+                self.touche_pave(message="arrow_left")
+            else:
+                self.touche_pave(message="arrow_right-up")
+                self.touche_pave(message="arrow_left-up")
+            if left_y.value > 0.5:
+                self.touche_pave(message="arrow_up")
+            elif left_y.value < -0.5:
+                self.touche_pave(message="arrow_down")
+            else:
+                self.touche_pave(message="arrow_up-up")
+                self.touche_pave(message="arrow_down-up")
+            if right_y.value > 0.5:
+                self.player.followcam.move("up", globalClock.getDt())
+            elif right_y.value < -0.5:
+                self.player.followcam.move("down", globalClock.getDt())
+            if right_x.value > 0.5:
+                self.player.followcam.move("right", globalClock.getDt())
+            elif right_x.value < -0.5:
+                self.player.followcam.move("left", globalClock.getDt())
+        #----------------------Section de gestion de la caméra si pas de manette----------------------
+        else:
+            haut_button = self.clavier_rep.get_mapped_button(self.keys_data["Monter la camera"])
+            if base.mouseWatcherNode.is_button_down(haut_button):
+                self.player.followcam.move("up", globalClock.getDt())
+            bas_button = self.clavier_rep.get_mapped_button(self.keys_data["Descendre la camera"])
+            if base.mouseWatcherNode.is_button_down(bas_button):
+                self.player.followcam.move("down", globalClock.getDt())
+            gauche_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a gauche"])
+            if base.mouseWatcherNode.is_button_down(gauche_button):
+                self.player.followcam.move("left", globalClock.getDt())
+            droite_button = self.clavier_rep.get_mapped_button(self.keys_data["Camera a droite"])
+            if base.mouseWatcherNode.is_button_down(droite_button):
+                self.player.followcam.move("right", globalClock.getDt())
+        #-----------------------Section souris---------------------------------------
+        if not self.manette:
+            if base.mouseWatcherNode.hasMouse():
+                self.player.setH(self.player.getH() - base.mouseWatcherNode.getMouseX() * globalClock.getDt() * 3000)
+        base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
+        #-----------------------Section mouvements du joueur------------------------
+        self.player.setZ(self.player, -self.player.gravite*dt)
+        if self.player.walk:
+            self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
+        if self.player.reverse:
+            self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
+        if self.player.right:
+            self.player.setH(self.player, -self.player.vitesse*20*globalClock.getDt())
+        if self.player.left:
+            self.player.setH(self.player, self.player.vitesse*20*globalClock.getDt())
+        #--------------------Section gestion des vies-----------------------------
+        if self.player.vies <= 0:
+            self.transition.fadeOut(0.5)
+            taskMgr.doMethodLater(0.5, self.launch_game_over, "launch game over")
+            return task.done        
+        return task.cont
+        
+    #--------------------------Pop-ups----------------------------------------
+    def confirm_quit(self):
+        """
+        Fonction qui s'active quand on joue, et que l'on appuie sur échap.
+        Une boîte de dialogue apparaît et nous demande si l'on est sûr de quitter.
+        ------------------------------------------------------------------------------
+        return -> None
+        """
+        taskMgr.remove("update")
+        properties = WindowProperties()
+        properties.setCursorHidden(False)
+        base.win.requestProperties(properties)
+        self.ignore(self.keys_data["Inventaire"])
+        self.ignore("escape")
+        if self.quitDlg is None:
+          self.quitDlg = YesNoDialog(text = self.story["gui"][13], command = self.quit_confirm) #Voulez-vous vraiment quitter ?
+
+    def quit_confirm(self, clickedYes):
+        """
+        Fonction qui se met en marche une fois que le joueur
+        a répondu à la boîte de dialogue pour quitter le jeu.
+        -----------------------------------------------------
+        clickedYes -> bool
+        return -> None
+        """
+        self.quitDlg.cleanup()
+        self.quitDlg = None
+        taskMgr.add(self.update, "update")
+        if clickedYes:
+            self.fade_out()
+        else:
+            properties = WindowProperties()
+            properties.setCursorHidden(True)
+            base.win.requestProperties(properties)
+            self.accept("escape", self.confirm_quit)
+            self.accept(self.keys_data["Inventaire"], self.inventaire)
 
 
-	def inutile(self, inutile=None):
-		"""
-		Fonction qui permet d'effacer le diaogue ok.
-		--------------------------------------------
-		inutile -> bool
-		return -> None
-		"""
-		self.OkDialog.cleanup()
-		self.inventaire_show = DirectScrolledList(
-		decButton_pos=(0, 0, 0.7),
-		decButton_text="+",
-		decButton_text_scale=0.07,
-		decButton_borderWidth=(0.005, 0.005),
-		incButton_pos=(0, 0, -0.7),
-		incButton_text="-",
-		incButton_text_scale=0.07,
-		incButton_borderWidth=(0.005, 0.005),
-		frameSize=(-0.7, 0.7, -0.8, 0.8),
-		frameColor=(0.1, 0.1, 0.1, 0.8),
-		pos=(0, 0, 0),
-		items=[],
-		numItemsVisible = 7,
-		forceHeight = 0.15,
-		itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-		itemFrame_pos=(0, 0, 0))
-		for article in self.player.inventaire:
-			if self.player.inventaire[article] > 0:
-				bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
-				self.inventaire_show.addItem(bouton)
-		taskMgr.add(self.update_invent, "update_invent")
+    #-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
+    def inventaire(self):
+        """
+        Fonction utilisée pour ouvrir l'inventaire
+        -------------------------------------------
+        return -> None
+        """
+        self.player.stop()
+        self.ignore_touches()
+        self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
+        self.index_invent = 0
+        self.accept("escape", self.exit_inventaire)
+        self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
+        if not self.manette:
+            self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+            self.accept("arrow_left", self.change_index_invent)
+        taskMgr.add(self.update_invent, "update_invent")
+        self.inventaire_show = self.genere_liste_defilement()
+        for article in self.player.inventaire:
+            if self.player.inventaire[article] > 0:
+                bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+                self.inventaire_show.addItem(bouton)
+        self.music.setVolume(0.6)
+        self.croix_image.setPos(self.get_pos_croix()[0])
+        self.lieu_text.setText(self.get_pos_croix()[1])
+
+    def active_article(self, article="Vodka"):
+        """
+        Méthode s'activant quand on consomme un article.
+        -------------------------------------------------
+        return -> None
+        """
+        taskMgr.remove("update_invent")
+        self.inventaire_show.removeNode()
+        self.player.inventaire[article] -= 1
+        if article == "Vodka":
+            self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
+            if self.player.vies + 3 > self.player.maxvies:
+                self.player.vies = self.player.maxvies
+            else:
+                self.player.vies += 3
 
 
-	def get_pos_croix(self):
-		"""
-		Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
-		-----------------------------------------------------------------------
-		return -> Vec3
-		"""
-		if self.current_map == "village_pecheurs.bam" or self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam":
-			return	Vec3(0.6, 0, 0), "Village des pêcheurs"
-		elif self.current_map == "Marelys.bam":
-			return Vec3(0.2, 0, 0), "Marelys, région océanique"
-		elif self.current_map == "pyramide.bam":
-			return Vec3(0, 0, 0.6), "Pyramide antique"	
-		return Vec3(0, 0, 0), "???"
+    def inutile(self, inutile=None):
+        """
+        Fonction qui permet d'effacer le diaogue ok.
+        --------------------------------------------
+        inutile -> bool
+        return -> None
+        """
+        self.OkDialog.cleanup()
+        self.inventaire_show = DirectScrolledList(
+        decButton_pos=(0, 0, 0.7),
+        decButton_text="+",
+        decButton_text_scale=0.07,
+        decButton_borderWidth=(0.005, 0.005),
+        incButton_pos=(0, 0, -0.7),
+        incButton_text="-",
+        incButton_text_scale=0.07,
+        incButton_borderWidth=(0.005, 0.005),
+        frameSize=(-0.7, 0.7, -0.8, 0.8),
+        frameColor=(0.1, 0.1, 0.1, 0.8),
+        pos=(0, 0, 0),
+        items=[],
+        numItemsVisible = 7,
+        forceHeight = 0.15,
+        itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
+        itemFrame_pos=(0, 0, 0))
+        for article in self.player.inventaire:
+            if self.player.inventaire[article] > 0:
+                bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
+                self.inventaire_show.addItem(bouton)
+        taskMgr.add(self.update_invent, "update_invent")
 
-	def change_index_invent(self, dir="left"):
-		"""
-		Fonction qui permet de changer de menu d'inventaire
-		-------------------------------------------------
-		dir -> str
-		return -> None
-		"""
-		if dir == "left":
-			if self.index_invent > 0:
-				self.index_invent -= 1
-			else:
-				self.index_invent = 1
-		elif dir == "right":
-			if self.index_invent < 1:
-				self.index_invent += 1
-			else:
-				self.index_invent = 0
-		if self.index_invent == 1:
-			properties = WindowProperties()
-			properties.setCursorHidden(False)
-			base.win.requestProperties(properties)
-		else:
-			properties = WindowProperties()
-			properties.setCursorHidden(True)
-			base.win.requestProperties(properties)
 
-	def update_invent(self, task):
-		"""
-		Fonction appelée à chaque frame dans l'inventaire pour mettre à jour le contenu
-		-----------------------------------------------------------------------------
-		task -> task
-		return -> task.cont
-		"""
-		self.inventaire_show.hide()
-		self.map_image.hide()
-		self.croix_image.hide()
-		self.noai_image.hide()
-		self.noai_text.hide()
-		self.lieu_text.hide()
-		for coeur in self.coeurs_pleins:
-			coeur.hide()
-		for coeur in self.coeurs_moitie:
-			coeur.hide()
-		for coeur in self.coeurs_vides:
-			coeur.hide()
-		if self.index_invent == 0:
-			self.map_image.show()
-			self.croix_image.show()
-			self.lieu_text.show()
-		elif self.index_invent == 1:
-			self.noai_image.show()
-			self.noai_text.show()
-			self.inventaire_show.show()
-		return task.cont
+    def get_pos_croix(self):
+        """
+        Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
+        -----------------------------------------------------------------------
+        return -> Vec3
+        """
+        if self.current_map == "village_pecheurs.bam" or self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam":
+            return  Vec3(0.6, 0, 0), "Village des pêcheurs"
+        elif self.current_map == "Marelys.bam":
+            return Vec3(0.2, 0, 0), "Marelys, région océanique"
+        elif self.current_map == "pyramide.bam":
+            return Vec3(0, 0, 0.6), "Pyramide antique"  
+        return Vec3(0, 0, 0), "???"
 
-	def exit_inventaire(self):
-		"""
-		Fonction appelée lorsqu'on quitte l'inventaire
-		--------------------------------------------------
-		return -> None
-		"""
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		self.inventaire_show.removeNode()
-		del self.inventaire_show
-		self.music.setVolume(1)
-		taskMgr.remove("update_invent")
-		self.accept_touches()
-		
-	#----------------------------------Partie pour le generique--------------------------------------------------------------------------
-	def enterGenerique(self):
-		"""
-		Fonction activée quand on entre dans le générique.
-		-------------------------------------------------
-		return -> None
-		"""
-		self.music = loader.loadSfx("Thème_de_Therenor.ogg")
-		self.music.setLoop(True)
-		self.music.play()
-		self.texts_gen_1 = [("PNJ Design :", True), ("Alexandrine Charette", False), ("Player and Item Design :", True), ("Rémy Martinot", False),
-		("Enemy program : ", True), ("Noé Mora", False), ("Map and dungeon creation :", True), ("Etienne Pacault", False), ("Website and movies :", True), ("Tyméo Bonvicini-Renaud", False),
-		("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False), ("Disney Online", False),
-		("And thank you to everyone we probably forgot ! :-)", False)]
-		colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
-		i_color = 0
-		y = -0.9
-		self.texts_gen = []
-		s = (0.15, 0.15, 0.15)
-		c = (1, 0, 0, 1)
-		for text in self.texts_gen_1:
-			if text[1]:
-				s = (0.15, 0.15, 0.15)
-				c = colors[i_color]
-				i_color += 1
-				y -= 0.5
-			else:
-				s = (0.1, 0.1, 0.1)
-				c = (1, 1, 1, 1)
-				y -= 0.25
-			self.texts_gen.append(OnscreenText(text[0], pos=(0, y), scale=s , fg=(c)))
-		self.texts_gen.append(OnscreenText("Fin", pos=(0, y-0.5), scale=(0.2, 0.2, 0.2), fg=(1, 1, 1, 1)))
-		taskMgr.add(self.update_generique, "update generique")
+    def change_index_invent(self, dir="left"):
+        """
+        Fonction qui permet de changer de menu d'inventaire
+        -------------------------------------------------
+        dir -> str
+        return -> None
+        """
+        if dir == "left":
+            if self.index_invent > 0:
+                self.index_invent -= 1
+            else:
+                self.index_invent = 1
+        elif dir == "right":
+            if self.index_invent < 1:
+                self.index_invent += 1
+            else:
+                self.index_invent = 0
+        if self.index_invent == 1:
+            properties = WindowProperties()
+            properties.setCursorHidden(False)
+            base.win.requestProperties(properties)
+        else:
+            properties = WindowProperties()
+            properties.setCursorHidden(True)
+            base.win.requestProperties(properties)
 
-	def exitGenerique(self):
-		"""
-		Fonction activée quand on quitte le générique.
-		-------------------------------------------------
-		return -> None
-		"""
-		for text in self.texts_gen:
-			text.removeNode()
-			del text
-		del self.texts_gen
-		self.music.stop()
+    def update_invent(self, task):
+        """
+        Fonction appelée à chaque frame dans l'inventaire pour mettre à jour le contenu
+        -----------------------------------------------------------------------------
+        task -> task
+        return -> task.cont
+        """
+        self.inventaire_show.hide()
+        self.map_image.hide()
+        self.croix_image.hide()
+        self.noai_image.hide()
+        self.noai_text.hide()
+        self.lieu_text.hide()
+        for coeur in self.coeurs_pleins:
+            coeur.hide()
+        for coeur in self.coeurs_moitie:
+            coeur.hide()
+        for coeur in self.coeurs_vides:
+            coeur.hide()
+        if self.index_invent == 0:
+            self.map_image.show()
+            self.croix_image.show()
+            self.lieu_text.show()
+        elif self.index_invent == 1:
+            self.noai_image.show()
+            self.noai_text.show()
+            self.inventaire_show.show()
+        return task.cont
 
-	def change_to_menu(self, task):
-		"""
-		Fonction qui après le générique permet d'accéder à l'écran titre.
-		------------------------------------------------------------------
-		task -> task
-		return -> task.done
-		"""
-		self.request("Menu")
-		self.transition.fadeIn(2)
-		Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 2)).start()
-		return task.done
+    def exit_inventaire(self):
+        """
+        Fonction appelée lorsqu'on quitte l'inventaire
+        --------------------------------------------------
+        return -> None
+        """
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        self.inventaire_show.removeNode()
+        del self.inventaire_show
+        self.music.setVolume(1)
+        taskMgr.remove("update_invent")
+        self.accept_touches()
+        
+    #----------------------------------Partie pour le generique--------------------------------------------------------------------------
+    def enterGenerique(self):
+        """
+        Fonction activée quand on entre dans le générique.
+        -------------------------------------------------
+        return -> None
+        """
+        self.music = loader.loadSfx("Thème_de_Therenor.ogg")
+        self.music.setLoop(True)
+        self.music.play()
+        self.texts_gen_1 = [("PNJ Design :", True), ("Alexandrine Charette", False), ("Player and Item Design :", True), ("Rémy Martinot", False),
+        ("Enemy program : ", True), ("Noé Mora", False), ("Map and dungeon creation :", True), ("Etienne Pacault", False), ("Website and movies :", True), ("Tyméo Bonvicini-Renaud", False),
+        ("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False), ("Disney Online", False),
+        ("And thank you to everyone we probably forgot ! :-)", False)]
+        colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
+        i_color = 0
+        y = -0.9
+        self.texts_gen = []
+        s = (0.15, 0.15, 0.15)
+        c = (1, 0, 0, 1)
+        for text in self.texts_gen_1:
+            if text[1]:
+                s = (0.15, 0.15, 0.15)
+                c = colors[i_color]
+                i_color += 1
+                y -= 0.5
+            else:
+                s = (0.1, 0.1, 0.1)
+                c = (1, 1, 1, 1)
+                y -= 0.25
+            self.texts_gen.append(OnscreenText(text[0], pos=(0, y), scale=s , fg=(c)))
+        self.texts_gen.append(OnscreenText("Fin", pos=(0, y-0.5), scale=(0.2, 0.2, 0.2), fg=(1, 1, 1, 1)))
+        taskMgr.add(self.update_generique, "update generique")
 
-	def update_generique(self, task):
-		"""
-		Fonction qui met à jour le générique.
-		--------------------------------------
-		task -> task
-		return -> task.cont ou task.done
-		"""
-		i = 0
-		for text in self.texts_gen:
-			i += 1
-			text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/20)
-			if i == len(self.texts_gen) -1:
-				if text.getTextPos()[1] > 1.5:
-					taskMgr.doMethodLater(2, self.change_to_menu, "change to menu")
-					self.transition.fadeOut(2)
-					Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
-					return task.done
-		return task.cont
+    def exitGenerique(self):
+        """
+        Fonction activée quand on quitte le générique.
+        -------------------------------------------------
+        return -> None
+        """
+        for text in self.texts_gen:
+            text.removeNode()
+            del text
+        del self.texts_gen
+        self.music.stop()
 
-	#-------------------------Fonctions gérant le game over---------------------------------------
-	def launch_game_over(self, task):
-		"""
-		Fonction pour lancer le game over.
-		-----------------------------------
-		task -> task
-		return -> task.done
-		"""
-		self.request("Game_over")
-		return task.done
+    def change_to_menu(self, task):
+        """
+        Fonction qui après le générique permet d'accéder à l'écran titre.
+        ------------------------------------------------------------------
+        task -> task
+        return -> task.done
+        """
+        self.request("Menu")
+        self.transition.fadeIn(2)
+        Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 2)).start()
+        return task.done
 
-	def enterGame_over(self):
-		"""
-		Fonction qui s'active quand on entre dans le game over.
-		--------------------------------------------------------
-		return -> None
-		"""
-		render.hide()
-		self.noai_text.hide()
-		self.noai_image.hide()
-		for coeur in self.coeurs_pleins:
-			coeur.hide()
-		for coeur in self.coeurs_moitie:
-			coeur.hide()
-		for coeur in self.coeurs_vides:
-			coeur.hide()
-		self.music.stop()
-		self.music = loader.loadSfx("game_over.ogg")
-		self.music.play()
-		self.player.vies = 3
-		self.transition.fadeIn(0.5)
-		self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
-		self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1)) #Appuyez sur F1 pour recommencer.
-		self.accept("f1", self.fade_out, extraArgs=["Map"])
+    def update_generique(self, task):
+        """
+        Fonction qui met à jour le générique.
+        --------------------------------------
+        task -> task
+        return -> task.cont ou task.done
+        """
+        i = 0
+        for text in self.texts_gen:
+            i += 1
+            text.setTextPos(text.getTextPos()[0], text.getTextPos()[1]+globalClock.getDt()/20)
+            if i == len(self.texts_gen) -1:
+                if text.getTextPos()[1] > 1.5:
+                    taskMgr.doMethodLater(2, self.change_to_menu, "change to menu")
+                    self.transition.fadeOut(2)
+                    Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
+                    return task.done
+        return task.cont
 
-	def exitGame_over(self):
-		"""
-		Fonciton qui s'active quand on quitte l'état game over.
-		----------------------------------------------------------
-		return -> None
-		"""
-		self.music.stop()
-		self.text_game_over.removeNode()
-		self.text_game_over_2.removeNode()
-		del self.text_game_over
-		del self.text_game_over_2
-		render.show()
+    #-------------------------Fonctions gérant le game over---------------------------------------
+    def launch_game_over(self, task):
+        """
+        Fonction pour lancer le game over.
+        -----------------------------------
+        task -> task
+        return -> task.done
+        """
+        self.request("Game_over")
+        return task.done
 
-	def apparaitre_render(self, task):
-		"""
-		Fonction qui permet de masquer les textes
-		de game over et faire apparaître le rendu
-		------------------------------------------
-		task -> task
-		return -> task.done
-		"""
-		render.show()
-		self.text_game_over.hide()
-		self.text_game_over_2.hide()
-		return task.done
+    def enterGame_over(self):
+        """
+        Fonction qui s'active quand on entre dans le game over.
+        --------------------------------------------------------
+        return -> None
+        """
+        render.hide()
+        self.noai_text.hide()
+        self.noai_image.hide()
+        for coeur in self.coeurs_pleins:
+            coeur.hide()
+        for coeur in self.coeurs_moitie:
+            coeur.hide()
+        for coeur in self.coeurs_vides:
+            coeur.hide()
+        self.music.stop()
+        self.music = loader.loadSfx("game_over.ogg")
+        self.music.play()
+        self.player.vies = 3
+        self.transition.fadeIn(0.5)
+        self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
+        self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1)) #Appuyez sur F1 pour recommencer.
+        self.accept("f1", self.fade_out, extraArgs=["Map"])
+
+    def exitGame_over(self):
+        """
+        Fonciton qui s'active quand on quitte l'état game over.
+        ----------------------------------------------------------
+        return -> None
+        """
+        self.music.stop()
+        self.text_game_over.removeNode()
+        self.text_game_over_2.removeNode()
+        del self.text_game_over
+        del self.text_game_over_2
+        render.show()
+
+    def apparaitre_render(self, task):
+        """
+        Fonction qui permet de masquer les textes
+        de game over et faire apparaître le rendu
+        ------------------------------------------
+        task -> task
+        return -> task.done
+        """
+        render.show()
+        self.text_game_over.hide()
+        self.text_game_over_2.hide()
+        return task.done
 
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
-	def save(self, reset=False, file=1):
-		"""
-		Fonction qui permet de sauvegarder les données de la partie.
-		------------------------------------------------------------
-		return -> None
-		"""
-		if reset:
-			self.chapitre = 0
-			self.player.nom = "Link"
-			self.player.noais = 0
-			self.player.sexe = "masculin"
-			self.current_point = "save_heros"
-		file = open(self.get_path()+f"/save_{file}.txt", "wt")
-		info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
-		file.writelines([donnee +"|" for donnee in info])
-		file.close()
+    def save(self, reset=False, file=1):
+        """
+        Fonction qui permet de sauvegarder les données de la partie.
+        ------------------------------------------------------------
+        return -> None
+        """
+        if reset:
+            self.chapitre = 0
+            self.player.nom = "Link"
+            self.player.noais = 0
+            self.player.sexe = "masculin"
+            self.current_point = "save_heros"
+        file = open(self.get_path()+f"/save_{file}.txt", "wt")
+        info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
+        file.writelines([donnee +"|" for donnee in info])
+        file.close()
 
-	def will_save(self, clickedYes):
-		"""
-		Fonction qui s'active si on touche une statue de sauvegarde.
-		--------------------------------------------------------------
-		return -> None
-		"""
-		self.saveDlg.cleanup()
-		if clickedYes:
-			self.save(file=self.actual_file)
-			self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
-		else:
-			self.reupdate(False)	
+    def will_save(self, clickedYes):
+        """
+        Fonction qui s'active si on touche une statue de sauvegarde.
+        --------------------------------------------------------------
+        return -> None
+        """
+        self.saveDlg.cleanup()
+        if clickedYes:
+            self.save(file=self.actual_file)
+            self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
+        else:
+            self.reupdate(False)    
 
-	def reupdate(self, inutile):
-		"""
-		Fonction pour remettre la fonction de mise à jour en éxécution.
-		---------------------------------------------------------------
-		inutile -> bool
-		return -> None
-		"""
-		properties = WindowProperties()
-		properties.setCursorHidden(True)
-		base.win.requestProperties(properties)
-		if hasattr(self, "myOkDialog"):
-			if self.myOkDialog is not None:
-				self.myOkDialog.cleanup()
-		self.accept("escape", self.confirm_quit)
-		taskMgr.add(self.update, "update")
+    def reupdate(self, inutile):
+        """
+        Fonction pour remettre la fonction de mise à jour en éxécution.
+        ---------------------------------------------------------------
+        inutile -> bool
+        return -> None
+        """
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        if hasattr(self, "myOkDialog"):
+            if self.myOkDialog is not None:
+                self.myOkDialog.cleanup()
+        self.accept("escape", self.confirm_quit)
+        taskMgr.add(self.update, "update")
 
-	def read(self, file=1):
-		"""
-		Fonction qui permet de lire les données préalablement enregistrées.
-		-------------------------------------------------------------------
-		return -> None
-		"""
-		fichier = open(self.get_path()+f"/save_{file}.txt", "rt")
-		i = 0
-		for truc in fichier.read().split("|"):
-			i += 1
-			if i == 1:
-				self.player.nom = truc
-			elif i == 2:
-				self.chapitre = int(truc)
-			elif i == 3:
-				self.current_point = truc
-			elif i == 4:
-				self.player.vies = float(truc)
-				if self.player.vies < 3:
-					self.player.vies = 3
-			elif i == 5:
-				self.player.maxvies = int(truc)
-			elif i == 6:
-				self.player.noais = int(truc)
-			elif i == 7:
-				self.player.sexe = truc
-		fichier.close()
-		
-	def init_fichiers(self):
-		"""
-		Fonction qui permet de créer les fichiers de jeu.
-		-------------------------------------------------
-		return -> None
-		"""
-		#-----------Section qui permet de déterminer si l'ordinateur est au lycée----------------------
-		self.augustins = False
-		if platform.system() == "Windows":
-			if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
-				self.augustins = True
-		self.langue = "francais"
-		path = self.get_path()
-		#----------Création du dossier---------------------------
-		if not os.path.exists(path):
-			os.mkdir(path)
-		#-----------------Création des 3 fichiers individuels----------------
-		for loop in range(3):
-			if not os.path.exists(path+f"/save_{loop+1}.txt"):
-				file = open(path+f"/save_{loop+1}.txt", "wt")
-				file.writelines(["_|0|save_heros|3|3|0|masculin"])
-				file.close()
-		#--------------Création du fichier de mappage de touches-------------------------------
-		if not os.path.exists(path+"/keys.json"):
-			file = open(path+"/keys.json", "wt")
-			file.writelines(['[{"Avancer":"z", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"lshift", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
-			file.close()
-		#----------------Création du fichier pour enregistrer les variables communes à tous les joueurs (ex : langue)---------------------
-		if not os.path.exists(path+"/global.txt"):
-			self.save_global(reset=True)
-		#On lit ce fichier pour mettre à jour toutes les variables.
-		self.read_global()
+    def read(self, file=1):
+        """
+        Fonction qui permet de lire les données préalablement enregistrées.
+        -------------------------------------------------------------------
+        return -> None
+        """
+        fichier = open(self.get_path()+f"/save_{file}.txt", "rt")
+        i = 0
+        for truc in fichier.read().split("|"):
+            i += 1
+            if i == 1:
+                self.player.nom = truc
+            elif i == 2:
+                self.chapitre = int(truc)
+            elif i == 3:
+                self.current_point = truc
+            elif i == 4:
+                self.player.vies = float(truc)
+                if self.player.vies < 3:
+                    self.player.vies = 3
+            elif i == 5:
+                self.player.maxvies = int(truc)
+            elif i == 6:
+                self.player.noais = int(truc)
+            elif i == 7:
+                self.player.sexe = truc
+        fichier.close()
+        
+    def init_fichiers(self):
+        """
+        Fonction qui permet de créer les fichiers de jeu.
+        -------------------------------------------------
+        return -> None
+        """
+        #-----------Section qui permet de déterminer si l'ordinateur est au lycée----------------------
+        self.augustins = False
+        if platform.system() == "Windows":
+            if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
+                self.augustins = True
+        self.langue = "francais"
+        path = self.get_path()
+        #----------Création du dossier---------------------------
+        if not os.path.exists(path):
+            os.mkdir(path)
+        #-----------------Création des 3 fichiers individuels----------------
+        for loop in range(3):
+            if not os.path.exists(path+f"/save_{loop+1}.txt"):
+                file = open(path+f"/save_{loop+1}.txt", "wt")
+                file.writelines(["_|0|save_heros|3|3|0|masculin"])
+                file.close()
+        #--------------Création du fichier de mappage de touches-------------------------------
+        if not os.path.exists(path+"/keys.json"):
+            file = open(path+"/keys.json", "wt")
+            file.writelines(['[{"Avancer":"z", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"lshift", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+            file.close()
+        #----------------Création du fichier pour enregistrer les variables communes à tous les joueurs (ex : langue)---------------------
+        if not os.path.exists(path+"/global.txt"):
+            self.save_global(reset=True)
+        #On lit ce fichier pour mettre à jour toutes les variables.
+        self.read_global()
 
-	def read_global(self):
-		"""
-		Méthode de lecture du fichier contenant les variables globales.
-		---------------------------------------------------------------
-		return -> None
-		"""
-		file = open(self.get_path()+"/global.txt", "rt")
-		i = 0
-		for machin in file.read().split("|"):
-			i += 1
-			if i == 1:
-				self.langue = machin
-		file.close()
+    def read_global(self):
+        """
+        Méthode de lecture du fichier contenant les variables globales.
+        ---------------------------------------------------------------
+        return -> None
+        """
+        file = open(self.get_path()+"/global.txt", "rt")
+        i = 0
+        for machin in file.read().split("|"):
+            i += 1
+            if i == 1:
+                self.langue = machin
+        file.close()
 
-	def save_global(self, reset=False):
-		"""
-		Méthode pour enregistrer le fichier de sauvegarde commun aux différents joueurs.
-		--------------------------------------------------------------------------------
-		reset -> bool
-		return -> None
-		"""
-		if reset:
-			self.langue = "francais"
-		file = open(self.get_path()+"/global.txt", "wt")
-		info = [self.langue]
-		file.writelines([donnee +"|" for donnee in info])
-		file.close()	
-		
-	def get_path(self):
-		"""
-		Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
-		--------------------------------------------------------------------------
-		return -> str
-		"""
-		if platform.system() == "Windows":
-			if self.augustins:
-				return f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
-			else:
-				return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
-		else:
-			return f"/home/{os.getlogin()}/.Therenor"
-				
-	#-------------------------------Méthodes spécifiques à la manette (je ne pense pas qu'il y en aura beaucoup)---------------------------
-	def wait_for_gamepad(self, task):
-		"""
-		Fonction qui vérifie si la manette
-		qui a été déconnectée est rebranchée.
-		--------------------------------------------
-		task -> task
-		return -> task.cont ou task.done
-		"""
-		base.devices.update()
-		if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
-			base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
-			self.transition.noTransitions()
-			self.gamepad_text.removeNode()
-			del self.gamepad_text
-			self.transition.letterboxOff()
-			taskMgr.add(self.update, "update")
-			self.music.setVolume(1)
-			return task.done
-		return task.cont
+    def save_global(self, reset=False):
+        """
+        Méthode pour enregistrer le fichier de sauvegarde commun aux différents joueurs.
+        --------------------------------------------------------------------------------
+        reset -> bool
+        return -> None
+        """
+        if reset:
+            self.langue = "francais"
+        file = open(self.get_path()+"/global.txt", "wt")
+        info = [self.langue]
+        file.writelines([donnee +"|" for donnee in info])
+        file.close()    
+        
+    def get_path(self):
+        """
+        Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
+        --------------------------------------------------------------------------
+        return -> str
+        """
+        if platform.system() == "Windows":
+            if self.augustins:
+                return f"C://users/{os.getlogin()}.AUGUSTINS/AppData/Roaming/Therenor"
+            else:
+                return f"C://users/{os.getlogin()}/AppData/Roaming/Therenor"
+        else:
+            return f"/home/{os.getlogin()}/.Therenor"
+                
+    #-------------------------------Méthodes spécifiques à la manette (je ne pense pas qu'il y en aura beaucoup)---------------------------
+    def wait_for_gamepad(self, task):
+        """
+        Fonction qui vérifie si la manette
+        qui a été déconnectée est rebranchée.
+        --------------------------------------------
+        task -> task
+        return -> task.cont ou task.done
+        """
+        base.devices.update()
+        if base.devices.getDevices(InputDevice.DeviceClass.gamepad):
+            base.attachInputDevice(base.devices.getDevices(InputDevice.DeviceClass.gamepad)[0], prefix="manette")
+            self.transition.noTransitions()
+            self.gamepad_text.removeNode()
+            del self.gamepad_text
+            self.transition.letterboxOff()
+            taskMgr.add(self.update, "update")
+            self.music.setVolume(1)
+            return task.done
+        return task.cont
 
 
 #-----------------------------------------------------------------------------------------------------------
 class Application(ShowBase):
-	"""
-	Classe "principale", celle du jeu.
-	"""
-	def __init__(self):
-		"""
-		Méthode constructeur.
-		-----------------------
-		return -> Application
-		"""
-		loadPrcFile("config.prc")
-		ShowBase.__init__(self)
-		#PStatClient.connect() #Décommentez si vous voulez voir les stats du PC
-		base.set_background_color(0, 0, 0, 0)
-		self.set_level = SetLevel()
-		base.disableMouse()
-		#messenger.toggleVerbose() #Décommentez si vous voulez voir les messages d'input
-		self.set_level.request("Menu")
+    """
+    Classe "principale", celle du jeu.
+    """
+    def __init__(self):
+        """
+        Méthode constructeur.
+        -----------------------
+        return -> Application
+        """
+        loadPrcFile("config.prc")
+        ShowBase.__init__(self)
+        #PStatClient.connect() #Décommentez si vous voulez voir les stats du PC
+        base.set_background_color(0, 0, 0, 0)
+        self.set_level = SetLevel()
+        base.disableMouse()
+        #messenger.toggleVerbose() #Décommentez si vous voulez voir les messages d'input
+        self.set_level.request("Menu")
