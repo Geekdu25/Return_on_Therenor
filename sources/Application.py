@@ -1235,7 +1235,7 @@ class SetLevel(FSM):
             if self.langue == "francais":
                 texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
             elif self.langue == "deutsch":
-                texts = [f"Hey ! {self.player.nom} !", "Los ! Wir haben viele Arbeit zu tun !"]
+                texts = [f"Hey ! {self.player.nom} !", "Du bist den ganzen Morgen im Bett geblieben!", "Komm her und hilf uns beim Angeln!"]
             s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
             s.start()
             self.ignore("texte_ok")
