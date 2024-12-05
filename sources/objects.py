@@ -17,7 +17,7 @@ class Lit:
         self.col = CollisionNode("lit")
         self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
         self.col.setFromCollideMask(BitMask32.allOff())
-        self.col.setIntoCollideMask(BitMask32.bit(0)) 
+        self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
 
 class Bateau:
@@ -35,7 +35,7 @@ class Bateau:
         self.col = CollisionNode("bateau")
         self.col.addSolid(CollisionBox((0, 0, 0), 4, 3.5, 1))
         self.col.setFromCollideMask(BitMask32.allOff())
-        self.col.setIntoCollideMask(BitMask32.bit(0)) 
+        self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
 
 class Coffre:
@@ -56,5 +56,23 @@ class Coffre:
         self.col = CollisionNode("coffre_"+str(id))
         self.col.addSolid(CollisionBox((0, 0, 2), 2, 4, 2))
         self.col.setFromCollideMask(BitMask32.allOff())
-        self.col.setIntoCollideMask(BitMask32.bit(0)) 
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)
+
+class Sapin:
+    """
+    Un sapin tout ce qu'il y a de plus normal.
+    """
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ----------------------
+        return -> Sapin
+        """
+        self.object = loader.loadModel("sapin.bam")
+        self.object.setScale(27)
+        self.col = CollisionNode("sapin")
+        self.col.addSolid(CollisionBox((0, 0, 3), 2.5, 2.5, 4))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
