@@ -2,6 +2,19 @@ from panda3d.core import *
 from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
 
+class Objet:
+    """
+    Un objet classique utilisé par défaut.
+    """
+    def __init__(self, name):
+        """
+        Méthode constructeur.
+        ----------------------
+        return -> Objet
+        """
+        self.name = name
+        self.object = loader.loadModel(name)
+
 class Lit:
     """
     Un lit.
@@ -72,6 +85,24 @@ class Sapin:
         self.object = loader.loadModel("sapin.bam")
         self.object.setScale(27)
         self.col = CollisionNode("sapin")
+        self.col.addSolid(CollisionBox((0, 0, 3), 2.5, 2.5, 4))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)
+
+class Manoir:
+    """
+    Le manoir que l'on retrouve à Verdantia.
+    """
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ---------------------
+        return -> Manoir
+        """
+        self.object = loader.loadModel("Manoir.bam")
+        self.object.setScale(30)
+        self.col = CollisionNode("Manoir")
         self.col.addSolid(CollisionBox((0, 0, 3), 2.5, 2.5, 4))
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))

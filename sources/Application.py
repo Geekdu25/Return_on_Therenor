@@ -1370,6 +1370,10 @@ class SetLevel(FSM):
                     n_coffre += 1
                 elif cle[0] == "sapin":
                     objet = Sapin()
+                elif cle[0] == "manoir":
+                    objet = Manoir()
+                else:
+                    objet = Objet(cle[0])        
                 objet.object.reparentTo(render)
                 objet.object.setPos((data[self.current_map][i][1][0][0], data[self.current_map][i][1][0][1], data[self.current_map][i][1][0][2]))
                 objet.object.setHpr((data[self.current_map][i][1][1][0], data[self.current_map][i][1][1][1], data[self.current_map][i][1][1][2]))
