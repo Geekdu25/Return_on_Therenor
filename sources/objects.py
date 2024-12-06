@@ -101,9 +101,9 @@ class Manoir:
         return -> Manoir
         """
         self.object = loader.loadModel("Manoir.bam")
-        self.object.setScale(30)
+        self.object.setScale(9)
         self.col = CollisionNode("Manoir")
-        self.col.addSolid(CollisionBox((0, 0, 3), 2.5, 2.5, 4))
+        self.col.addSolid(CollisionBox((-10, -20, 10), 100, 40, 50))
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
