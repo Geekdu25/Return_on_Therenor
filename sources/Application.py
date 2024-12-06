@@ -154,6 +154,7 @@ class SetLevel(FSM):
         self.texts = ["It's a secret to everybody."]
         self.text_index = 0
         self.letter_index = 0
+        self.first_time = False
         self.objects = []
         self.keys_data = {}
         self.current_point = 1
@@ -1243,6 +1244,7 @@ class SetLevel(FSM):
         elif cine == 4:
             self.ignore("texte_ok")
             self.fade_out("Map")
+            self.first_time = True
         if task is not None:
             return task.done
 
@@ -1488,7 +1490,7 @@ class SetLevel(FSM):
 
     def load_light(self):
         """
-        Méthode permettant de générr une lumière spécifique pour chaque map.
+        Méthode permettant de générer une lumière spécifique pour chaque map.
         ----------------------------------------------------------------------
         return -> None
         """
@@ -1580,6 +1582,8 @@ class SetLevel(FSM):
         base.win.requestProperties(properties)
         self.load_save()
         self.load_map(self.current_map)
+        if self.first_time:
+            self.help()
 
     def accept_touches(self):
         """
@@ -1598,6 +1602,7 @@ class SetLevel(FSM):
         self.accept(self.keys_data["Interagir"], self.check_interact)
         self.accept("into", self.into)
         self.accept("out", self.out)
+        self.accept("h", self.help)
         taskMgr.remove("update")
         taskMgr.add(self.update, "update")
 
@@ -1617,7 +1622,7 @@ class SetLevel(FSM):
         self.ignore(self.keys_data["Interagir"])
         self.ignore("into")
         self.ignore("out")
-        self.ignore("mouse1")
+        self.ignore("h")
         taskMgr.remove("update")
 
     def load_save(self, task=None):
@@ -1929,7 +1934,49 @@ class SetLevel(FSM):
             self.accept(self.keys_data["Inventaire"], self.inventaire)
 
 
-    #-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)--------------
+    #-----------------------Section de gestion de l'inventaire (et d'autres fonctions d'ui)-------------------
+    def help(self):
+        """
+        Méthode permettant d'afficher un message d'aide.
+        ------------------------------------------------
+        return -> None
+        """
+        self.hide_gui()
+        if self.first_time:
+            self.first_time = False
+        taskMgr.remove("update")
+        self.ignore_touches()
+        self.bg_picture = OnscreenImage("file.png", pos=Vec3(0, 0, 0), scale=Vec3(1.2, 1, 0.75))
+        self.title = OnscreenText("Aide :", scale=0.15, pos=(-1.2, 0.63), align=TextNode.ALeft)
+        liste_textes = ["Avancer : "+self.keys_data["Avancer"].capitalize(), "Changer de point de vue : "+self.keys_data["Changer le point de vue"].capitalize(),
+                            "Courir : "+self.keys_data["Courir"].capitalize(), "Inventaire : "+self.keys_data["Inventaire"].capitalize(), "Interagir : "+self.keys_data["Interagir"].capitalize(),
+                            "Afficher ce panneau d'aide : H", "Appuyez sur H ou Echap pour quitter."]
+        z = 0.5
+        self.real_liste = []
+        for element in liste_textes:
+            self.real_liste.append(OnscreenText(element, scale=0.1, pos=(-1.2, z), align=TextNode.ALeft))
+            z -= 0.1 
+        del liste_textes
+        self.ignore("h")
+        self.accept("h", self.exit_help)
+        self.ignore("escape")
+        self.accept("escape", self.exit_help)
+	
+    def exit_help(self):
+        """
+        Méthode permettant de quitter l'aide.
+        ---------------------------------------
+        return -> None
+        """	
+        taskMgr.add(self.update, "update")
+        self.bg_picture.removeNode()
+        self.title.removeNode()
+        for element in self.real_liste:
+            element.removeNode()
+        self.ignore("h")
+        self.ignore("escape")
+        self.accept_touches()
+		
     def inventaire(self):
         """
         Fonction utilisée pour ouvrir l'inventaire
