@@ -1539,6 +1539,8 @@ class SetLevel(FSM):
         """
         if pnj == "magicien":
             return Magicien()
+        elif pnj == "inventeur":
+            return Inventeur()
         return PNJ()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
@@ -1645,6 +1647,9 @@ class SetLevel(FSM):
         elif self.current_point == "save_pyramide": #Dans la pyramide
             self.current_map = "pyramide.bam"
             self.player.setPos(150, -50, 0)
+        elif self.current_point == "save_maison_chasseurs":
+            self.current_map = "Manoir.bam"
+            self.player.setPos(0, -20, 0)    
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)

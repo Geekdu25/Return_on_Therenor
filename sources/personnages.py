@@ -73,6 +73,7 @@ class PNJ(Actor):
     def __init__(self, name="error", anims=[]):
         #On cherche l'existence des modèles 3D de notre personnage.
         dico = {}
+        print(name)
         for anim in anims:
                 dico[anim] = f"../models/{name}-{anim}.bam"
         Actor.__init__(self, f"../models/{name}.bam", dico)
@@ -90,7 +91,7 @@ class PNJ(Actor):
 
 class Assasin_repenti(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["immobile"])
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts= 4
         self.quetes= 13
         self.object= "error"
@@ -99,7 +100,7 @@ class Assasin_repenti(PNJ):
 
 class Mage_cache(PNJ):
     def __init__(self):
-        PNJ.__init__(self,name="magicien", anims=["immobile"])
+        PNJ.__init__(self,name="magicien", anims=["Immobile"])
         self.texts= 5
         self.object= "montre"#montre qui permet de ralentir le temps pour les combat
         self.nom = "Axil"
@@ -107,14 +108,15 @@ class Mage_cache(PNJ):
 
 class Inventeur(PNJ):
     def __init___(self):
-        PNJ.__init__(self, name="magicien",anims=["immobile"])
+        PNJ.__init__(self, name="magicien",anims=["Immobile"])
         self.texts = 6
+        self.setScale(40)
         self.nom = "Elia"
         self.lieu = "vilage des chasseurs"
 
 class Enfant_prodige(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["immobile"])
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 7
         self.object = "Vodka"
         self.textquest = 14
@@ -123,14 +125,14 @@ class Enfant_prodige(PNJ):
 
 class Archer(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["immobile"])
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 8
         self.nom = "Robin"
         self.lieu = "Village des pecheurs"
 
 class Etudiant_amoureux(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["immobile"])
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 9
         self.anecdotes = 11
         self.aide = 12
@@ -139,7 +141,7 @@ class Etudiant_amoureux(PNJ):
 
 class Etudiante_amoureuse(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["immobile"])
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 10
         self.nom = "Alfi"
         self.lieu = "tentes des nomades"
