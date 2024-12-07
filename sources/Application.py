@@ -867,7 +867,7 @@ class SetLevel(FSM):
         scale=self.textscale,
         pos=(base.a2dLeft + 0.05, 0.0, base.a2dTop - (self.textscale + 0.05)),
         frameColor=VBase4(0, 0, 0, 0),
-        text="Paramétrage des touches",
+        text=self.story["gui"][18],
         text_align=TextNode.ALeft,
         text_fg=VBase4(1, 1, 1, 1),
         text_shadow=VBase4(0, 0, 0, 0.75),
@@ -1023,7 +1023,7 @@ class SetLevel(FSM):
 
         buttonScale = 0.15
         btn = DirectButton(
-        text="Modifier",
+        text=self.story["gui"][19],
         scale=buttonScale,
         text_scale=0.25,
         text_align=TextNode.ALeft,
@@ -1952,9 +1952,9 @@ class SetLevel(FSM):
         self.ignore_touches()
         self.bg_picture = OnscreenImage("file.png", pos=Vec3(0, 0, 0), scale=Vec3(1.2, 1, 0.75))
         self.title = OnscreenText("Aide :", scale=0.15, pos=(-1.2, 0.63), align=TextNode.ALeft)
-        liste_textes = ["Avancer : "+self.keys_data["Avancer"].capitalize(), "Changer de point de vue : "+self.keys_data["Changer le point de vue"].capitalize(),
-                            "Courir : "+self.keys_data["Courir"].capitalize(), "Inventaire : "+self.keys_data["Inventaire"].capitalize(), "Interagir : "+self.keys_data["Interagir"].capitalize(),
-                            "Afficher ce panneau d'aide : H", "Appuyez sur H ou Echap pour quitter."]
+        liste_textes = [self.story["gui"][20]+self.keys_data["Avancer"].capitalize(), self.story["gui"][21]+self.keys_data["Changer le point de vue"].capitalize(),
+                            self.story["gui"][22]+self.keys_data["Courir"].capitalize(), self.story["gui"][23]+self.keys_data["Inventaire"].capitalize(), self.story["gui"][24]+self.keys_data["Interagir"].capitalize(),
+                            self.story["gui"][25], self.story["gui"][26]]
         z = 0.5
         self.real_liste = []
         for element in liste_textes:
