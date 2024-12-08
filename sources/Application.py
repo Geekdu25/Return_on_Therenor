@@ -1471,6 +1471,13 @@ class SetLevel(FSM):
             noeud_np = self.map.attachNewNode(noeud)
             #noeud_np.show() #Décommentez pour voir les murs.
             self.murs.append(noeud_np)
+        if self.current_map == "Marelys.bam":
+            plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0.8)))
+            plane_n = CollisionNode("Sol")
+            plane_n.addSolid(plane)
+            plane_n.setCollideMask(BitMask32.bit(0))
+            plane_np = self.map.attachNewNode(plane_n)
+            self.murs.append(plane_np)    
         del data, i
         #------------Mode debug------------------------
         if self.debug:
@@ -1541,6 +1548,10 @@ class SetLevel(FSM):
             return Magicien()
         elif pnj == "inventeur":
             return Inventeur()
+        elif pnj == "archer":
+            return Archer()
+        elif pnj == "enfant_prodige":
+            return Enfant_prodige()
         return PNJ()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):

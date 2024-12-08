@@ -73,11 +73,10 @@ class PNJ(Actor):
     def __init__(self, name="error", anims=[]):
         #On cherche l'existence des modèles 3D de notre personnage.
         dico = {}
-        print(name)
         for anim in anims:
-                dico[anim] = f"../models/{name}-{anim}.bam"
-        Actor.__init__(self, f"../models/{name}.bam", dico)
-        self.name = name        
+                dico[anim] = f"{name}-{anim}.bam"
+        Actor.__init__(self, f"{name}.bam", dico)
+        self.name = name       
         self.s = None
         self.nom = "Tingle"
         self.texts = None
@@ -108,7 +107,7 @@ class Mage_cache(PNJ):
 
 class Inventeur(PNJ):
     def __init___(self):
-        PNJ.__init__(self, name="magicien",anims=["Immobile"])
+        PNJ.__init__(name="magicien", anims=["Immobile"])
         self.texts = 6
         self.setScale(40)
         self.nom = "Elia"
