@@ -1418,7 +1418,7 @@ class SetLevel(FSM):
             self.portails[portail] = solid
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            #noeud_np.show() #Décommentez pour voir les portes et les portails.
+            noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
             info = data[self.current_map][1][pnj]
@@ -1469,7 +1469,7 @@ class SetLevel(FSM):
             noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            #noeud_np.show() #Décommentez pour voir les murs.
+            noeud_np.show() #Décommentez pour voir les murs.
             self.murs.append(noeud_np)
         if self.current_map == "Marelys.bam":
             plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0.8)))
