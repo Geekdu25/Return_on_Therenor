@@ -1373,7 +1373,7 @@ class SetLevel(FSM):
                 elif cle[0] == "manoir":
                     objet = Manoir()
                 else:
-                    objet = Objet(cle[0])        
+                    objet = Objet(cle[0])
                 objet.object.reparentTo(render)
                 objet.object.setPos((data[self.current_map][i][1][0][0], data[self.current_map][i][1][0][1], data[self.current_map][i][1][0][2]))
                 objet.object.setHpr((data[self.current_map][i][1][1][0], data[self.current_map][i][1][1][1], data[self.current_map][i][1][1][2]))
@@ -1418,7 +1418,7 @@ class SetLevel(FSM):
             self.portails[portail] = solid
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            noeud_np.show() #Décommentez pour voir les portes et les portails.
+            #noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
             info = data[self.current_map][1][pnj]
@@ -1469,7 +1469,7 @@ class SetLevel(FSM):
             noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            noeud_np.show() #Décommentez pour voir les murs.
+            #noeud_np.show() #Décommentez pour voir les murs.
             self.murs.append(noeud_np)
         if self.current_map == "Marelys.bam":
             plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0.8)))
@@ -1477,7 +1477,7 @@ class SetLevel(FSM):
             plane_n.addSolid(plane)
             plane_n.setCollideMask(BitMask32.bit(0))
             plane_np = self.map.attachNewNode(plane_n)
-            self.murs.append(plane_np)    
+            self.murs.append(plane_np)
         del data, i
         #------------Mode debug------------------------
         if self.debug:
@@ -1660,7 +1660,7 @@ class SetLevel(FSM):
             self.player.setPos(150, -50, 0)
         elif self.current_point == "save_maison_chasseurs":
             self.current_map = "Manoir.bam"
-            self.player.setPos(0, -20, 0)    
+            self.player.setPos(0, -20, 0)
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)
@@ -1975,19 +1975,19 @@ class SetLevel(FSM):
         self.real_liste = []
         for element in liste_textes:
             self.real_liste.append(OnscreenText(element, scale=0.1, pos=(-1.2, z), align=TextNode.ALeft))
-            z -= 0.1 
+            z -= 0.1
         del liste_textes
         self.ignore("h")
         self.accept("h", self.exit_help)
         self.ignore("escape")
         self.accept("escape", self.exit_help)
-	
+
     def exit_help(self):
         """
         Méthode permettant de quitter l'aide.
         ---------------------------------------
         return -> None
-        """	
+        """
         taskMgr.add(self.update, "update")
         self.bg_picture.removeNode()
         self.title.removeNode()
@@ -1996,7 +1996,7 @@ class SetLevel(FSM):
         self.ignore("h")
         self.ignore("escape")
         self.accept_touches()
-		
+
     def inventaire(self):
         """
         Fonction utilisée pour ouvrir l'inventaire
