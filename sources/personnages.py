@@ -30,12 +30,12 @@ class Player(Actor):
         self.gravite = 2
         #---------------Section de gestion des collisions------------------
         self.col = CollisionNode('player_sphere')
-        self.col.addSolid(CollisionSphere((0, 0, 0.65), 0.65)) 
+        self.col.addSolid(CollisionSphere((0, 0, 0.65), 0.65))
         self.col.setFromCollideMask(BitMask32.bit(0))
-        self.col.setIntoCollideMask(BitMask32.allOff()) 
+        self.col.setIntoCollideMask(BitMask32.allOff())
         self.col_np = self.attachNewNode(self.col)
         self.mode = True
-        
+
     def degats(self, degats=1):
         """
         Méthode permettant d'ajouter des dégâts au joueur.
@@ -43,19 +43,19 @@ class Player(Actor):
         return -> None
         """
         self.vies -= degats
-    
+
     def ajoute_item(self, item="Vodka"):
         """
         Méthode permettant d'ajouter un item dans l'inventaire.
         --------------------------------------------------------
         item -> str
         return -> None
-        """ 
+        """
         if item in self.inventaire:
             self.inventaire[item] += 1
         else:
-            self.inventaire[item] = 1   
-        
+            self.inventaire[item] = 1
+
     def create_camera(self):
         """
         Méthode permettant de créer la caméra du joueur.
@@ -63,8 +63,8 @@ class Player(Actor):
         return -> None
         """
         self.followcam = ManetteCam(base.cam, self)
-        
-#-------------------------------Les pnjs---------------------------------------     
+
+#-------------------------------Les pnjs---------------------------------------
 class PNJ(Actor):
     """
     Classe nous servant de base pour tous les pnjs du jeu.
@@ -76,7 +76,7 @@ class PNJ(Actor):
         for anim in anims:
                 dico[anim] = f"{name}-{anim}.bam"
         Actor.__init__(self, f"{name}.bam", dico)
-        self.name = name       
+        self.name = name
         self.s = None
         self.nom = "Tingle"
         self.texts = None
@@ -84,8 +84,8 @@ class PNJ(Actor):
         self.texts = 2
         self.setScale(6)
         self.col = CollisionNode(name)
-        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25)) 
-        self.col.setIntoCollideMask(BitMask32.bit(0)) 
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.attachNewNode(self.col)
 
 class Assasin_repenti(PNJ):
@@ -106,8 +106,8 @@ class Mage_cache(PNJ):
         self.lieu = "Maison d'aurélia"
 
 class Inventeur(PNJ):
-    def __init___(self):
-        PNJ.__init__(name="magicien", anims=["Immobile"])
+    def __init__(self):
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 6
         self.setScale(40)
         self.nom = "Elia"
