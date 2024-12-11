@@ -2078,11 +2078,25 @@ class SetLevel(FSM):
         return -> Vec3
         """
         if self.current_map == "village_pecheurs.bam" or self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam":
-            return  Vec3(0.6, 0, 0), "Village des pêcheurs"
+            return  Vec3(0.6, 0, 0), self.story["map"][2]
         elif self.current_map == "Marelys.bam":
-            return Vec3(0.2, 0, 0), "Marelys, région océanique"
+            return Vec3(0.2, 0, 0), self.story["map"][1]
         elif self.current_map == "pyramide.bam":
-            return Vec3(0, 0, 0.6), "Pyramide antique"
+            return Vec3(0, 0, 0.6), self.story["map"][0]
+        elif self.current_map == "Verdantia.bam":
+            return Vec3(-0.05, 0, -0.3), self.story["map"][3]
+        elif self.current_map == "Manoir.bam":
+            return Vec3(-0.1, 0, -0.05), self.story["map"][4]
+        elif self.current_map == "Ignirift.bam":
+            return Vec3(-0.3, 0, 0.2), self.story["map"][5]
+        elif self.current_map == "maison_aurelia.bam":
+            return Vec3(-0.3, 0, 0), self.story["map"][6]
+        elif self.current_map == "Arduny.bam":
+            return Vec3(0.1, 0, 0.5), self.story["map"][7]
+        elif self.current_map == "Crest.bam":
+            return Vec3(0, 0, 0), self.story["map"][8]
+        elif self.current_map == "forteresse.bam":
+            return Vec3(0.05, 0, 0.1), self.story["map"][9]
         return Vec3(0, 0, 0), "???"
 
     def change_index_invent(self, dir="left"):
