@@ -1,0 +1,100 @@
+body {
+    background-image : url(fond_montagne_lune.jpg);
+    background-size : 100% 100%;
+    font-family: sans-serif;
+}
+
+.btn1 {
+  position: absolute;
+  left: 90%;
+}
+
+.btn2 {
+  position: absolute;
+  left: 75%;
+}
+
+.btn3 {
+  position: absolute;
+  left: 65.8%;
+}
+
+.bouton-lien {
+  background-color: #7a49001e;
+  border: 0.2px solid #00000060;
+  border-radius: 5px;
+  padding: 3px;
+  color: rgb(255, 255, 255);
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: large;
+  text-align: center;
+  text-decoration: none;
+  cursor: default;
+}
+
+.bouton-lien:hover {
+background-color: #6137009c;
+border: 0.2px solid #00000085;
+border-radius: 5px;
+padding: 3px;
+color: rgb(255, 255, 255);
+font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+font-size: large;
+text-align: center;
+text-decoration: none;
+cursor: default;
+}
+
+header
+{
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    height: 100px;
+    background-color: rgba(110, 65, 28, 0.11);
+}
+
+.grand-titre {
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 20px;
+    height: 111px;
+    margin: 10px;
+    color: rgb(255, 255, 255);
+    text-align: center;
+}
+
+.titre {
+    position: relative;
+    top: 120px;
+    height: 111px;
+    margin: 10px;
+    text-align: center;
+    color: rgb(255, 255, 255);
+}
+
+.presentation {
+    position: relative;
+    top: 50px;
+    height: 111px;
+    margin: 10px;
+    text-align: center;
+    color: rgb(255, 255, 255);
+}
+
+.video {
+  text-align: center;
+  color: rgb(255, 255, 255);
+}
+
+.presentation-groupe {
+    position: relative;
+    text-align: center;
+    color: rgb(255, 255, 255);
+}
+
+.image {
+  height: 50%;
+}
