@@ -88,7 +88,10 @@ class PNJ(Actor):
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.attachNewNode(self.col)
 
-class Assasin_repenti(PNJ):
+    def __str__(self):
+        return self.nom+" est un PNJ."
+
+class Assassin_repenti(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts= 4
@@ -96,6 +99,7 @@ class Assasin_repenti(PNJ):
         self.object= "error"
         self.nom = "Phoolan Devi"
         self.lieu= "Ignirift"
+        self.col.setName("assassin")
 
 class Mage_cache(PNJ):
     def __init__(self):
@@ -104,6 +108,7 @@ class Mage_cache(PNJ):
         self.object= "montre"#montre qui permet de ralentir le temps pour les combat
         self.nom = "Axil"
         self.lieu = "Maison d'aurélia"
+        self.col.setName("mage")
 
 class Inventeur(PNJ):
     def __init__(self):
@@ -112,6 +117,7 @@ class Inventeur(PNJ):
         self.setScale(40)
         self.nom = "Elia"
         self.lieu = "vilage des chasseurs"
+        self.col.setName("inventeur")
 
 class Enfant_prodige(PNJ):
     def __init__(self):
@@ -121,6 +127,7 @@ class Enfant_prodige(PNJ):
         self.textquest = 14
         self.nom = "Maryanne"
         self.lieu = "village des pecheurs"
+        self.col.setName("enfant")
 
 class Archer(PNJ):
     def __init__(self):
@@ -128,6 +135,7 @@ class Archer(PNJ):
         self.texts = 8
         self.nom = "Robin"
         self.lieu = "Village des pecheurs"
+        self.col.setName("archer")
 
 class Etudiant_amoureux(PNJ):
     def __init__(self):
@@ -137,6 +145,7 @@ class Etudiant_amoureux(PNJ):
         self.aide = 12
         self.nom = "Rodef"
         self.lieu = "tentes des nomades"
+        self.col.setName("etudiant")
 
 class Etudiante_amoureuse(PNJ):
     def __init__(self):
@@ -144,6 +153,7 @@ class Etudiante_amoureuse(PNJ):
         self.texts = 10
         self.nom = "Alfi"
         self.lieu = "tentes des nomades"
+        self.col.setName("etudiante")
 
 #-----------------------------------------PNJ de test--------------------------------------
 
