@@ -283,6 +283,7 @@ class SetLevel(FSM):
             self.ignore("into")
             self.ignore("escape")
             self.ignore(self.keys_data["Inventaire"])
+            self.ignore("h")
             if not self.reading and not reussi:
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
@@ -374,8 +375,6 @@ class SetLevel(FSM):
         properties = WindowProperties()
         properties.setCursorHidden(False)
         base.win.requestProperties(properties)
-        self.ignore(self.keys_data["Interagir"])
-        self.ignore("escape")
         self.accept("escape", self.exit_vente)
         self.ignore(self.keys_data["Inventaire"])
         self.articles = self.genere_liste_defilement()
@@ -441,6 +440,7 @@ class SetLevel(FSM):
             self.articles.removeNode()
             self.accept("into", self.into)
             self.accept("out", self.out)
+            self.accept("h", self.help)
             self.current_pnj = None
 
     def update_vente(self, task=None):
@@ -465,6 +465,7 @@ class SetLevel(FSM):
         self.accept("escape", self.confirm_quit)
         self.accept(self.keys_data["Inventaire"], self.inventaire)
         self.accept("into", self.into)
+        self.accept("h", self.help)
 
     def check_interact_dial(self):
         """
