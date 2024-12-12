@@ -281,6 +281,7 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.ignore("out")
             self.ignore("into")
+            self.ignore("escape")
             self.ignore(self.keys_data["Inventaire"])
             if not self.reading and not reussi:
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
@@ -459,9 +460,9 @@ class SetLevel(FSM):
         ----------------------------------------------------
         return -> None
         """
-        taskMgr.remove("update vente")
         taskMgr.add(self.update, "update")
         self.accept("out", self.out)
+        self.accept("escape", self.confirm_quit)
         self.accept(self.keys_data["Inventaire"], self.inventaire)
         self.accept("into", self.into)
 
