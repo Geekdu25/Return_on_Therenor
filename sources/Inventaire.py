@@ -38,10 +38,7 @@ class Inventaire(DirectObject):
         self.accept("7", self.repartition_touches, [6])
         self.accept("8", self.repartition_touches, [7])
         self.accept("9", self.repartition_touches, [8])
-        self.accept("e", self.affiche_inventaire_armes)
-        self.accept("i", self.affiche_inventaire_items)
         self.accept("c", self.consommer_item)
-
         self.creer_inventaire()
 
 
@@ -166,7 +163,7 @@ class Inventaire(DirectObject):
         if 0 <= indiceArme < len(self.weapons) and self.visible:
             self.arme_en_main = indiceArme
             self.arme_surbrillance()
-            print(f"Arme sélectionnée : {self.weapons[indiceArme]}")
+            #Arme sélectionnée : self.weapons[indiceArme]
 
     def item_select(self, indiceItem):
         """Méthode qui modifie l'item séléctioné et le met en surbrillance"""
@@ -181,13 +178,11 @@ class Inventaire(DirectObject):
             le masque avec cacher_armes() s'il est affiché
         """
         if self.visible :
-            print("Iventaire fermé")
             self.cacher_armes()
             self.visible = False
         else:
             if self.inventaire_visible:
                 self.affiche_inventaire_items()
-            print("Inventaire ouvert")
             self.afficher_armes()
             self.visible = True
 
@@ -211,13 +206,11 @@ class Inventaire(DirectObject):
             le masque avec cacher_items() s'il est affiché
             """
         if self.inventaire_visible:
-            print("Inventaire fermé")
             self.cacher_items()
             self.inventaire_visible = False
         else:
             if self.visible:
                 self.affiche_inventaire_armes()
-            print("Inventaire ouvert")
             self.afficher_items()
             self.inventaire_visible = True
 
@@ -247,7 +240,6 @@ class Inventaire(DirectObject):
                 self.item_selectione -= 1
             self.creer_inventaire()
             self.afficher_items()
-            print(aConsommer+' consommé(e) !')
 
     def cacher(self):
         self.cacher_armes()

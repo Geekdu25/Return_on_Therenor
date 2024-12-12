@@ -2008,27 +2008,6 @@ class SetLevel(FSM):
         return -> None
         """
         self.OkDialog.cleanup()
-        self.inventaire_show = DirectScrolledList(
-        decButton_pos=(0, 0, 0.7),
-        decButton_text="+",
-        decButton_text_scale=0.07,
-        decButton_borderWidth=(0.005, 0.005),
-        incButton_pos=(0, 0, -0.7),
-        incButton_text="-",
-        incButton_text_scale=0.07,
-        incButton_borderWidth=(0.005, 0.005),
-        frameSize=(-0.7, 0.7, -0.8, 0.8),
-        frameColor=(0.1, 0.1, 0.1, 0.8),
-        pos=(0, 0, 0),
-        items=[],
-        numItemsVisible = 7,
-        forceHeight = 0.15,
-        itemFrame_frameSize=(-0.6, 0.6, -0.5, 0.5),
-        itemFrame_pos=(0, 0, 0))
-        for article in self.player.inventaire:
-            if self.player.inventaire[article] > 0:
-                bouton = DirectButton(text=article+" : "+str(self.player.inventaire[article]),  text_scale=0.1, borderWidth=(0.01, 0.01), relief=2, command=self.active_article, extraArgs=[article])
-                self.inventaire_show.addItem(bouton)
         taskMgr.add(self.update_invent, "update_invent")
 
 
@@ -2071,9 +2050,9 @@ class SetLevel(FSM):
             if self.index_invent > 0:
                 self.index_invent -= 1
             else:
-                self.index_invent = 1
+                self.index_invent = 2
         elif dir == "right":
-            if self.index_invent < 1:
+            if self.index_invent < 2:
                 self.index_invent += 1
             else:
                 self.index_invent = 0
@@ -2102,7 +2081,9 @@ class SetLevel(FSM):
             self.croix_image.show()
             self.lieu_text.show()
         elif self.index_invent == 1:
-            self.inventaire_show.show()
+            self.inventaire_mgr.affiche_inventaire_armes()
+        elif self.index_invent == 2:
+            self.inventaire_mgr.affiche_inventaire_items()
         return task.cont
 
     def exit_inventaire(self):
