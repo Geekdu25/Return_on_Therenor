@@ -281,11 +281,13 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.ignore("out")
             self.ignore("into")
+            self.ignore(self.keys_data["Inventaire"])
             if not self.reading and not reussi:
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
                     self.letter_index = 0
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
+                    self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
                     self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
@@ -460,6 +462,7 @@ class SetLevel(FSM):
         taskMgr.remove("update vente")
         taskMgr.add(self.update, "update")
         self.accept("out", self.out)
+        self.accept(self.keys_data["Inventaire"], self.inventaire)
         self.accept("into", self.into)
 
     def check_interact_dial(self):
@@ -2334,11 +2337,11 @@ class SetLevel(FSM):
         self.saveDlg.cleanup()
         if clickedYes:
             self.save(file=self.actual_file)
-            self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.reupdate) #Sauvegarde effectuée.
+            self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.update_after_save) #Sauvegarde effectuée.
         else:
-            self.reupdate(False)
+            self.update_after_save(False)
 
-    def reupdate(self, inutile):
+    def update_after_save(self, inutile):
         """
         Fonction pour remettre la fonction de mise à jour en éxécution.
         ---------------------------------------------------------------
