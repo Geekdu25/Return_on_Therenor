@@ -1801,6 +1801,7 @@ class SetLevel(FSM):
         self.croix_image.hide()
         self.lieu_text.hide()
         self.map_image.hide()
+        self.player_interface.montrer()
         #-----------------------Section gestion de la manette-----------------
         if self.manette:
             base.devices.update()

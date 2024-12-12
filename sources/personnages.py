@@ -17,6 +17,8 @@ class Player(Actor):
         self.nom = "Link"
         self.vies = 30
         self.maxvies = 30
+        self.mana = 15
+        self.mana_max = 15
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------

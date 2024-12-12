@@ -17,30 +17,18 @@ class InterfaceJoueur(DirectObject):
     def __init__(self, joueur):
         DirectObject.__init__(self)
         self.joueur = joueur
-        self.accept("mouse1", self.enlever_hp)  # Bouton gauche souris
-        self.accept("mouse3", self.ajouter_hp) # Bouton droit souris
-        self.accept("a", self.ajouter_mana)    #touche a
-        self.accept("z", self.enlever_mana)    #touche z
-        self.accept("r", self.enlever_argent)  #touche r
-        self.accept("e", self.ajouter_argent)  #touche e
-        #stats du joueur(on pourra les modifier si elles sont sensées être stockées ailleurs)
-        self.pv = 50
-        self.pv_max = 50
-        self.mana = 25
-        self.mana_max = 25
-        self.bourse = 100
         self.hp = affichageTexte(0.6, 0.06, 0.05, 'HP')  #affichage à l'écran de "HP"
         self.mn = affichageTexte(0.6, 0.131, 0.05, 'MANA')  #affichage à l'écran de "MANA"
         self.no = OnscreenImage(image="noai.png", pos=(-1.2,0,0.73), scale=(0.05,0,0.05))
         self.no.setTransparency(TransparencyAttrib.MAlpha)
-        self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.bourse))  #affichage à l'écran de la quantité d'argent
+        self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.joueur.noais))  #affichage à l'écran de la quantité d'argent
         self.barre_pv_root = NodePath("BarrePVRoot")
         self.barre_pv_root.reparentTo(aspect2d)
         self.barre_mana_root = NodePath("BarreManaRoot")
         self.barre_mana_root.reparentTo(aspect2d)
-        self.create("background_pv",scale=(0.5,0,0.05),color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.92))
+        self.barre_pv_background = self.create("background_pv",scale=(0.5,0,0.05),color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.92))
         self.barre_pv = self.create("Barredevie",scale=(0.5,0,0.05),color=LVector4(0.8,0,0,1),pos=(-1.25,0,0.92))
-        self.create("background_mana",scale=(0.5,0,0.05), color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.85))
+        self.barre_mana_background = self.create("background_mana",scale=(0.5,0,0.05), color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.85))
         self.barre_mana = self.create("Barredemana",scale=(0.5,0,0.05), color=LVector4(0,0.8,0,1),pos=(-1.25,0,0.85))
 
 
@@ -60,46 +48,50 @@ class InterfaceJoueur(DirectObject):
 
 
 
-    def enlever_hp(self):
+    def enlever_hp(self, enmoins):
         """Méthode qui diminue la quantité de la barre d'hp quand le joueur en perd"""
-        if self.pv -1 >= 0:
-            self.pv -= 1
-            ratio = self.pv/self.pv_max
+        if self.joueur.vies - enmoins >= 0:
+            self.joueur.vies -= enmoins
+            ratio = self.joueur.vies/self.joueur.maxvies
             self.barre_pv.setScale(ratio*0.5,0,0.05)
 
-    def ajouter_hp(self):
+    def ajouter_hp(self, enplus):
         """Méthode qui augmente la quantité de la barre d'hp quand le joueur en gagne"""
-        if self.pv + 1 <= self.pv_max:
-            self.pv += 1
-            ratio = self.pv/self.pv_max
+        if self.joueur.vies + enplus <= self.pv_max:
+            self.joueur.vies += enplus
+            ratio = self.joueur.vies/self.joueur.maxvies
+            self.barre_pv.setScale(ratio*0.5,0,0.05)
+        else:
+            self.joueur.vies = self.joueur.maxvies
+            ratio = self.joueur.vies/self.joueur.maxvies
             self.barre_pv.setScale(ratio*0.5,0,0.05)
 
-    def ajouter_mana(self):
+    def ajouter_mana(self, enplus):
         """Méthode qui augmente la quantité de la barre de mana quand le joueur en gagne"""
-        if self.mana+1 <= self.mana_max:
-            self.mana += 1
-            ratio = self.mana/self.mana_max
+        if self.joueur.mana + enplus<= self.joueur.mana_max:
+            self.joueur.mana += enplus
+            ratio = self.joueur.mana/self.joueur.mana_max
             self.barre_mana.setScale(ratio*0.5,0,0.05)
 
-    def enlever_mana(self):
+    def enlever_mana(self, enlever):
         """Méthode qui diminue la quantité de la barre de mana quand le joueur en perd"""
-        if self.mana -1 >= 0:
-            self.mana -= 1
-            ratio = self.mana/self.mana_max
+        if self.joueur.mana - enlever >= 0:
+            self.joueur.mana -= enlever
+            ratio = self.joueur.mana/self.joueur.mana_max
             self.barre_mana.setScale(ratio*0.5,0,0.05)
 
-    def enlever_argent(self):
+    def enlever_argent(self, somme):
         """Méthode qui diminue la quantité d'argent affichée quand le joueur en perd"""
-        if self.bourse -1 >= 0:
-            self. bourse -= 1
+        if self.joueur.noais -1 >= 0:
+            self.joueur.noais -= somme
             self.ag.destroy()
-            self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.bourse))
+            self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.joueur.noais))
 
-    def ajouter_argent(self):
+    def ajouter_argent(self, somme):
         """Méthode qui augmente la quantité d'argent affichée quand le joueur de gagne"""
-        self.bourse += 1
+        self.joueur.noais += somme
         self.ag.destroy()
-        self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.bourse))
+        self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.joueur.noais))
 
     def cacher(self):
         """
@@ -109,6 +101,8 @@ class InterfaceJoueur(DirectObject):
         self.no.hide()
         self.barre_mana.hide()
         self.barre_pv.hide()
+        self.barre_pv_background.hide()
+        self.barre_mana_background.hide()
         self.hp.hide()
         self.mn.hide()
 
@@ -120,6 +114,8 @@ class InterfaceJoueur(DirectObject):
         self.no.show()
         self.barre_mana.show()
         self.barre_pv.show()
+        self.barre_pv_background.show()
+        self.barre_mana_background.show()
         self.hp.show()
         self.mn.show()
 
