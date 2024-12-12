@@ -248,20 +248,21 @@ class SetLevel(FSM):
         return -> None
         """
         reussi = self.check_interact_dial()
-        if self.current_pnj is not None:
-            taskMgr.remove("update")
-            self.ignore("out")
-            self.ignore("into")
-            self.ignore("escape")
-            self.ignore(self.keys_data["Inventaire"])
-            self.ignore("h")
+        if self.current_pnj is not None:            
             if not self.reading and not reussi:
+                taskMgr.remove("update")
+                self.ignore("out")                
+                self.ignore("into")
+                self.ignore("escape")
+                self.ignore(self.keys_data["Inventaire"])
+                self.ignore("h")
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
                     self.letter_index = 0
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
+                    self.ignore("space")
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
                     self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
         if self.current_porte is not None:
@@ -412,6 +413,7 @@ class SetLevel(FSM):
             self.accept("into", self.into)
             self.accept("out", self.out)
             self.accept("h", self.help)
+            self.accept("space", self.check_interact)
             self.current_pnj = None
 
     def update_vente(self, task=None):
@@ -1967,6 +1969,7 @@ class SetLevel(FSM):
         """
         self.player.stop()
         self.ignore_touches()
+        self.player_interface.cacher()
         self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
         self.index_invent = 0
         self.accept("escape", self.exit_inventaire)
@@ -2077,14 +2080,16 @@ class SetLevel(FSM):
         self.map_image.hide()
         self.croix_image.hide()
         self.lieu_text.hide()
+        self.inventaire_mgr.cacher_armes()
+        self.inventaire_mgr.cacher_items()
         if self.index_invent == 0:
             self.map_image.show()
             self.croix_image.show()
             self.lieu_text.show()
         elif self.index_invent == 1:
-            self.inventaire_mgr.affiche_inventaire_armes()
+            self.inventaire_mgr.afficher_armes()
         elif self.index_invent == 2:
-            self.inventaire_mgr.affiche_inventaire_items()
+            self.inventaire_mgr.afficher_items()
         return task.cont
 
     def exit_inventaire(self):
@@ -2093,11 +2098,14 @@ class SetLevel(FSM):
         --------------------------------------------------
         return -> None
         """
+        self.inventaire_mgr.cacher_items()
+        self.inventaire_mgr.cacher_armes()
         properties = WindowProperties()
         properties.setCursorHidden(True)
         base.win.requestProperties(properties)
         self.inventaire_show.removeNode()
         del self.inventaire_show
+        self.player_interface.montrer()
         self.music.setVolume(1)
         taskMgr.remove("update_invent")
         self.accept_touches()

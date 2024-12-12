@@ -19,17 +19,17 @@ class InterfaceJoueur(DirectObject):
         self.joueur = joueur
         self.hp = affichageTexte(0.6, 0.06, 0.05, 'HP')  #affichage à l'écran de "HP"
         self.mn = affichageTexte(0.6, 0.131, 0.05, 'MANA')  #affichage à l'écran de "MANA"
-        self.no = OnscreenImage(image="noai.png", pos=(-1.2,0,0.73), scale=(0.05,0,0.05))
+        self.no = OnscreenImage(image="noai.png", pos=(-0.9,0,0.73), scale=(0.05,0,0.05))
         self.no.setTransparency(TransparencyAttrib.MAlpha)
-        self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.joueur.noais))  #affichage à l'écran de la quantité d'argent
+        self.ag = affichageTexte(0.6, 0.25, 0.1, str(self.joueur.noais))  #affichage à l'écran de la quantité d'argent
         self.barre_pv_root = NodePath("BarrePVRoot")
         self.barre_pv_root.reparentTo(aspect2d)
         self.barre_mana_root = NodePath("BarreManaRoot")
         self.barre_mana_root.reparentTo(aspect2d)
-        self.barre_pv_background = self.create("background_pv",scale=(0.5,0,0.05),color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.92))
-        self.barre_pv = self.create("Barredevie",scale=(0.5,0,0.05),color=LVector4(0.8,0,0,1),pos=(-1.25,0,0.92))
-        self.barre_mana_background = self.create("background_mana",scale=(0.5,0,0.05), color=LVector4(0.2,0.2,0.2,1),pos=(-1.25,0,0.85))
-        self.barre_mana = self.create("Barredemana",scale=(0.5,0,0.05), color=LVector4(0,0.8,0,1),pos=(-1.25,0,0.85))
+        self.barre_pv_background = self.create("background_pv",scale=(0.5,0,0.05),color=LVector4(0.2,0.2,0.2,1),pos=(-1,0,0.92))
+        self.barre_pv = self.create("Barredevie",scale=(0.5,0,0.05),color=LVector4(0.8,0,0,1),pos=(-1,0,0.92))
+        self.barre_mana_background = self.create("background_mana",scale=(0.5,0,0.05), color=LVector4(0.2,0.2,0.2,1),pos=(-1,0,0.85))
+        self.barre_mana = self.create("Barredemana",scale=(0.5,0,0.05), color=LVector4(0,0.8,0,1),pos=(-1,0,0.85))
 
 
 
@@ -92,6 +92,34 @@ class InterfaceJoueur(DirectObject):
         self.joueur.noais += somme
         self.ag.destroy()
         self.ag = affichageTexte(0.2, 0.25, 0.1, str(self.joueur.noais))
+
+    def changer(self, quoi="hp", combien=0):
+        """
+        Méthode permettant de changer un paramètre.
+        -------------------------------------------
+        quoi -> str
+        combien -> int
+        return -> None
+        """     
+        if quoi == "hp":
+            if combien > self.player.vies:
+                self.ajouter_hp(combien-self.player.vies)
+            elif combien < self.player.vies:
+                self.enlever_hp(self.player.vies-combien)
+        elif quoi == "mana":
+            if combien > self.player.mana:
+                self.ajouter_mana(combien-self.player.mana)
+            elif combien < self.player.mana:
+                self.enlever_mana(self.player.mana-combien)
+        else:
+            if combien > self.player.noais:
+                self.ajouter_argent(combien-self.player.noais)
+            elif combien < self.player.noais:
+                self.enlever_argent(self.player.noais-combien)                
+
+
+
+
 
     def cacher(self):
         """
