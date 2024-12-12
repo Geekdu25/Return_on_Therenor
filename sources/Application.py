@@ -16,6 +16,8 @@ from personnages import *
 from monsters import *
 from objects import *
 from mappingGUI import *
+from Inventaire import *
+from Interface_joueur import *
 #-------------Autres modules (nécessaires entre autres à la manipulation des fichiers)------------------
 import os, sys, json, platform, random, time
 
@@ -192,33 +194,8 @@ class SetLevel(FSM):
         return -> None
         """
         self.myOkDialog = None
-        self.coeurs_vides = []
-        self.coeurs_moitie = []
-        self.coeurs_pleins = []
-        #------------------------Les coeurs vides-------------------------------------
-        x = -1.2
-        for loop in range(10):
-            a = OnscreenImage("vie_lost.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-            a.setTransparency(TransparencyAttrib.MAlpha)
-            self.coeurs_vides.append(a)
-            x += 0.12
-        #-------------------------Les coeurs pleins---------------------------------
-        x = -1.2
-        for loop in range(10):
-            a = OnscreenImage("vie_full.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-            a.setTransparency(TransparencyAttrib.MAlpha)
-            self.coeurs_pleins.append(a)
-            x += 0.12
-        #--------------------Les coeurs à moitié pleins-------------------------------------
-        x = -1.2
-        for loop in range(10):
-            a = OnscreenImage("vie_half.png", scale=Vec3(0.05, 0.05, 0.05), pos=Vec3(x, 1, 0.9))
-            a.setTransparency(TransparencyAttrib.MAlpha)
-            self.coeurs_moitie.append(a)
-            x+= 0.12
-        self.noai_text = OnscreenText(text=f"Noaïs : {self.player.noais}", pos=(-0.9, 0.7), scale=0.07, fg=(1, 1, 1, 1))
-        self.noai_image = OnscreenImage("noai.png", scale=Vec3(0.07, 0, 0.07), pos=Vec3(-1.23, 0, 0.72))
-        self.noai_image.setTransparency(TransparencyAttrib.MAlpha)
+        self.inventaire_mgr = Inventaire(self.player.inventaire)
+        self.player_interface = InterfaceJoueur(self.player)
         self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
         self.croix_image = OnscreenImage("croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
         self.croix_image.setTransparency(TransparencyAttrib.MAlpha)
@@ -231,14 +208,8 @@ class SetLevel(FSM):
         --------------------------------------------------------------------------------------
         return -> None
         """
-        for a in self.coeurs_pleins:
-            a.hide()
-        for a in self.coeurs_moitie:
-            a.hide()
-        for a in self.coeurs_vides:
-            a.hide()
-        self.noai_text.hide()
-        self.noai_image.hide()
+        self.inventaire_mgr.cacher()
+        self.player_interface.cacher()
         self.map_image.hide()
         self.croix_image.hide()
         self.lieu_text.hide()
@@ -450,7 +421,7 @@ class SetLevel(FSM):
         task -> task
         return -> task.cont
         """
-        self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
+        self.player_interface.ag.setText(f"Noaïs : {str(self.player.noais)}")#DANGER
         return task.cont
 
 
@@ -1827,24 +1798,9 @@ class SetLevel(FSM):
         dt = globalClock.getDt() #L'horloge, le chronomètre...appelez ça comme
         #vous voulez c'est ce qui permet de mesurer le temps écoulé entre chaque frame.
         #---------------Section éléments 2D-------------------------------------------
-        self.noai_text.show()
-        self.noai_text.setText(f"Noaïs : {str(self.player.noais)}")
-        self.noai_image.show()
         self.croix_image.hide()
         self.lieu_text.hide()
         self.map_image.hide()
-        for coeur in self.coeurs_vides:
-            coeur.hide()
-        for coeur in self.coeurs_moitie:
-            coeur.hide()
-        for coeur in self.coeurs_pleins:
-            coeur.hide()
-        for loop in range(self.player.maxvies):
-            self.coeurs_vides[loop].show()
-        if self.player.vies%1 != 0:
-            self.coeurs_moitie[int(self.player.vies)].show()
-        for loop in range(int(self.player.vies)):
-            self.coeurs_pleins[loop].show()
         #-----------------------Section gestion de la manette-----------------
         if self.manette:
             base.devices.update()
@@ -2140,22 +2096,12 @@ class SetLevel(FSM):
         self.inventaire_show.hide()
         self.map_image.hide()
         self.croix_image.hide()
-        self.noai_image.hide()
-        self.noai_text.hide()
         self.lieu_text.hide()
-        for coeur in self.coeurs_pleins:
-            coeur.hide()
-        for coeur in self.coeurs_moitie:
-            coeur.hide()
-        for coeur in self.coeurs_vides:
-            coeur.hide()
         if self.index_invent == 0:
             self.map_image.show()
             self.croix_image.show()
             self.lieu_text.show()
         elif self.index_invent == 1:
-            self.noai_image.show()
-            self.noai_text.show()
             self.inventaire_show.show()
         return task.cont
 
@@ -2269,14 +2215,6 @@ class SetLevel(FSM):
         return -> None
         """
         render.hide()
-        self.noai_text.hide()
-        self.noai_image.hide()
-        for coeur in self.coeurs_pleins:
-            coeur.hide()
-        for coeur in self.coeurs_moitie:
-            coeur.hide()
-        for coeur in self.coeurs_vides:
-            coeur.hide()
         self.music.stop()
         self.music = loader.loadSfx("game_over.ogg")
         self.music.play()

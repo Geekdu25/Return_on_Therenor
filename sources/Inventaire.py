@@ -1,4 +1,5 @@
 from direct.showbase.ShowBase import ShowBase
+from direct.showbase.DirectObject import DirectObject
 from panda3d.core import *
 from direct.task.Task import Task
 from direct.actor.Actor import Actor
@@ -9,19 +10,17 @@ from direct.gui.OnscreenImage import *
 import sys
 import os
 
-class Inventaire(ShowBase):
+class Inventaire(DirectObject):
     """Classe gérant d'affichage à l'écran des deux inventaires: celui des armes et des items"""
-    def __init__(self):
-        ShowBase.__init__(self)
-
+    def __init__(self, inventaire):
+        DirectObject.__init__(self)
         self.weapons = ["épée","arc","sceptre"]  #liste des armes que l'on possède
         self.arme_en_main = 0     #quand on a aucune arme équipée
         self.weapon_texts = []    #liste servant à afficher les armes
         self.visible = False  #état de l'inventaire (affiché ou non)
         self.invent = None #rectangle de l'inventaire armes
         self.titre = None #nom "ARMES"
-
-        self.inventaire = {'vodka':3, 'potion rouge':2, 'legume':1}   #liste des items de son inventaire avec leur quantité
+        self.inventaire = inventaire   #liste des items de son inventaire avec leur quantité
         self.item_selectione = 0    #item selectionné dans l'inventaire
         self.inventaire_texts= []   #liste des textes à afficher
         self.inventaire_liste = []    #liste des objets, pour la methode consommer_item
@@ -250,10 +249,9 @@ class Inventaire(ShowBase):
             self.afficher_items()
             print(aConsommer+' consommé(e) !')
 
-
-
-game = Inventaire()
-game.run()
+    def cacher(self):
+        self.cacher_armes()
+        self.cacher_items()
 
 
 

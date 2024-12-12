@@ -15,8 +15,8 @@ class Player(Actor):
         #----------------------Noais et autres infos de jeu--------------------------------
         self.noais = 0
         self.nom = "Link"
-        self.vies = 3
-        self.maxvies = 3
+        self.vies = 30
+        self.maxvies = 30
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------
