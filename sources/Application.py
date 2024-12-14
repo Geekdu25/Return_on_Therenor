@@ -194,7 +194,7 @@ class SetLevel(FSM):
         return -> None
         """
         self.myOkDialog = None
-        self.inventaire_mgr = Inventaire(self.player.inventaire)
+        self.inventaire_mgr = Inventaire(self.player)
         self.player_interface = InterfaceJoueur(self.player)
         self.map_image = OnscreenImage("carte_Terenor.png", scale=Vec3(0.8, 0, 0.8), pos=Vec3(0, 0, 0))
         self.croix_image = OnscreenImage("croix.png", scale=Vec3(0.04, 0, 0.04), pos=Vec3(0, 0, 0))
@@ -2263,10 +2263,13 @@ class SetLevel(FSM):
             self.player.noais = 0
             self.player.sexe = "masculin"
             self.current_point = "save_heros"
-        file = open(self.get_path()+f"/save_{file}.txt", "wt")
+        fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
         info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
-        file.writelines([donnee +"|" for donnee in info])
-        file.close()
+        fichier.writelines([donnee +"|" for donnee in info])
+        fichier.close()
+        fichier = open(self.get_path()+f'/invent_{file}.json', "wt")
+        fichier.writelines(['{"Armes":'+str(self.player.armes)+', "Objets":'+json.dumps(self.player.inventaire)+'}'])
+        fichier.close()
 
     def will_save(self, clickedYes):
         """
@@ -2324,6 +2327,12 @@ class SetLevel(FSM):
             elif i == 7:
                 self.player.sexe = truc    
         fichier.close()
+        fichier = open(self.get_path()+f"/invent_{file}.json", "rt")
+        data = json.loads(fichier.read())
+        fichier.close()
+        self.player.inventaire = data["Objets"]
+        self.player.armes = data["Armes"]
+        del data
 
     def init_fichiers(self):
         """
@@ -2347,6 +2356,12 @@ class SetLevel(FSM):
                 file = open(path+f"/save_{loop+1}.txt", "wt")
                 file.writelines(["_|0|save_heros|3|3|0|masculin"])
                 file.close()
+        #------------------Création des 3 fichiers de l'inventaire-----------------------
+        for loop in range(3):
+            if not os.path.exists(path+f"/invent_{loop+1}.json"):
+                file = open(path+f"/invent_{loop+1}.json", "wt")
+                file.writelines('{"Armes":[], "Objets":{}}')
+                file.close()        
         #--------------Création du fichier de mappage de touches-------------------------------
         if not os.path.exists(path+"/keys.json"):
             file = open(path+"/keys.json", "wt")

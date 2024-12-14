@@ -19,6 +19,7 @@ class Player(Actor):
         self.maxvies = 30
         self.mana = 15
         self.mana_max = 15
+        self.armes = []
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------

@@ -12,15 +12,16 @@ import os
 
 class Inventaire(DirectObject):
     """Classe gérant d'affichage à l'écran des deux inventaires: celui des armes et des items"""
-    def __init__(self, inventaire):
+    def __init__(self, joueur):
         DirectObject.__init__(self)
-        self.weapons = ["épée","arc","sceptre"]  #liste des armes que l'on possède
+        self.joueur = joueur
+        self.weapons = self.joueur.armes  #liste des armes que l'on possède
         self.arme_en_main = 0     #quand on a aucune arme équipée
         self.weapon_texts = []    #liste servant à afficher les armes
         self.visible = False  #état de l'inventaire (affiché ou non)
         self.invent = None #rectangle de l'inventaire armes
         self.titre = None #nom "ARMES"
-        self.inventaire = inventaire   #liste des items de son inventaire avec leur quantité
+        self.inventaire = self.joueur.inventaire   #liste des items de son inventaire avec leur quantité
         self.item_selectione = 0    #item selectionné dans l'inventaire
         self.inventaire_texts= []   #liste des textes à afficher
         self.inventaire_liste = []    #liste des objets, pour la methode consommer_item
@@ -47,6 +48,8 @@ class Inventaire(DirectObject):
             self.invent2.removeNode()                    
         self.weapon_texts = []
         self.invent = None
+        self.inventaire = self.joueur.inventaire
+        self.armes = self.joueur.armes
         self.titre = None
         self.inventaire_texts= []
         self.inventaire_liste = []
