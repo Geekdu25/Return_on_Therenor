@@ -38,14 +38,6 @@ class Player(Actor):
         self.col_np = self.attachNewNode(self.col)
         self.mode = True
 
-    def degats(self, degats=1):
-        """
-        Méthode permettant d'ajouter des dégâts au joueur.
-        ---------------------------------------------------
-        return -> None
-        """
-        self.vies -= degats
-
     def ajoute_item(self, item="Vodka"):
         """
         Méthode permettant d'ajouter un item dans l'inventaire.

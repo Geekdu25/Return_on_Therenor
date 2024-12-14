@@ -52,26 +52,20 @@ class InterfaceJoueur(DirectObject):
         """Méthode qui diminue la quantité de la barre d'hp quand le joueur en perd"""
         if self.joueur.vies - enmoins >= 0:
             self.joueur.vies -= enmoins
-            ratio = self.joueur.vies/self.joueur.maxvies
-            self.barre_pv.setScale(ratio*0.5,0,0.05)
+        else:
+            self.joueur.vies = 0    
 
     def ajouter_hp(self, enplus):
         """Méthode qui augmente la quantité de la barre d'hp quand le joueur en gagne"""
         if self.joueur.vies + enplus <= self.pv_max:
             self.joueur.vies += enplus
-            ratio = self.joueur.vies/self.joueur.maxvies
-            self.barre_pv.setScale(ratio*0.5,0,0.05)
         else:
             self.joueur.vies = self.joueur.maxvies
-            ratio = self.joueur.vies/self.joueur.maxvies
-            self.barre_pv.setScale(ratio*0.5,0,0.05)
 
     def ajouter_mana(self, enplus):
         """Méthode qui augmente la quantité de la barre de mana quand le joueur en gagne"""
         if self.joueur.mana + enplus<= self.joueur.mana_max:
             self.joueur.mana += enplus
-            ratio = self.joueur.mana/self.joueur.mana_max
-            self.barre_mana.setScale(ratio*0.5,0,0.05)
 
     def enlever_mana(self, enlever):
         """Méthode qui diminue la quantité de la barre de mana quand le joueur en perd"""
@@ -118,7 +112,17 @@ class InterfaceJoueur(DirectObject):
                 self.enlever_argent(self.player.noais-combien)                
 
 
-
+    def update_barres(self):
+        """
+        Méthode permettant de mettre à jour 
+        l'état des barres de mana et de vies.
+        ---------------------------------------
+        return -> None
+        """
+        ratio = self.joueur.mana/self.joueur.mana_max
+        self.barre_mana.setScale(ratio*0.5,0,0.05)
+        ratio = self.joueur.vies/self.joueur.maxvies
+        self.barre_pv.setScale(ratio*0.5,0,0.05)
 
 
     def cacher(self):
@@ -138,6 +142,8 @@ class InterfaceJoueur(DirectObject):
         """
         Méthode pour montrer l'interface.
         """
+        self.update_barres()
+        self.ag.setText(str(self.joueur.noais))
         self.ag.show()
         self.no.show()
         self.barre_mana.show()

@@ -262,7 +262,7 @@ class SetLevel(FSM):
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
-                    self.ignore("space")
+                    #self.ignore("space")
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
                     self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
         if self.current_porte is not None:
@@ -365,7 +365,7 @@ class SetLevel(FSM):
             self.d_actif = True
             if self.player.noais >= prix:
                 self.player.noais -= prix #On retire de l'argent au joueur $$$$
-                self.player.inventaire.ajoute_item(article)
+                self.player.ajoute_item(article)
                 self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
             else:
                 self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
@@ -423,7 +423,7 @@ class SetLevel(FSM):
         task -> task
         return -> task.cont
         """
-        self.player_interface.ag.setText(f"Noaïs : {str(self.player.noais)}")#DANGER
+        self.player_interface.ag.setText(f"{str(self.player.noais)}")
         return task.cont
 
 
@@ -1570,7 +1570,7 @@ class SetLevel(FSM):
         """
         #On montre le joueur.
         self.player.show()
-        self.accept("t", self.player.degats)
+        self.accept("t", self.player_interface.enlever_hp, extraArgs=[5])
         #On cache le curseur de la souris.
         properties = WindowProperties()
         properties.setCursorHidden(True)
@@ -1974,9 +1974,10 @@ class SetLevel(FSM):
         self.index_invent = 0
         self.accept("escape", self.exit_inventaire)
         self.accept(self.keys_data["Inventaire"], self.exit_inventaire)
-        if not self.manette:
-            self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
-            self.accept("arrow_left", self.change_index_invent)
+        self.accept("arrow_right", self.change_index_invent, extraArgs=["right"])
+        self.accept("arrow_left", self.change_index_invent)
+        self.accept("arrow_down", self.change_index_invent, extraArgs=["down"])
+        self.accept("arrow_up", self.change_index_invent, extraArgs=["up"])
         taskMgr.add(self.update_invent, "update_invent")
         self.inventaire_show = self.genere_liste_defilement()
         for article in self.player.inventaire:
@@ -1986,6 +1987,7 @@ class SetLevel(FSM):
         self.music.setVolume(0.6)
         self.croix_image.setPos(self.get_pos_croix()[0])
         self.lieu_text.setText(self.get_pos_croix()[1])
+        self.inventaire_mgr.creer_inventaire()
 
     def active_article(self, article="Vodka"):
         """
@@ -2060,14 +2062,17 @@ class SetLevel(FSM):
                 self.index_invent += 1
             else:
                 self.index_invent = 0
-        if self.index_invent == 1:
-            properties = WindowProperties()
-            properties.setCursorHidden(False)
-            base.win.requestProperties(properties)
-        else:
-            properties = WindowProperties()
-            properties.setCursorHidden(True)
-            base.win.requestProperties(properties)
+        elif dir == "up" or dir == "down":
+            if self.index_invent == 1:
+                if dir == "up":
+                    self.inventaire_mgr.arme_select(self.inventaire_mgr.arme_en_main-1)
+                elif dir == "down":
+                    self.inventaire_mgr.arme_select(self.inventaire_mgr.arme_en_main+1)
+            elif self.index_invent == 2:
+                if dir == "up":
+                    self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione-1)
+                elif dir == "down":
+                    self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione+1)             
 
     def update_invent(self, task):
         """
@@ -2098,6 +2103,10 @@ class SetLevel(FSM):
         --------------------------------------------------
         return -> None
         """
+        self.ignore("arrow_down")
+        self.ignore("arrow_up")
+        self.ignore("arrow_right")
+        self.ignore("arrow_left")
         self.inventaire_mgr.cacher_items()
         self.inventaire_mgr.cacher_armes()
         properties = WindowProperties()
@@ -2204,11 +2213,12 @@ class SetLevel(FSM):
         --------------------------------------------------------
         return -> None
         """
+        self.player_interface.cacher()
         render.hide()
         self.music.stop()
         self.music = loader.loadSfx("game_over.ogg")
         self.music.play()
-        self.player.vies = 3
+        self.player.vies = 15
         self.transition.fadeIn(0.5)
         self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
         self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1)) #Appuyez sur F1 pour recommencer.
@@ -2312,7 +2322,7 @@ class SetLevel(FSM):
             elif i == 6:
                 self.player.noais = int(truc)
             elif i == 7:
-                self.player.sexe = truc
+                self.player.sexe = truc    
         fichier.close()
 
     def init_fichiers(self):

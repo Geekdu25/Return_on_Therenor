@@ -29,15 +29,6 @@ class Inventaire(DirectObject):
         self.titre2 = None #nom "INVENTAIRE"
 
         #commandes claviers utilisées:
-        self.accept("1", self.repartition_touches, [0])
-        self.accept("2", self.repartition_touches, [1])
-        self.accept("3", self.repartition_touches, [2])
-        self.accept("4", self.repartition_touches, [3])
-        self.accept("5", self.repartition_touches, [4])
-        self.accept("6", self.repartition_touches, [5])
-        self.accept("7", self.repartition_touches, [6])
-        self.accept("8", self.repartition_touches, [7])
-        self.accept("9", self.repartition_touches, [8])
         self.accept("c", self.consommer_item)
         self.creer_inventaire()
 
@@ -46,6 +37,14 @@ class Inventaire(DirectObject):
         """Créer l'affichage des deux inventaires"""
 
         #Détruire le potentiel affichage d'un précédent inventaire
+        if self.titre is not None:
+            self.titre.removeNode()
+        if self.titre2 is not None:
+            self.titre2.removeNode()
+        if self.invent is not None:
+            self.invent.removeNode() 
+        if self.invent2 is not None:
+            self.invent2.removeNode()                    
         self.weapon_texts = []
         self.invent = None
         self.titre = None
@@ -150,24 +149,16 @@ class Inventaire(DirectObject):
                 texte_item.setFg((1,1,1,1))
 
 
-    def repartition_touches(self, touche):
-        """Répartit la touche de clavier selectionnée, qui doit être utilisable pour les deux iventaires"""
-        if self.visible == True:
-            self.arme_select(touche)
-        if self.inventaire_visible == True:
-            self.item_select(touche)
-
-
     def arme_select(self, indiceArme):
         """Méthode qui modifie l'arme séléctionée et la met en surbrillance"""
-        if 0 <= indiceArme < len(self.weapons) and self.visible:
+        if 0 <= indiceArme < len(self.weapons):
             self.arme_en_main = indiceArme
             self.arme_surbrillance()
             #Arme sélectionnée : self.weapons[indiceArme]
 
     def item_select(self, indiceItem):
-        """Méthode qui modifie l'item séléctioné et le met en surbrillance"""
-        if 0 <= indiceItem < len(self.inventaire) and self.inventaire_visible:
+        """Méthode qui modifie l'item séléctionné et le met en surbrillance"""
+        if 0 <= indiceItem < len(self.inventaire):
             self.item_selectione = indiceItem
             self.item_surbrillance()
 
