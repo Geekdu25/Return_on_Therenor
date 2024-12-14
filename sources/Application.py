@@ -50,6 +50,7 @@ class Portail(CollisionBox):
         """
         CollisionBox.__init__(self, center, sx, sy, sz)
         self.newpos = newpos
+        self.orientation = None
         self.setTangible(False) #On peut traverser un portail
 
 
@@ -70,6 +71,7 @@ class Porte(CollisionBox):
         """
         CollisionBox.__init__(self, center, sx, sy, sz)
         self.newpos = newpos
+        self.orientation = None
 
 class Save_bloc(CollisionBox):
     """
@@ -276,7 +278,9 @@ class SetLevel(FSM):
                 self.ignore(self.keys_data[event])
             self.ignore("into")
             self.ignore("out")
-            taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte].newpos])
+            taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte][1].newpos])
+            if hasattr(self.portails[self.current_porte][1], "orientation"):
+              taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=self.portails[self.current_porte][1].orientation)
         if self.actual_statue is not None:
             taskMgr.remove("update")
             properties = WindowProperties()
@@ -1289,6 +1293,8 @@ class SetLevel(FSM):
             objet.object.removeNode()
         for mur in self.murs:
             mur.removeNode()
+        for porte in self.portails:
+            self.portails[porte][0].removeNode()    
         for statue in self.save_statues:
             self.save_statues[statue][0].removeNode()
             self.save_statues[statue][1].removeNode()
@@ -1393,9 +1399,11 @@ class SetLevel(FSM):
             else:
                 solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
             noeud.addSolid(solid)
-            self.portails[portail] = solid
             noeud.setCollideMask(BitMask32.bit(0))
-            noeud_np = self.map.attachNewNode(noeud)
+            noeud_np = self.map.attachNewNode(noeud)            
+            if len(info) > 6:
+                solid.orientation = info[6]
+            self.portails[portail] = (noeud_np, solid)    
             #noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
@@ -1660,6 +1668,8 @@ class SetLevel(FSM):
         self.map.removeNode()
         self.skybox.removeNode()
         self.player.hide()
+        for porte in self.portails:
+            self.portails[porte][0].removeNode()
         for pnj in self.pnjs:
             self.pnjs[pnj].cleanup()
             self.pnjs[pnj].removeNode()
@@ -1678,6 +1688,7 @@ class SetLevel(FSM):
         self.antimur.clearOutPatterns()
         self.objects = []
         self.pnjs = {}
+        self.portails = {}
         self.map = None
         self.player.left = False
         self.player.right = False
@@ -1707,10 +1718,12 @@ class SetLevel(FSM):
                 if self.pnjs[b].s is not None:
                     self.pnjs[b].s.pause()
             elif b in self.portails:
-                if type(self.portails[b]) is Portail:
+                if type(self.portails[b][1]) is Portail:
                     self.transition.fadeOut(0.5)
-                    taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b].newpos])
-                elif type(self.portails[b]) is Porte:
+                    taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
+                    if hasattr(self.portails[b][1], "orientation"):
+                      taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=[self.portails[b][1].orientation])
+                elif type(self.portails[b][1]) is Porte:
                     self.current_porte = b
             elif b.isdigit(): #Trigger
                 b = int(b)
