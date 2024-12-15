@@ -279,7 +279,7 @@ class SetLevel(FSM):
             self.ignore("into")
             self.ignore("out")
             taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte][1].newpos])
-            if hasattr(self.portails[self.current_porte][1], "orientation"):
+            if self.portails[self.current_porte][1].orientation is not None:
               taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=self.portails[self.current_porte][1].orientation)
         if self.actual_statue is not None:
             taskMgr.remove("update")
@@ -1402,7 +1402,7 @@ class SetLevel(FSM):
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)            
             if len(info) > 6:
-                solid.orientation = info[6]
+                solid.orientation = info[6]      
             self.portails[portail] = (noeud_np, solid)    
             #noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
@@ -1721,7 +1721,7 @@ class SetLevel(FSM):
                 if type(self.portails[b][1]) is Portail:
                     self.transition.fadeOut(0.5)
                     taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
-                    if hasattr(self.portails[b][1], "orientation"):
+                    if self.portails[b][1].orientation is not None:
                       taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=[self.portails[b][1].orientation])
                 elif type(self.portails[b][1]) is Porte:
                     self.current_porte = b
@@ -1733,9 +1733,6 @@ class SetLevel(FSM):
                 self.actual_statue = b
             elif "coffre" in b:
                 self.actual_coffre = b.split("_")[len(b.split("_"))-1]
-        elif c == "sphere_sword":
-            if b in self.pnjs:
-                self.set_text(3)
 
     def out(self, a):
         """
