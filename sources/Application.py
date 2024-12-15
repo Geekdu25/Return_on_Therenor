@@ -1227,7 +1227,7 @@ class SetLevel(FSM):
             self.accept("texte_ok", self.change_cine, extraArgs=[3])
         elif cine == 3:
             texts = self.story["0"]
-            texts[0] = new_text_z + self.player.nom + " !"
+            texts[0] = texts[0] + self.player.nom + " !"
             s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
             s.start()
             self.ignore("texte_ok")
