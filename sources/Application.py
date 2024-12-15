@@ -1305,6 +1305,7 @@ class SetLevel(FSM):
         self.pnjs = {}
         self.portails = {}
         self.save_statues = {}
+        base.win.movePointer(0, int(base.win.getProperties().getXSize()/2), int(base.win.getProperties().getYSize()/2))
         if hasattr(self, "actuals_light"):
             for light in self.actuals_light:
                 render.clearLight()
