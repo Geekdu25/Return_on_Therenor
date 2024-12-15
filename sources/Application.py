@@ -1110,7 +1110,17 @@ class SetLevel(FSM):
             del self.helloBtn
             self.nameEnt.removeNode()
             del self.nameEnt
-            self.request("Cinematique")
+            self.request("Mini_tuto")
+
+    def enterMini_tuto(self):
+        self.tuto = OnscreenText(self.story["gui"][27]+self.keys_data["Interagir"].capitalize()+self.story["gui"][28], pos=(0, 0.4), scale=(0.13, 0.13), fg=(1, 1, 1, 1))
+        self.ignore(self.keys_data["Interagir"])
+        self.accept(self.keys_data["Interagir"], self.fade_out, extraArgs=["Cinematique"])
+
+    def exitMini_tuto(self):
+        self.tuto.removeNode() 
+        self.ignore(self.keys_data["Interagir"])
+        self.accept(self.keys_data["Interagir"], self.check_interact)           
 
     #-------------------------------Cinématiques--------------------------------------
     def enterCinematique(self):
@@ -1122,6 +1132,7 @@ class SetLevel(FSM):
         self.actuals_light = []
         #------------------------Légende-------------------------------------------------------
         if self.chapitre == 1:
+            self.transition.fadeIn(1)
             self.chapitre_step = 0
             cm = CardMaker("plan")
             cm.setFrame(-1, 1, -1, 1)
@@ -1215,10 +1226,8 @@ class SetLevel(FSM):
             s.start()
             self.accept("texte_ok", self.change_cine, extraArgs=[3])
         elif cine == 3:
-            if self.langue == "francais":
-                texts = [f"Hé ! {self.player.nom} !", "Tu es resté au lit toute la matinée.", "Viens donc nous aider à pêcher !"]
-            elif self.langue == "deutsch":
-                texts = [f"Hey ! {self.player.nom} !", "Du bist den ganzen Morgen im Bett geblieben!", "Komm her und hilf uns beim Angeln!"]
+            texts = self.story["0"]
+            texts[0] = new_text_z + self.player.nom + " !"
             s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
             s.start()
             self.ignore("texte_ok")
