@@ -1999,6 +1999,7 @@ class SetLevel(FSM):
         self.accept("arrow_down", self.change_index_invent, extraArgs=["down"])
         self.accept("arrow_up", self.change_index_invent, extraArgs=["up"])
         taskMgr.add(self.update_invent, "update_invent")
+        self.accept("enter", self.active_article)
         self.inventaire_show = self.genere_liste_defilement()
         for article in self.player.inventaire:
             if self.player.inventaire[article] > 0:
@@ -2009,16 +2010,17 @@ class SetLevel(FSM):
         self.lieu_text.setText(self.get_pos_croix()[1])
         self.inventaire_mgr.creer_inventaire()
 
-    def active_article(self, article="Vodka"):
+    def active_article(self):
         """
         Méthode s'activant quand on consomme un article.
         -------------------------------------------------
         return -> None
         """
-        taskMgr.remove("update_invent")
-        self.inventaire_show.removeNode()
-        self.player.inventaire[article] -= 1
-        if article == "Vodka":
+        if self.index_invent == 2:
+          article = self.inventaire_mgr.joueur.inventaire[self.inventaire_mgr.item_selectione]
+          taskMgr.remove("update_invent")
+          self.player.inventaire[article] -= 1
+          if article == "Vodka":
             self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
             if self.player.vies + 3 > self.player.maxvies:
                 self.player.vies = self.player.maxvies
@@ -2123,6 +2125,7 @@ class SetLevel(FSM):
         --------------------------------------------------
         return -> None
         """
+        self.ignore("enter")
         self.ignore("arrow_down")
         self.ignore("arrow_up")
         self.ignore("arrow_right")
