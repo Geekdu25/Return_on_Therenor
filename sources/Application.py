@@ -250,10 +250,10 @@ class SetLevel(FSM):
         return -> None
         """
         reussi = self.check_interact_dial()
-        if self.current_pnj is not None:            
+        if self.current_pnj is not None:
             if not self.reading and not reussi:
                 taskMgr.remove("update")
-                self.ignore("out")                
+                self.ignore("out")
                 self.ignore("into")
                 self.ignore("escape")
                 self.ignore(self.keys_data["Inventaire"])
@@ -1118,9 +1118,9 @@ class SetLevel(FSM):
         self.accept(self.keys_data["Interagir"], self.fade_out, extraArgs=["Cinematique"])
 
     def exitMini_tuto(self):
-        self.tuto.removeNode() 
+        self.tuto.removeNode()
         self.ignore(self.keys_data["Interagir"])
-        self.accept(self.keys_data["Interagir"], self.check_interact)           
+        self.accept(self.keys_data["Interagir"], self.check_interact)
 
     #-------------------------------Cinématiques--------------------------------------
     def enterCinematique(self):
@@ -1303,7 +1303,7 @@ class SetLevel(FSM):
         for mur in self.murs:
             mur.removeNode()
         for porte in self.portails:
-            self.portails[porte][0].removeNode()    
+            self.portails[porte][0].removeNode()
         for statue in self.save_statues:
             self.save_statues[statue][0].removeNode()
             self.save_statues[statue][1].removeNode()
@@ -1410,10 +1410,10 @@ class SetLevel(FSM):
                 solid = Portail(center=(info[1][0], info[1][1], info[1][2]), sx=info[2], sy=info[3], sz=info[4], newpos=(info[5][0], info[5][1], info[5][2]))
             noeud.addSolid(solid)
             noeud.setCollideMask(BitMask32.bit(0))
-            noeud_np = self.map.attachNewNode(noeud)            
+            noeud_np = self.map.attachNewNode(noeud)
             if len(info) > 6:
-                solid.orientation = info[6]      
-            self.portails[portail] = (noeud_np, solid)    
+                solid.orientation = info[6]
+            self.portails[portail] = (noeud_np, solid)
             #noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
@@ -2092,7 +2092,7 @@ class SetLevel(FSM):
                 if dir == "up":
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione-1)
                 elif dir == "down":
-                    self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione+1)             
+                    self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione+1)
 
     def update_invent(self, task):
         """
@@ -2345,7 +2345,7 @@ class SetLevel(FSM):
             elif i == 6:
                 self.player.noais = int(truc)
             elif i == 7:
-                self.player.sexe = truc    
+                self.player.sexe = truc
         fichier.close()
         fichier = open(self.get_path()+f"/invent_{file}.json", "rt")
         data = json.loads(fichier.read())
@@ -2374,14 +2374,14 @@ class SetLevel(FSM):
         for loop in range(3):
             if not os.path.exists(path+f"/save_{loop+1}.txt"):
                 file = open(path+f"/save_{loop+1}.txt", "wt")
-                file.writelines(["_|0|save_heros|3|3|0|masculin"])
+                file.writelines(["_|0|save_heros|15|15|0|masculin"])
                 file.close()
         #------------------Création des 3 fichiers de l'inventaire-----------------------
         for loop in range(3):
             if not os.path.exists(path+f"/invent_{loop+1}.json"):
                 file = open(path+f"/invent_{loop+1}.json", "wt")
                 file.writelines('{"Armes":[], "Objets":{}}')
-                file.close()        
+                file.close()
         #--------------Création du fichier de mappage de touches-------------------------------
         if not os.path.exists(path+"/keys.json"):
             file = open(path+"/keys.json", "wt")
