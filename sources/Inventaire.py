@@ -28,9 +28,6 @@ class Inventaire(DirectObject):
         self.inventaire_visible = False   #état de l'inventaire (visible ou non)
         self.invent2 = None   #rectangle de l'inventaire items
         self.titre2 = None #nom "INVENTAIRE"
-
-        #commandes claviers utilisées:
-        self.accept("c", self.consommer_item)
         self.creer_inventaire()
 
 
@@ -43,9 +40,9 @@ class Inventaire(DirectObject):
         if self.titre2 is not None:
             self.titre2.removeNode()
         if self.invent is not None:
-            self.invent.removeNode() 
+            self.invent.removeNode()
         if self.invent2 is not None:
-            self.invent2.removeNode()                    
+            self.invent2.removeNode()
         self.weapon_texts = []
         self.invent = None
         self.inventaire = self.joueur.inventaire
@@ -101,7 +98,6 @@ class Inventaire(DirectObject):
                                         align=TextNode.ALeft,
                                         parent=aspect2d,
                                         mayChange=True)
-
             texte_item.hide()#on cache initialement le texte
             self.inventaire_texts.append(texte_item)
             self.inventaire_liste.append(item)
@@ -163,6 +159,7 @@ class Inventaire(DirectObject):
         """Méthode qui modifie l'item séléctionné et le met en surbrillance"""
         if 0 <= indiceItem < len(self.inventaire):
             self.item_selectione = indiceItem
+            print(indiceItem)
             self.item_surbrillance()
 
 
@@ -222,18 +219,9 @@ class Inventaire(DirectObject):
         for item in self.inventaire_texts:
             item.hide()
 
-    def consommer_item(self):
-        """Méthode qui permet de consommer un item pour décrémenter sa quantité et l'enlever de l'inventaire si sa quantité passe à 0"""
-        if self.inventaire_visible:
-            aConsommer = self.inventaire_liste[self.item_selectione]
-            self.inventaire[aConsommer] -= 1
-            if self.inventaire[aConsommer] == 0:
-                self.inventaire.pop(aConsommer)
-            self.cacher_items()
-            if self.item_selectione >= len(self.inventaire):
-                self.item_selectione -= 1
-            self.creer_inventaire()
-            self.afficher_items()
+    def get_item(self):
+        return self.inventaire_liste[self.item_selectione]
+
 
     def cacher(self):
         self.cacher_armes()

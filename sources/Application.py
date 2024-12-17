@@ -2017,7 +2017,7 @@ class SetLevel(FSM):
         return -> None
         """
         if self.index_invent == 2:
-          article = self.inventaire_mgr.joueur.inventaire[self.inventaire_mgr.item_selectione]
+          article = self.inventaire_mgr.get_item()
           taskMgr.remove("update_invent")
           self.player.inventaire[article] -= 1
           if article == "Vodka":
