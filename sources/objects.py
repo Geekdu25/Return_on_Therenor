@@ -107,3 +107,21 @@ class Manoir:
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
+
+class Palmier:
+    """
+    Les palmiers se trouvant à Arduny.
+    """        
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ----------------------
+        return -> Palmier
+        """
+        self.object = loader.loadModel("Palmier.bam")
+        self.object.setScale(10)
+        self.col = CollisionNode("palmier")
+        self.col.addSolid(CollisionBox((0, 0, 3), 2.5, 2.5, 4))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)

@@ -1366,6 +1366,8 @@ class SetLevel(FSM):
                     objet = Sapin()
                 elif cle[0] == "manoir":
                     objet = Manoir()
+                elif cle[0] == "palmier":
+                    objet = Palmier()    
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
