@@ -57,7 +57,7 @@ class InterfaceJoueur(DirectObject):
 
     def ajouter_hp(self, enplus):
         """Méthode qui augmente la quantité de la barre d'hp quand le joueur en gagne"""
-        if self.joueur.vies + enplus <= self.pv_max:
+        if self.joueur.vies + enplus <= self.joueur.maxvies:
             self.joueur.vies += enplus
         else:
             self.joueur.vies = self.joueur.maxvies

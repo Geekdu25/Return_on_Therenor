@@ -1989,6 +1989,7 @@ class SetLevel(FSM):
         """
         self.player.stop()
         self.ignore_touches()
+        self.activing = False
         self.player_interface.cacher()
         self.player.walk, self.player.reverse, self.player.left, self.player.right = False, False, False, False
         self.index_invent = 0
@@ -1998,6 +1999,8 @@ class SetLevel(FSM):
         self.accept("arrow_left", self.change_index_invent)
         self.accept("arrow_down", self.change_index_invent, extraArgs=["down"])
         self.accept("arrow_up", self.change_index_invent, extraArgs=["up"])
+        self.indication = OnscreenText(text=self.story["gui"][29], scale=0.03, pos=(0, -0.8))
+        self.indication.hide()
         taskMgr.add(self.update_invent, "update_invent")
         self.accept("enter", self.active_article)
         self.inventaire_show = self.genere_liste_defilement()
@@ -2009,6 +2012,9 @@ class SetLevel(FSM):
         self.croix_image.setPos(self.get_pos_croix()[0])
         self.lieu_text.setText(self.get_pos_croix()[1])
         self.inventaire_mgr.creer_inventaire()
+        properties = WindowProperties()
+        properties.setCursorHidden(False)
+        base.win.requestProperties(properties)
 
     def active_article(self):
         """
@@ -2016,16 +2022,18 @@ class SetLevel(FSM):
         -------------------------------------------------
         return -> None
         """
-        if self.index_invent == 2:
+        if self.index_invent == 2 and not self.activing:
+          self.activing = True
           article = self.inventaire_mgr.get_item()
           taskMgr.remove("update_invent")
           self.player.inventaire[article] -= 1
+          if self.player.inventaire[article] < 1:
+              del self.player.inventaire[article]
+          a_dire = "Utilisation d'un(e) "+ article    
           if article == "Vodka":
-            self.OkDialog = OkDialog(text="Miam, de la vodka !", command=self.inutile)
-            if self.player.vies + 3 > self.player.maxvies:
-                self.player.vies = self.player.maxvies
-            else:
-                self.player.vies += 3
+            a_dire = self.story["items"][0]
+            self.player_interface.ajouter_hp(5)
+          self.OkDialog = OkDialog(text=a_dire, command=self.inutile)      
 
 
     def inutile(self, inutile=None):
@@ -2037,6 +2045,8 @@ class SetLevel(FSM):
         """
         self.OkDialog.cleanup()
         taskMgr.add(self.update_invent, "update_invent")
+        self.inventaire_mgr.creer_inventaire()
+        self.activing = False
 
 
     def get_pos_croix(self):
@@ -2104,6 +2114,7 @@ class SetLevel(FSM):
         return -> task.cont
         """
         self.inventaire_show.hide()
+        self.indication.hide()
         self.map_image.hide()
         self.croix_image.hide()
         self.lieu_text.hide()
@@ -2117,6 +2128,7 @@ class SetLevel(FSM):
             self.inventaire_mgr.afficher_armes()
         elif self.index_invent == 2:
             self.inventaire_mgr.afficher_items()
+            self.indication.show()
         return task.cont
 
     def exit_inventaire(self):
@@ -2125,6 +2137,7 @@ class SetLevel(FSM):
         --------------------------------------------------
         return -> None
         """
+        self.indication.removeNode()
         self.ignore("enter")
         self.ignore("arrow_down")
         self.ignore("arrow_up")

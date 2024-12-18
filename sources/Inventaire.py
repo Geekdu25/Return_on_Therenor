@@ -43,11 +43,15 @@ class Inventaire(DirectObject):
             self.invent.removeNode()
         if self.invent2 is not None:
             self.invent2.removeNode()
+        for text in self.weapon_texts:
+            text.removeNode()    
         self.weapon_texts = []
         self.invent = None
         self.inventaire = self.joueur.inventaire
         self.armes = self.joueur.armes
         self.titre = None
+        for text in self.inventaire_texts:
+            text.removeNode()    
         self.inventaire_texts= []
         self.inventaire_liste = []
         self.invent2 = None
@@ -159,7 +163,6 @@ class Inventaire(DirectObject):
         """Méthode qui modifie l'item séléctionné et le met en surbrillance"""
         if 0 <= indiceItem < len(self.inventaire):
             self.item_selectione = indiceItem
-            print(indiceItem)
             self.item_surbrillance()
 
 
