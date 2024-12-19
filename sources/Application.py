@@ -1367,7 +1367,7 @@ class SetLevel(FSM):
                 elif cle[0] == "manoir":
                     objet = Manoir()
                 elif cle[0] == "palmier":
-                    objet = Palmier()    
+                    objet = Palmier()
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -2001,7 +2001,7 @@ class SetLevel(FSM):
         self.accept("arrow_left", self.change_index_invent)
         self.accept("arrow_down", self.change_index_invent, extraArgs=["down"])
         self.accept("arrow_up", self.change_index_invent, extraArgs=["up"])
-        self.indication = OnscreenText(text=self.story["gui"][29], scale=0.03, pos=(0, -0.8))
+        self.indication = OnscreenText(text=self.story["gui"][29], scale=0.1, pos=(0, -0.8), fg=(1, 1, 1, 1))
         self.indication.hide()
         taskMgr.add(self.update_invent, "update_invent")
         self.accept("enter", self.active_article)
@@ -2024,18 +2024,18 @@ class SetLevel(FSM):
         -------------------------------------------------
         return -> None
         """
-        if self.index_invent == 2 and not self.activing:
+        if self.index_invent == 2 and not self.activing and len(self.player.inventaire) > 0:
           self.activing = True
           article = self.inventaire_mgr.get_item()
           taskMgr.remove("update_invent")
           self.player.inventaire[article] -= 1
           if self.player.inventaire[article] < 1:
               del self.player.inventaire[article]
-          a_dire = "Utilisation d'un(e) "+ article    
+          a_dire = "Utilisation d'un(e) "+ article
           if article == "Vodka":
             a_dire = self.story["items"][0]
             self.player_interface.ajouter_hp(5)
-          self.OkDialog = OkDialog(text=a_dire, command=self.inutile)      
+          self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
 
 
     def inutile(self, inutile=None):
@@ -2097,12 +2097,13 @@ class SetLevel(FSM):
             else:
                 self.index_invent = 0
         elif dir == "up" or dir == "down":
-            if self.index_invent == 1:
+            if len(self.player.inventaire) > 0:
+              if self.index_invent == 1:
                 if dir == "up":
                     self.inventaire_mgr.arme_select(self.inventaire_mgr.arme_en_main-1)
                 elif dir == "down":
                     self.inventaire_mgr.arme_select(self.inventaire_mgr.arme_en_main+1)
-            elif self.index_invent == 2:
+              elif self.index_invent == 2:
                 if dir == "up":
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione-1)
                 elif dir == "down":
