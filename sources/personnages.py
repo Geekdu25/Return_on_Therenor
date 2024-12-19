@@ -90,6 +90,7 @@ class Assassin_repenti(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts= 4
+        self.setScale(40)
         self.quetes= 13
         self.object= "error"
         self.nom = "Phoolan Devi"
@@ -100,6 +101,7 @@ class Mage_cache(PNJ):
     def __init__(self):
         PNJ.__init__(self,name="magicien", anims=["Immobile"])
         self.texts= 5
+        self.setScale(40)
         self.object= "montre"#montre qui permet de ralentir le temps pour les combat
         self.nom = "Axil"
         self.lieu = "Maison d'aurélia"
@@ -118,6 +120,7 @@ class Enfant_prodige(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 7
+        self.setScale(40)
         self.object = "Vodka"
         self.textquest = 14
         self.nom = "Maryanne"
@@ -128,6 +131,7 @@ class Archer(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 8
+        self.setScale(40)
         self.nom = "Robin"
         self.lieu = "Village des pecheurs"
         self.col.setName("archer")
@@ -138,6 +142,7 @@ class Etudiant_amoureux(PNJ):
         self.texts = 9
         self.anecdotes = 11
         self.aide = 12
+        self.setScale(40)
         self.nom = "Rodef"
         self.lieu = "tentes des nomades"
         self.col.setName("etudiant")
@@ -146,6 +151,7 @@ class Etudiante_amoureuse(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
         self.texts = 10
+        self.setScale(40)
         self.nom = "Alfi"
         self.lieu = "tentes des nomades"
         self.col.setName("etudiante")
@@ -159,4 +165,4 @@ class Magicien(PNJ):
         self.texts = None
         self.commercant = True
         self.texts_vente = 2
-        self.articles = {"Vodka":30, "Tsar Bomba":300, "Cigare cubain":50,"Machins":5}
+        self.articles = {"Vodka":30, "Tsar Bomba":300, "Cigare cubain":50}

@@ -261,6 +261,8 @@ class SetLevel(FSM):
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
                     self.letter_index = 0
+                    print(self.pnjs[self.current_pnj].texts)
+                    self.music.setVolume(0.5)
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
@@ -437,6 +439,7 @@ class SetLevel(FSM):
         ----------------------------------------------------
         return -> None
         """
+        self.music.setVolume(1)
         taskMgr.add(self.update, "update")
         self.accept("out", self.out)
         self.accept("escape", self.confirm_quit)
@@ -519,7 +522,6 @@ class SetLevel(FSM):
             self.messages = messages
             #-------------Partie de chargement des fichiers audios de dialogue------------
             if len(self.sons_messages) > 0:
-                print(self.sons_messages)
                 try:
                     self.son = loader.loadSfx(self.sons_messages[0])
                     self.son.play()
