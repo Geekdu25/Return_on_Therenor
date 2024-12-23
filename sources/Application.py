@@ -1491,11 +1491,6 @@ class SetLevel(FSM):
                 light.removeNode()
         self.actuals_light = []
         self.load_light()
-        if self.current_map == "village_pecheurs.bam":
-            slime = Slime()
-            slime.reparentTo(render)
-            slime.setPos(0, 0, 320)
-            slime.loop("move")
         if position is not None:
             self.player.setPos(position)
         self.transition.fadeIn(2)
