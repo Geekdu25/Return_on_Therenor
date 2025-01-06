@@ -125,7 +125,7 @@ class Enfant_prodige(PNJ):
         self.textquest = 14
         self.nom = "Maryanne"
         self.lieu = "village des pecheurs"
-        self.col.setName("enfant")
+        self.col.setName("enfant_prodige")
 
 class Archer(PNJ):
     def __init__(self):

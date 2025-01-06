@@ -261,7 +261,6 @@ class SetLevel(FSM):
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
                     self.letter_index = 0
-                    print(self.pnjs[self.current_pnj].texts)
                     self.music.setVolume(0.5)
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
@@ -466,7 +465,7 @@ class SetLevel(FSM):
                             self.son = loader.loadSfx(self.sons_messages[self.text_index])
                             self.son.play()
                         except:
-                            print("Pas de fichier son valide.")
+                            pass
                 if self.text_index >= len(self.texts):
                     self.reading = False
                     self.termine = True
@@ -526,7 +525,7 @@ class SetLevel(FSM):
                     self.son = loader.loadSfx(self.sons_messages[0])
                     self.son.play()
                 except:
-                    print("Pas de fichier son valide.")
+                    pass
 
     def update_text(self, task):
         """
