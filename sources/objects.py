@@ -138,3 +138,4 @@ class Maison_aurelia:
         """
         self.object = loader.loadModel("maison_aurelia.bam")
         self.object.setScale(3)
+        self.object.setCollideMask(BitMask32.bit(0))
