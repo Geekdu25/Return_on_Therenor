@@ -2179,10 +2179,9 @@ class SetLevel(FSM):
         self.music = loader.loadSfx("Thème_de_Therenor.ogg")
         self.music.setLoop(True)
         self.music.play()
-        self.texts_gen_1 = [("PNJ Design :", True), ("Alexandrine Charette", False), ("Player and Item Design :", True), ("Rémy Martinot", False),
+        self.texts_gen_1 = [("PNJ Design :", True), ("Alexandrine Charette", False), ("Player and GUI Design :", True), ("Rémy Martinot", False),
         ("Enemy program : ", True), ("Noé Mora", False), ("Map and dungeon creation :", True), ("Etienne Pacault", False), ("Website and movies :", True), ("Tyméo Bonvicini-Renaud", False),
-        ("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University who updates the Panda 3D source code", False), ("Disney Online", False),
-        ("And thank you to everyone we probably forgot ! :-)", False)]
+        ("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University", False), ("Disney Online", False), ("The blender foundation", False), ("Emmanuel Puybaret (Sweet Home 3D)", False), ("And you !", False)]
         colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
         i_color = 0
         y = -0.9
