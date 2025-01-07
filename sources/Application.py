@@ -1434,6 +1434,9 @@ class SetLevel(FSM):
             noeud.addSolid(Save_bloc(save, data[self.current_map][3][save][0:3]))
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
+            if self.current_map == "Ignirift.bam":
+                noeud_np.setScale(0.25)
+                noeud_np.setY(noeud_np, -6.25)
             #noeud_np.show() #Décommentez pour voir les solides de collision de sauvegardes.
             model_save = loader.loadModel("save_point.bam")
             model_save.reparentTo(render)
@@ -1553,6 +1556,8 @@ class SetLevel(FSM):
             return Archer()
         elif pnj == "enfant_prodige":
             return Enfant_prodige()
+        elif pnj == "mage":
+            return Mage_cache()
         return PNJ()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
@@ -1662,6 +1667,9 @@ class SetLevel(FSM):
         elif self.current_point == "save_maison_chasseurs":
             self.current_map = "Manoir.bam"
             self.player.setPos(0, -20, 0)
+        elif self.current_point == "save_ignirift":
+            self.current_map = "Ignirift.bam"
+            self.player.setPos(10, 10, 25)
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)
