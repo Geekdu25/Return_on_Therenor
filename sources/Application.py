@@ -1678,7 +1678,7 @@ class SetLevel(FSM):
             self.player.setPos(10, 10, 25)
         elif self.current_point == "save_desert":
             self.current_map = "Arduny.bam"
-            self.player.setPos(2500, -1600, 0)
+            self.player.setPos(2125, -2000, 0)
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)
