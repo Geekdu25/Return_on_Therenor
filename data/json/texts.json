@@ -22,7 +22,12 @@
 "11":["Rémy est un grand musicien de renom.","Noé est passioné de modélisation 3D.","Tyméo adore les trains, ça en devient suspiceux.","Etienne a l'air d'être un génie de l'informatique.","Et Alex ? Bah elle existe."],
 "12":["Le magicien et Zmeyevick doivent être dans l'ancienne Forteresse de la Reine.", "Mais je ne vois pas pourquoi tu veux y aller."],
 "13":["Phoolan semble avoir perdu son collier porte bonheur.", "Essayez de le retrouver et de le lui ramener.", "Qui sait, il vous donnera peut-être quelque chose."],
-"14":["Ne le dis pas à Papa, s'il te plaît."]},
+"14":["Ne le dis pas à Papa, s'il te plaît."],
+"15":["Ton grand-père a disparu !", "Il devait revenir hier soir pour la nouvelle lune.", "Mais il ne s'est jamais présenté au passeur."],
+"16":["C'est terrible ! Que faire ?"],
+"17":["Justement. Toi qui le connais bien...", "On s'était dit que tu serais en mesure \nde le retrouver sur l'île de Therenor."],
+"18":["Très bien ! Le destin m'appelle !"],
+"19":["Dès que tu auras acheté \nl'équipement nécessaire chez le marchand...", "Tu pourras te présenter sur le ponton de l'embarcadère et prendre la mer."]},
 "deutsch":{"gui":["Wollen Sie speichern ?", "Drücken Sie F1, um zu beginnen.", "Leere Datei", "Beginnen", "Löschen", "Tastenzuordnung", "Sprache ändern", "Sind Sie sicher, dass Sie die Daten löschen? (Gelöschte Daten können nicht wiederhergestellt werden)",
 "Zurück", "Grüße junger Abenteurer, wie ist dein Name?", "Bestätigen", "Ist alles gut ?", "Bitte schließen Sie Ihren Controller erneut an", "Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)",
 "Drücken Sie F1 um neu zu beginnen.", "Speichern durchgeführt !", "Männlich", "Weiblich", "Einrichten der Tasten", "Bearbeiten", "Vorrücken: ", "Den Blickwinkel ändern : ", "Laufen : ", "Inventar : ", "Interagieren",
@@ -45,5 +50,10 @@
 "11":["Rémy ist ein berühmter Musiker.", "Noé hat eine Leidenschaft für 3D-Modellierung.", "Tyméo liebt Züge, das macht es spannend.", "Etienne scheint ein Computergenie zu sein." , "Was ist mit Alex? Die gibt es wirklich."],
 "12":["Der Zauberer und Zmeyevick müssen sich in der alten Festung der Königin befinden.", "Aber ich verstehe nicht, warum du dorthin gehen willst."],
 "13":["Phoolan scheint seine Glückskette verloren zu haben.", "Versuchen Sie, sie zu finden und ihr zurückzubringen.", "Wer weiß, vielleicht gibt sie Ihnen etwas."],
-"14":["Bitte sag es Papa nicht."]}
+"14":["Bitte sag es Papa nicht."],
+"15":["Dein Großvater ist verschwunden!", "Er sollte gestern Abend zum Neumond wiederkommen.", "Aber er hat sich nie beim Fährmann gemeldet !"],
+"16":["Das ist schrecklich! Was sollen wir tun?"],
+"17":["Du kennst ihn doch so gut...", "Also wir dachten, du könntest ihn \nauf der Insel Therenor finden."],
+"18":["Sehr gut, das Schicksal ruft!"],
+"19":["Sobald du die nötige Ausrüstung\n beim Händler gekauft hast... ", "Dann kannst du dich auf dem Steg\n der Anlegestelle melden und in See stechen!"]}
 }
