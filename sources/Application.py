@@ -279,9 +279,13 @@ class SetLevel(FSM):
                 self.ignore(self.keys_data[event])
             self.ignore("into")
             self.ignore("out")
-            taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte][1].newpos])
-            if self.portails[self.current_porte][1].orientation is not None:
-              taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=self.portails[self.current_porte][1].orientation)
+            if self.chapitre == 2:
+                self.chapitre = 3
+                self.fade_out("Cinematique")
+            else:
+              taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte][1].newpos])
+              if self.portails[self.current_porte][1].orientation is not None:
+                taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=self.portails[self.current_porte][1].orientation)
         if self.actual_statue is not None:
             taskMgr.remove("update")
             properties = WindowProperties()
@@ -1149,6 +1153,25 @@ class SetLevel(FSM):
             self.son.play()
             self.ignore(self.keys_data["Interagir"])
             self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
+        elif self.chapitre == 3:
+            self.load_map("village_pecheurs.bam")
+            render.clearFog()
+            self.pnj_bonus = Pecheur()
+            self.pnj_bonus.reparentTo(render)
+            self.pnj_bonus.setPos((-470, 175, 275))
+            self.player.followcam.set_active(False)
+            taskMgr.remove("update")
+            self.player.show()
+            self.player.col_np.removeNode()
+            self.player.setPos((-480, 500, 300))
+            base.cam.setPos((-200, 500, 500))
+            base.cam.setHpr((180, 0, 0))
+            self.ignore_touches()
+            self.inventaire_mgr.cacher()
+            self.player_interface.cacher()
+            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 300)), base.cam.posInterval(2, Vec3(-240, 200, 475))))
+            s.start()
+            self.transition.fadeIn(2)
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
 
@@ -1287,6 +1310,8 @@ class SetLevel(FSM):
             self.player.setHpr(0, 0, 0)
             base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
             self.chapitre = 2
+        elif self.chapitre == 3:
+            self.pnj_bonus.removeNode()
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):

@@ -131,6 +131,14 @@ class Archer(PNJ):
         self.nom = "Robin"
         self.col.setName("archer")
 
+class Pecheur(PNJ):
+    def __init__(self):
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        self.texts = 8
+        self.setScale(40)
+        self.nom = "Michel"
+        self.col.setName("pecheur")
+
 class Etudiant_amoureux(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
