@@ -1167,10 +1167,12 @@ class SetLevel(FSM):
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
             self.ignore_touches()
+            self.accept(self.keys_data["Interagir"], self.check_interact)
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
-            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 300)), base.cam.posInterval(2, Vec3(-240, 200, 475))))
+            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 300)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.set_text, 15, ["texte_ok"]))
             s.start()
+            self.accept("texte_ok", self.change_cine, extraArgs=[5])
             self.transition.fadeIn(2)
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
@@ -1262,6 +1264,22 @@ class SetLevel(FSM):
             self.ignore("texte_ok")
             self.fade_out("Map")
             self.first_time = True
+        elif cine == 5:
+            self.ignore("texte_ok")
+            self.set_text(16, "texte_ok")
+            self.accept("texte_ok", self.change_cine, extraArgs=[6])
+        elif cine == 6:
+            self.ignore("texte_ok")
+            self.set_text(17, "texte_ok")
+            self.accept("texte_ok", self.change_cine, extraArgs=[7])
+        elif cine == 7:
+            self.ignore("texte_ok")
+            self.set_text(18, "texte_ok")
+            self.accept("texte_ok", self.change_cine, extraArgs=[8])
+        elif cine == 8:
+            self.ignore("texte_ok")
+            self.set_text(19, "texte_ok")
+            self.accept("texte_ok", self.request, extraArgs=["Map"])
         if task is not None:
             return task.done
 
