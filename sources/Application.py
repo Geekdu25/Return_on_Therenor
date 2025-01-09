@@ -1161,7 +1161,7 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.player.show()
             self.player.col_np.removeNode()
-            self.player.setPos((-480, 500, 300))
+            self.player.setPos((-480, 500, 290))
             self.player.setHpr((0, 0, 0))
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
@@ -1169,7 +1169,7 @@ class SetLevel(FSM):
             self.accept(self.keys_data["Interagir"], self.check_interact)
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
-            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 300)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.set_text, 15, ["texte_ok"]))
+            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 290)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.set_text, 15, ["texte_ok"]))
             s.start()
             self.accept("texte_ok", self.change_cine, extraArgs=[5])
             self.transition.fadeIn(2)
@@ -1264,20 +1264,24 @@ class SetLevel(FSM):
             self.fade_out("Map")
             self.first_time = True
         elif cine == 5:
-            self.ignore("texte_ok")
+            self.ignore("texte_ok")            
             self.accept("texte_ok", self.change_cine, extraArgs=[6])
+            Parallel(base.cam.hprInterval(1, Vec3(15, 0, 0)), base.cam.posInterval(1, Vec3(-430, 250, 400))).start()
             self.set_text(16, ["texte_ok"])
         elif cine == 6:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[7])
+            base.cam.hprInterval(1, Vec3(165, 0, 0)).start()
             self.set_text(17, ["texte_ok"])            
         elif cine == 7:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[8])
+            base.cam.hprInterval(1, Vec3(15, 0, 0)).start()
             self.set_text(18, ["texte_ok"])            
         elif cine == 8:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
+            self.travel = 0
             self.set_text(19, ["texte_ok"])            
         if task is not None:
             return task.done
@@ -1307,6 +1311,15 @@ class SetLevel(FSM):
                         base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
                     if base.cam.getY() > -100:
                         base.cam.setY(base.cam, dt*25)
+        elif self.chapitre == 3:
+            if hasattr(self, "travel"):
+                if self.text_index == 0 and self.travel == 0:
+                    self.travel = 1
+                    base.cam.setHpr(180, 0, 0)
+                    base.cam.posInterval(3, Vec3(-450, 50, 350), startPos=Vec3(-450, 150, 350)).start()   
+                elif self.text_index == 1 and self.travel == 1:
+                    self.travel = 2
+                    base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350)).start()                
         return task.cont
 
 
@@ -1329,7 +1342,9 @@ class SetLevel(FSM):
             self.chapitre = 2
         elif self.chapitre == 3:
             self.current_point = "save_village"
+            del self.travel
             self.player.col_np = self.player.attachNewNode(self.player.col)
+            self.pnj_bonus.cleanup()
             self.pnj_bonus.removeNode()
 
     #-----------------------------Map (chargement et state)--------------------------------
