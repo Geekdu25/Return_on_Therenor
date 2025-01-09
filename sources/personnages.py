@@ -86,7 +86,7 @@ class PNJ(Actor):
     def __str__(self):
         return self.nom+" est un PNJ."
 
-    def optention(self):
+    """def optention(self):
         if "collier" in self.inventaire:
             self.texts = "Tu as retrouver mon collier merci","Mais maintenant j'en ai plus besoin, garde le. Et prend un peu d'argent pour te rembourser le trajet"
         elif "amulette" in inventaire:
@@ -95,7 +95,7 @@ class PNJ(Actor):
             self.texts = "Merci je peux enfin finir mon antidote pour le cholera","Prend ca, mais ne dit rien à mon papa"
         else:
             self.texts="Tu n'as pas l'object adéquat repasse plus tard"
-        return self.texts
+        return self.texts"""
 
 class Assassin_repenti(PNJ):
     def __init__(self):
@@ -106,9 +106,10 @@ class Assassin_repenti(PNJ):
         self.object= "collier"
         self.nom = "Phoolan Devi"
         self.col.setName("assassin")
-    def collier(self):
+
+    """def collier(self):
         self.ajoute_item(item="collier")
-        return self.optention
+        return self.optention"""
 
 class Mage_cache(PNJ):
     def __init__(self):
@@ -118,8 +119,9 @@ class Mage_cache(PNJ):
         self.object= "amulette"#amulette qui permet d'ouvrir un portail pour aller dans la forteresse plus rapidement
         self.nom = "Axil"
         self.col.setName("mage")
-    def amulette(self):
-        return self.optention
+    """def amulette(self):
+        return self.optention"""
+    
 class Inventeur(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
@@ -137,10 +139,12 @@ class Enfant_prodige(PNJ):
         self.textquest = 14
         self.nom = "Maryanne"
         self.col.setName("enfant_prodige")
-    def poisson(self):
+
+    """def poisson(self):
         self.ajoute_item(item="poisson") -=1
         self.ajoute_item(item="Vodka") +=1
-        return self.optention
+        return self.optention"""
+    
 class Archer(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
@@ -169,6 +173,13 @@ class Etudiante_amoureuse(PNJ):
         self.lieu = "tentes des nomades"
         self.col.setName("etudiante")
 
+class Pecheur(PNJ):
+    def __init__(self):
+        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        self.texts = 10
+        self.setScale(40)
+        self.nom = "Michel"
+        self.col.setName("pecheur")
 #-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):

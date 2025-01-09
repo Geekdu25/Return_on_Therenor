@@ -1279,7 +1279,7 @@ class SetLevel(FSM):
         elif cine == 8:
             self.ignore("texte_ok")
             self.set_text(19, "texte_ok")
-            self.accept("texte_ok", self.request, extraArgs=["Map"])
+            self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
         if task is not None:
             return task.done
 
