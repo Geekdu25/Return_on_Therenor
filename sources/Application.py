@@ -261,11 +261,11 @@ class SetLevel(FSM):
                 if self.pnjs[self.current_pnj].texts is not None: #Dans le cas où le pnj aurait quelque chose à dire
                     self.text_index = 0
                     self.letter_index = 0
-                    self.music.setVolume(0.5)
+                    self.music.setVolume(0.3)
                     self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
-                    #self.ignore("space")
+                    self.music.setVolume(0.3)
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
                     self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
         if self.current_porte is not None:
@@ -346,6 +346,7 @@ class SetLevel(FSM):
         articles -> dict
         return -> None
         """
+        self.ignore("space")
         self.d_actif = False
         self.hide_gui()
         taskMgr.add(self.update_vente, "update vente")
@@ -419,6 +420,7 @@ class SetLevel(FSM):
             self.accept("out", self.out)
             self.accept("h", self.help)
             self.accept("space", self.check_interact)
+            self.music.setVolume(1)
             self.current_pnj = None
 
     def update_vente(self, task=None):
