@@ -1560,6 +1560,10 @@ class SetLevel(FSM):
             return Enfant_prodige()
         elif pnj == "mage":
             return Mage_cache()
+        elif pnj == "etudiant":
+            return Etudiant_amoureux()
+        elif pnj == "etudiante":
+            return Etudiante_amoureuse()
         return PNJ()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
@@ -1672,6 +1676,9 @@ class SetLevel(FSM):
         elif self.current_point == "save_ignirift":
             self.current_map = "Ignirift.bam"
             self.player.setPos(10, 10, 25)
+        elif self.current_point == "save_desert":
+            self.current_map = "Arduny.bam"
+            self.player.setPos(2500, -1600, 0)
         else:#Le joueur se retrouve chez lui par défaut
             self.current_map = "village_pecheurs_maison_heros.bam"
             self.player.setPos(0, 30, 6)

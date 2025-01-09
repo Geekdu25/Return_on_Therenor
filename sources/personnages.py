@@ -94,7 +94,6 @@ class Assassin_repenti(PNJ):
         self.quetes= 13
         self.object= "error"
         self.nom = "Phoolan Devi"
-        self.lieu= "Ignirift"
         self.col.setName("assassin")
 
 class Mage_cache(PNJ):
@@ -104,7 +103,6 @@ class Mage_cache(PNJ):
         self.setScale(40)
         self.object= "montre"#montre qui permet de ralentir le temps pour les combat
         self.nom = "Axil"
-        self.lieu = "Maison d'aurélia"
         self.col.setName("mage")
 
 class Inventeur(PNJ):
@@ -113,7 +111,6 @@ class Inventeur(PNJ):
         self.texts = 6
         self.setScale(40)
         self.nom = "Elia"
-        self.lieu = "vilage des chasseurs"
         self.col.setName("inventeur")
 
 class Enfant_prodige(PNJ):
@@ -124,7 +121,6 @@ class Enfant_prodige(PNJ):
         self.object = "Vodka"
         self.textquest = 14
         self.nom = "Maryanne"
-        self.lieu = "village des pecheurs"
         self.col.setName("enfant_prodige")
 
 class Archer(PNJ):
@@ -133,7 +129,6 @@ class Archer(PNJ):
         self.texts = 8
         self.setScale(40)
         self.nom = "Robin"
-        self.lieu = "Village des pecheurs"
         self.col.setName("archer")
 
 class Etudiant_amoureux(PNJ):
