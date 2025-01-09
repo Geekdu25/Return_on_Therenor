@@ -1,5 +1,5 @@
 # Return on Therenor
-<img src="data/pictures/Logo_Final_RoT.png" alt="Logo de Return on Therenor", title="Logo de Return on Therenor"/>
+<img src="data/pictures/Logo_Final_RoT.png" alt="Logo de Return on Therenor" title="Logo de Return on Therenor" />
 Un jeu en 3 dimensions crée par Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora et Etienne Pacault pour <a href="https://www.trophees-nsi.fr" target="_blank">les trophées NSI 2025</a>
 # 1- Résumé
 Après avoir triomphé de Zmeyevick, le protagoniste de <b>The legend of Therenor</b> a pris une retraite bien méritée.
