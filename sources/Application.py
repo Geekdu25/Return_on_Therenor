@@ -759,11 +759,9 @@ class SetLevel(FSM):
         elif self.chapitre == 1:
             self.request("Cinematique")
         #-----------------On charge la map-----------------------------------
-        elif self.chapitre == 2:
+        elif self.chapitre == 2 or self.chapitre == 3:
             Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
             self.fade_out("Map")
-        elif self.chapitre == 3:
-            self.fade_out("Cinematique")
         #------------Générique---------------------------
         else:
             self.request("Generique")
@@ -1164,6 +1162,7 @@ class SetLevel(FSM):
             self.player.show()
             self.player.col_np.removeNode()
             self.player.setPos((-480, 500, 300))
+            self.player.setHpr((0, 0, 0))
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
             self.ignore_touches()
@@ -1266,20 +1265,20 @@ class SetLevel(FSM):
             self.first_time = True
         elif cine == 5:
             self.ignore("texte_ok")
-            self.set_text(16, "texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[6])
+            self.set_text(16, ["texte_ok"])
         elif cine == 6:
             self.ignore("texte_ok")
-            self.set_text(17, "texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[7])
+            self.set_text(17, ["texte_ok"])            
         elif cine == 7:
             self.ignore("texte_ok")
-            self.set_text(18, "texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[8])
+            self.set_text(18, ["texte_ok"])            
         elif cine == 8:
             self.ignore("texte_ok")
-            self.set_text(19, "texte_ok")
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
+            self.set_text(19, ["texte_ok"])            
         if task is not None:
             return task.done
 
@@ -1329,6 +1328,8 @@ class SetLevel(FSM):
             base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
             self.chapitre = 2
         elif self.chapitre == 3:
+            self.current_point = "save_village"
+            self.player.col_np = self.player.attachNewNode(self.player.col)
             self.pnj_bonus.removeNode()
 
     #-----------------------------Map (chargement et state)--------------------------------
