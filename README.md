@@ -13,7 +13,7 @@ Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
 
-# 3- Bibliothèques et logiciels utilisés (et remerciements ;-))
+# 3- Bibliothèques et logiciels utilisés
 <h2>Panda3D</h2>
 Le moteur de jeu utilisé dans ce jeu est Panda 3D, moteur de jeu conçu par l'université Carnegie-Mellon University de Pitsburgh en Pennsylvanie et par Disney Online.
 Un grand merci à eux ! <a href="https://www.panda3d.org" target="_blank">Lien vers le site de Panda3D</a>
@@ -37,3 +37,5 @@ De plus, ce jeu a été partiellement conçu avec Sweet Home 3D :
 Plus d'informations sur <a href="https://www.sweethome3d.com" target="_blank">https://www.sweethome3d.com</a>
 <h2>Skybox</h2>
 La skybox utilisée dans ce jeu pour simuler le ciel est issue <a href="https://github.com/shaunwa/cbt-panda3d-minecraft">d'un tutoriel</a> sur la création de minecraft en python avec Panda3D.
+<h2>Remerciements</h2>
+Un très grand merci à tous ceux qui ont rendu possible la création de ce projet que ce soit de manière directe ou indirecte.
