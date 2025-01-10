@@ -617,22 +617,10 @@ class SetLevel(FSM):
         self.hide_gui()
         self.menu = True
         #-----------------------On charge les textes------------------------------------
-        self.textObject1 = OnscreenText(text='Return on Therenor', pos=(0, 0.75), scale=0.07, fg=(1, 1, 1, 1))
-        self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, 0.5), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
-        #--------------------L'épée--------------------------------------
-        self.epee = loader.loadModel("sword.bam")
-        self.epee.reparentTo(base.cam)
+        self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, -0.8), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
+        self.image_logo = OnscreenImage("../data/pictures/Logo_Final_RoT.png", pos=Vec3(0, 0, 0.1), scale=(0.8, 1, 0.8))   
         #--------------On modifie la caméra (position, lentille)-------------
         base.cam.node().getLens().setFov(70)
-        base.cam.lookAt(self.epee)
-        #-------------On fait tourner cette épée---------------------------
-        self.epee.setPosHprScale(0.00, 5.00, 0.00, 0.00, 270, 90.00, 1.00, 1.00, 1.00)
-        interval = self.epee.hprInterval(2, Vec3(0, 270, 90), startHpr = Vec3(0, 270, 0))
-        interval2 = self.epee.hprInterval(2, Vec3(0, 270, 180), startHpr = Vec3(0, 270, 90))
-        interval3 = self.epee.hprInterval(2, Vec3(0, 270, 270), startHpr = Vec3(0, 270, 180))
-        interval4 = self.epee.hprInterval(2, Vec3(0, 270, 0), startHpr = Vec3(0, 270, 270))
-        s = Sequence(interval, interval2, interval3, interval4)
-        s.loop()
         #--------------------Gestion des touches----------------------------
         self.accept("escape", self.all_close)
         self.acceptOnce("f1", self.fade_out, extraArgs=["Trois_fichiers"])
@@ -645,10 +633,10 @@ class SetLevel(FSM):
         -----------------------------------------------------
         return -> None
         """
-        self.textObject1.remove_node()
         self.textObject2.remove_node()
-        self.epee.removeNode()
-        del self.epee
+        self.image_logo.removeNode()
+        del self.image_logo
+        del self.textObject2
 
     #-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
     def enterTrois_fichiers(self):
