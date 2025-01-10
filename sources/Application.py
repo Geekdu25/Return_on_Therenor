@@ -315,12 +315,22 @@ class SetLevel(FSM):
                             properties.setCursorHidden(False)
                             base.win.requestProperties(properties)
             if a:
+                item = ""
+                money = 0
                 if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
                     item = "Vodka"
-                self.player.ajoute_item(item)
-                self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
-                self.dialog.hide()
-                taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
+                elif self.current_map == "village_pecheurs.bam" and self.actual_coffre == "0":
+                    money = 100
+                if item != "":
+                  self.player.ajoute_item(item)
+                  self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
+                  self.dialog.hide()
+                  taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
+                elif money > 0:
+                  self.player.noais += money
+                  self.dialog = OkDialog(text="Vous avez obtenu : "+str(money)+" noaïs.", command=self.cleanup_dialog_tresor)
+                  self.dialog.hide()
+                  taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
 
 
     def accept_trigger(self, clickedYes):
@@ -1264,7 +1274,7 @@ class SetLevel(FSM):
             self.fade_out("Map")
             self.first_time = True
         elif cine == 5:
-            self.ignore("texte_ok")            
+            self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[6])
             Parallel(base.cam.hprInterval(1, Vec3(15, 0, 0)), base.cam.posInterval(1, Vec3(-430, 250, 400))).start()
             self.set_text(16, ["texte_ok"])
@@ -1272,17 +1282,17 @@ class SetLevel(FSM):
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[7])
             base.cam.hprInterval(1, Vec3(165, 0, 0)).start()
-            self.set_text(17, ["texte_ok"])            
+            self.set_text(17, ["texte_ok"])
         elif cine == 7:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[8])
             base.cam.hprInterval(1, Vec3(15, 0, 0)).start()
-            self.set_text(18, ["texte_ok"])            
+            self.set_text(18, ["texte_ok"])
         elif cine == 8:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
             self.travel = 0
-            self.set_text(19, ["texte_ok"])            
+            self.set_text(19, ["texte_ok"])
         if task is not None:
             return task.done
 
@@ -1316,10 +1326,10 @@ class SetLevel(FSM):
                 if self.text_index == 0 and self.travel == 0:
                     self.travel = 1
                     base.cam.setHpr(180, 0, 0)
-                    base.cam.posInterval(3, Vec3(-450, 50, 350), startPos=Vec3(-450, 150, 350)).start()   
+                    base.cam.posInterval(3, Vec3(-450, 50, 350), startPos=Vec3(-450, 150, 350)).start()
                 elif self.text_index == 1 and self.travel == 1:
                     self.travel = 2
-                    base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350)).start()                
+                    base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350)).start()
         return task.cont
 
 

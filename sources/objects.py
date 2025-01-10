@@ -12,6 +12,7 @@ class Objet:
         ----------------------
         return -> Objet
         """
+        self.nom = "objet"
         self.name = name
         self.object = loader.loadModel(name)
 
@@ -25,6 +26,7 @@ class Lit:
         ----------------------
         return -> Lit
         """
+        self.nom = "lit"
         self.object = loader.loadModel("lit.bam")
         self.object.setScale(15)
         self.col = CollisionNode("lit")
@@ -43,6 +45,7 @@ class Bateau:
         ----------------------
         return -> Bateau
         """
+        self.nom = "bateau"
         self.object = loader.loadModel("bateau.bam")
         self.object.setScale(30)
         self.col = CollisionNode("bateau")
@@ -82,6 +85,7 @@ class Sapin:
         ----------------------
         return -> Sapin
         """
+        self.nom = "sapin"
         self.object = loader.loadModel("sapin.bam")
         self.object.setScale(27)
         self.col = CollisionNode("sapin")
@@ -100,6 +104,7 @@ class Manoir:
         ---------------------
         return -> Manoir
         """
+        self.nom = "manoir"
         self.object = loader.loadModel("Manoir.bam")
         self.object.setScale(9)
         self.col = CollisionNode("Manoir")
@@ -118,6 +123,7 @@ class Palmier:
         ----------------------
         return -> Palmier
         """
+        self.nom = "palmier"
         self.object = loader.loadModel("Palmier.bam")
         self.object.setScale(13)
         self.col = CollisionNode("palmier")
@@ -136,6 +142,7 @@ class Maison_aurelia:
         ------------------------
         return -> Maison_aurelia
         """
+        self.nom = "maison_aurelia"
         self.object = loader.loadModel("maison_aurelia.bam")
         self.object.setScale(3)
         self.object.setCollideMask(BitMask32.bit(0))
