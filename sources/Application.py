@@ -1265,8 +1265,8 @@ class SetLevel(FSM):
         elif cine == 3:
             texts = self.story["0"]
             texts[0] = texts[0] + self.player.nom + " !"
-            s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
-            s.start()
+            self.s = Sequence(base.cam.hprInterval(4, Vec3(-140, 0, 0), startHpr=Vec3(0, -70, 0)), Func(self.set_text, texts, ["texte_ok"]))
+            self.s.start()
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[4])
         elif cine == 4:
@@ -1276,22 +1276,28 @@ class SetLevel(FSM):
         elif cine == 5:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[6])
-            Parallel(base.cam.hprInterval(1, Vec3(15, 0, 0)), base.cam.posInterval(1, Vec3(-430, 250, 400))).start()
+            self.s = Parallel(base.cam.hprInterval(1, Vec3(15, 0, 0)), base.cam.posInterval(1, Vec3(-430, 250, 400)))
+            self.s.start()
             self.set_text(16, ["texte_ok"])
         elif cine == 6:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[7])
-            base.cam.hprInterval(1, Vec3(165, 0, 0)).start()
+            self.s.finish()
+            self.s = base.cam.hprInterval(1, Vec3(165, 0, 0))
+            self.s.start()
             self.set_text(17, ["texte_ok"])
         elif cine == 7:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.change_cine, extraArgs=[8])
-            base.cam.hprInterval(1, Vec3(15, 0, 0)).start()
+            self.s.finish()
+            self.s = base.cam.hprInterval(1, Vec3(15, 0, 0))
+            self.s.start()
             self.set_text(18, ["texte_ok"])
         elif cine == 8:
             self.ignore("texte_ok")
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
             self.travel = 0
+            self.s.finish() 
             self.set_text(19, ["texte_ok"])
         if task is not None:
             return task.done
@@ -1326,10 +1332,13 @@ class SetLevel(FSM):
                 if self.text_index == 0 and self.travel == 0:
                     self.travel = 1
                     base.cam.setHpr(180, 0, 0)
-                    base.cam.posInterval(3, Vec3(-450, 50, 350), startPos=Vec3(-450, 150, 350)).start()
+                    self.s = base.cam.posInterval(3, Vec3(-450, 50, 350), startPos=Vec3(-450, 150, 350))
+                    self.s.start()
                 elif self.text_index == 1 and self.travel == 1:
                     self.travel = 2
-                    base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350)).start()
+                    self.s.finish()
+                    self.s = base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350))
+                    self.s.start()
         return task.cont
 
 
@@ -1351,6 +1360,8 @@ class SetLevel(FSM):
             base.cam.setPosHpr(0, 0, 0, 0, 0, 0)
             self.chapitre = 2
         elif self.chapitre == 3:
+            self.s.finish()
+            del self.s  
             self.current_point = "save_village"
             del self.travel
             self.player.col_np = self.player.attachNewNode(self.player.col)
