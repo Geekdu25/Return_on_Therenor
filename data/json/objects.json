@@ -1,5 +1,5 @@
 {
-"village_pecheurs.bam":[["bateau",[[350, -1600, 150], [180, 0, 0]]]],	
+"village_pecheurs.bam":[["bateau",[[350, -1600, 150], [180, 0, 0]]], ["coffre",[[-100, 700, 250], [0, 0, 0]]]],	
 "village_pecheurs_maison_heros.bam":[["lit",[[-290, 120, 10], [270, 0, 0]]]],
 "village_pecheurs_maison_chef.bam":[["lit",[[-190, 0, 0], [0, 0, 0]]]],
 "Marelys.bam":[["bateau",[[-1000, 1000, -1], [0, 0, 0]]]],
