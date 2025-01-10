@@ -107,10 +107,6 @@ class Assassin_repenti(PNJ):
         self.nom = "Phoolan Devi"
         self.col.setName("assassin")
 
-    """def collier(self):
-        self.ajoute_item(item="collier")
-        return self.optention"""
-
 class Mage_cache(PNJ):
     def __init__(self):
         PNJ.__init__(self,name="magicien", anims=["Immobile"])
@@ -119,8 +115,6 @@ class Mage_cache(PNJ):
         self.object= "amulette"#amulette qui permet d'ouvrir un portail pour aller dans la forteresse plus rapidement
         self.nom = "Axil"
         self.col.setName("mage")
-    """def amulette(self):
-        return self.optention"""
     
 class Inventeur(PNJ):
     def __init__(self):

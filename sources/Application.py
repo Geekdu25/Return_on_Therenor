@@ -262,7 +262,10 @@ class SetLevel(FSM):
                     self.text_index = 0
                     self.letter_index = 0
                     self.music.setVolume(0.3)
-                    self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
+                    if self.chapitre > 3:
+                      self.set_text(["..."], messages=["reupdate"])
+                    else:
+                      self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
                     self.music.setVolume(0.3)
@@ -454,6 +457,9 @@ class SetLevel(FSM):
         ----------------------------------------------------
         return -> None
         """
+        if self.current_pnj == "mage" and self.chapitre == 3:
+          self.chapitre = 4
+          self.fade_out("Cinematique")  
         self.music.setVolume(1)
         taskMgr.add(self.update, "update")
         self.accept("out", self.out)
@@ -1169,6 +1175,31 @@ class SetLevel(FSM):
             s.start()
             self.accept("texte_ok", self.change_cine, extraArgs=[5])
             self.transition.fadeIn(2)
+        elif self.chapitre == 4:
+            taskMgr.remove("update")
+            self.inventaire_mgr.cacher()
+            self.player_interface.cacher()
+            properties = WindowProperties()
+            properties.setCursorHidden(False)
+            base.win.requestProperties(properties)
+            base.enableMouse()
+            point_light = PointLight("point_light")
+            point_light.setColor((8.5, 8, 5, 1))
+            point_light_np = render.attachNewNode(point_light)
+            point_light_np.setPos(0, 0, 0)
+            self.actuals_light.append(point_light_np)
+            render.setLight(point_light_np)
+            base.cam.setPos(0, 0, 0)
+            base.cam.setHpr(0, 0, 0)
+            self.amulette = loader.loadModel("amulette.bam")
+            self.amulette.reparentTo(render)
+            self.amulette.setPos(0, 0, -10)
+            self.amulette.setHpr(180, 90, 0)
+            self.amulette.setScale(2)
+            self.s = Sequence(self.amulette.hprInterval(5, Vec3(360, 90, 0), startHpr=Vec3(180, 90, 0)), self.amulette.hprInterval(5, Vec3(180, 90, 0), startHpr=Vec3(360, 90, 0)))
+            self.s.loop()  
+            base.cam.lookAt(self.amulette)
+            self.transition.fadeIn(2) 
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
 
@@ -1630,6 +1661,8 @@ class SetLevel(FSM):
             return Etudiant_amoureux()
         elif pnj == "etudiante":
             return Etudiante_amoureuse()
+        elif pnj == "assassin":
+            return Assassin_repenti() 
         return PNJ()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
