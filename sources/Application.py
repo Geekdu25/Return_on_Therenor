@@ -699,9 +699,7 @@ class SetLevel(FSM):
         """
         self.eraseDlg.cleanup()
         if clickedYes:
-            fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
-            fichier.writelines(["_|0|1|3|3"])
-            fichier.close()
+            self.save(file=file, reset=True)
             for button in self.buttons_erase:
                 button.removeNode()
             for button in self.buttons_continue:
@@ -2385,8 +2383,10 @@ class SetLevel(FSM):
         """
         if reset:
             self.chapitre = 0
-            self.player.nom = "Link"
+            self.player.nom = "_"
             self.player.noais = 0
+            self.player.inventaire = {}
+            self.player.armes = {}
             self.player.sexe = "masculin"
             self.current_point = "save_heros"
         fichier = open(self.get_path()+f"/save_{file}.txt", "wt")
