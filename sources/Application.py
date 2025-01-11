@@ -1156,6 +1156,10 @@ class SetLevel(FSM):
         elif self.chapitre == 3:
             self.load_map("village_pecheurs.bam")
             render.clearFog()
+            fummee = Fog("Brume")
+            fummee.setColor(0.5, 0.5, 0.55)
+            fummee.setExpDensity(0.001)
+            render.setFog(fummee)
             self.pnj_bonus = Pecheur()
             self.pnj_bonus.reparentTo(render)
             self.pnj_bonus.setPos((-470, 175, 275))
@@ -1179,9 +1183,6 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
-            properties = WindowProperties()
-            properties.setCursorHidden(False)
-            base.win.requestProperties(properties)
             self.ignore_touches()
             self.accept("space", self.check_interact)
             a_light = AmbientLight("aa")
@@ -1207,6 +1208,34 @@ class SetLevel(FSM):
             self.set_text(["Vous obtenez l'amulette magique.", "Son pouvoir sacré dissippe les protections magiques !"], messages=["texte_ok"])
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"]) 
             self.transition.fadeIn(2) 
+        elif self.chapitre == 5:
+          taskMgr.remove("update")
+          a_light = AmbientLight("aa")
+          a_light_np = render.attachNewNode(a_light)
+          self.actuals_light.append(a_light_np)
+          render.setLight(a_light_np)  
+          point_light = PointLight("point_light")
+          point_light.setColor((0.85, 0.8, 0.1, 1))
+          point_light_np = render.attachNewNode(point_light)
+          point_light_np.setPos(0, 0, 1)
+          self.actuals_light.append(point_light_np)
+          render.setLight(point_light_np)
+          self.inventaire_mgr.cacher()
+          self.player_interface.cacher()   
+          self.load_map("pyramide.bam")
+          self.player.show()
+          self.player.setPos((0, 0, 0))
+          self.player.setHpr((0, 0, 0))
+          base.cam.setPos((0, 3, 3))
+          base.cam.lookAt(self.player)   
+          self.ignore_touches()
+          self.s = Parallel(base.cam.posInterval(5, Vec3(0, 3, 0)), base.cam.hprInterval(5, Vec3(180, 0, 0)))
+          self.s.start() 
+          self.set_text(["Ô toi qui est rentré dans l'antique pyramide...", "Ô toi qui entends ma voix...", "Je suis le gardien de ces lieux...", "Toi qui es en quête de toi aïeul, retrouve-moi...", "Je répondrai à tes questions...", "Mais prends garde à ne pas te perdre...", "Car cette pyramide est vaste..."], messages=["texte_ok"])
+          self.current_point = "save_pyramide"
+          self.accept("texte_ok", self.fade_out, extraArgs=["Map"])  
+          self.accept("space", self.check_interact)
+          self.transition.fadeIn(2)
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
 
@@ -1394,6 +1423,8 @@ class SetLevel(FSM):
         elif self.chapitre == 4:
           self.amulette.removeNode()
           self.player.inventaire["Amulette"] = 1  
+        elif self.chapitre == 5:
+          self.s.finish()   
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
@@ -1639,7 +1670,7 @@ class SetLevel(FSM):
         if self.current_map == "village_pecheurs.bam":
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
-            fummee.setExpDensity(0.02)
+            fummee.setExpDensity(0.03)
             render.setFog(fummee)
         elif self.current_map == "Arduny.bam":
             fummee = Fog("Sable")
@@ -1864,6 +1895,9 @@ class SetLevel(FSM):
                       taskMgr.remove("update")   
                       self.set_text(["Une puissante protection magique empêche quiconque d'entrer.", "Un artefact magique pourrait être utile."], messages=["ja"])
                       self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])  
+                    elif b == "pyramide.bam" and self.chapitre == 4:
+                      self.chapitre = 5 
+                      self.fade_out("Cinematique")
                     else: 
                       self.transition.fadeOut(0.5)
                       taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
@@ -2162,14 +2196,17 @@ class SetLevel(FSM):
           self.activing = True
           article = self.inventaire_mgr.get_item()
           taskMgr.remove("update_invent")
-          self.player.inventaire[article] -= 1
-          if self.player.inventaire[article] < 1:
-              del self.player.inventaire[article]
-          a_dire = "Utilisation d'un(e) "+ article
-          if article == "Vodka":
-            a_dire = self.story["items"][0]
-            self.player_interface.ajouter_hp(5)
-          self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
+          if article == "Amulette":
+            self.OkDialog = OkDialog(text="Impossible de consommer cet article.", command=self.inutile)
+          else:
+            self.player.inventaire[article] -= 1
+            if self.player.inventaire[article] < 1:
+                del self.player.inventaire[article]
+            a_dire = "Utilisation d'un(e) "+ article
+            if article == "Vodka":
+              a_dire = self.story["items"][0]
+              self.player_interface.ajouter_hp(5)
+            self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
 
 
     def inutile(self, inutile=None):
