@@ -262,7 +262,7 @@ class SetLevel(FSM):
                     self.text_index = 0
                     self.letter_index = 0
                     self.music.setVolume(0.3)
-                    if self.chapitre > 3:
+                    if self.chapitre > 3 and self.current_pnj == "mage":
                       self.set_text(["..."], messages=["reupdate"])
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
@@ -761,7 +761,7 @@ class SetLevel(FSM):
         elif self.chapitre == 1:
             self.request("Cinematique")
         #-----------------On charge la map-----------------------------------
-        elif self.chapitre == 2 or self.chapitre == 3:
+        elif self.chapitre >= 2 and self.chapitre <= 4:
             Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
             self.fade_out("Map")
         #------------Générique---------------------------
@@ -1182,7 +1182,12 @@ class SetLevel(FSM):
             properties = WindowProperties()
             properties.setCursorHidden(False)
             base.win.requestProperties(properties)
-            base.enableMouse()
+            self.ignore_touches()
+            self.accept("space", self.check_interact)
+            a_light = AmbientLight("aa")
+            a_light_np = render.attachNewNode(a_light)
+            self.actuals_light.append(a_light_np)
+            render.setLight(a_light_np)  
             point_light = PointLight("point_light")
             point_light.setColor((8.5, 8, 5, 1))
             point_light_np = render.attachNewNode(point_light)
@@ -1196,9 +1201,11 @@ class SetLevel(FSM):
             self.amulette.setPos(0, 0, -10)
             self.amulette.setHpr(180, 90, 0)
             self.amulette.setScale(2)
-            self.s = Sequence(self.amulette.hprInterval(5, Vec3(360, 90, 0), startHpr=Vec3(180, 90, 0)), self.amulette.hprInterval(5, Vec3(180, 90, 0), startHpr=Vec3(360, 90, 0)))
+            self.s = Sequence(self.amulette.hprInterval(5, Vec3(360, 270, 10), startHpr=Vec3(270, 90, 30)), self.amulette.hprInterval(5, Vec3(270, 89, 30), startHpr=Vec3(360, 270, 10)))
             self.s.loop()  
             base.cam.lookAt(self.amulette)
+            self.set_text(["Vous obtenez l'amulette magique.", "Son pouvoir sacré dissippe les protections magiques !"], messages=["texte_ok"])
+            self.accept("texte_ok", self.fade_out, extraArgs=["Map"]) 
             self.transition.fadeIn(2) 
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
@@ -1384,6 +1391,9 @@ class SetLevel(FSM):
             self.player.col_np = self.player.attachNewNode(self.player.col)
             self.pnj_bonus.cleanup()
             self.pnj_bonus.removeNode()
+        elif self.chapitre == 4:
+          self.amulette.removeNode()
+          self.player.inventaire["Amulette"] = 1  
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
@@ -1850,10 +1860,15 @@ class SetLevel(FSM):
                     self.pnjs[b].s.pause()
             elif b in self.portails:
                 if type(self.portails[b][1]) is Portail:
-                    self.transition.fadeOut(0.5)
-                    taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
-                    if self.portails[b][1].orientation is not None:
-                      taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=[self.portails[b][1].orientation])
+                    if b == "pyramide.bam" and not "Amulette" in self.player.inventaire:
+                      taskMgr.remove("update")   
+                      self.set_text(["Une puissante protection magique empêche quiconque d'entrer.", "Un artefact magique pourrait être utile."], messages=["ja"])
+                      self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])  
+                    else: 
+                      self.transition.fadeOut(0.5)
+                      taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
+                      if self.portails[b][1].orientation is not None:
+                        taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=[self.portails[b][1].orientation])
                 elif type(self.portails[b][1]) is Porte:
                     self.current_porte = b
             elif b.isdigit(): #Trigger
