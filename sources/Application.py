@@ -389,9 +389,9 @@ class SetLevel(FSM):
             if self.player.noais >= prix:
                 self.player.noais -= prix #On retire de l'argent au joueur $$$$
                 self.player.ajoute_item(article)
-                self.dialog = OkDialog(text="Cet article a été ajouté à votre inventaire !", command=self.cleanup_dialog_vente)
+                self.dialog = OkDialog(text=self.story["items"][2], command=self.cleanup_dialog_vente)
             else:
-                self.dialog = OkDialog(text="D'abord l'argent !!!", command=self.cleanup_dialog_vente)
+                self.dialog = OkDialog(text=self.story["items"][3], command=self.cleanup_dialog_vente)
 
 
     def cleanup_dialog_vente(self, inutile):
