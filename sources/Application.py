@@ -1205,7 +1205,7 @@ class SetLevel(FSM):
             self.s = Sequence(self.amulette.hprInterval(5, Vec3(360, 270, 10), startHpr=Vec3(270, 90, 30)), self.amulette.hprInterval(5, Vec3(270, 89, 30), startHpr=Vec3(360, 270, 10)))
             self.s.loop()  
             base.cam.lookAt(self.amulette)
-            self.set_text(["Vous obtenez l'amulette magique.", "Son pouvoir sacré dissippe les protections magiques !"], messages=["texte_ok"])
+            self.set_text(21, messages=["texte_ok"])
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"]) 
             self.transition.fadeIn(2) 
         elif self.chapitre == 5:
@@ -1231,7 +1231,7 @@ class SetLevel(FSM):
           self.ignore_touches()
           self.s = Parallel(base.cam.posInterval(5, Vec3(0, 3, 0)), base.cam.hprInterval(5, Vec3(180, 0, 0)))
           self.s.start() 
-          self.set_text(["Ô toi qui est rentré dans l'antique pyramide...", "Ô toi qui entends ma voix...", "Je suis le gardien de ces lieux...", "Toi qui es en quête de toi aïeul, retrouve-moi...", "Je répondrai à tes questions...", "Mais prends garde à ne pas te perdre...", "Car cette pyramide est vaste..."], messages=["texte_ok"])
+          self.set_text(20, messages=["texte_ok"])
           self.current_point = "save_pyramide"
           self.accept("texte_ok", self.fade_out, extraArgs=["Map"])  
           self.accept("space", self.check_interact)
@@ -1401,6 +1401,7 @@ class SetLevel(FSM):
         ------------------------------------------
         return -> None
         """
+        self.ignore("texte_ok")
         for light in self.actuals_light:
             render.clearLight(light)
             light.removeNode()
@@ -1893,7 +1894,7 @@ class SetLevel(FSM):
                 if type(self.portails[b][1]) is Portail:
                     if b == "pyramide.bam" and not "Amulette" in self.player.inventaire:
                       taskMgr.remove("update")   
-                      self.set_text(["Une puissante protection magique empêche quiconque d'entrer.", "Un artefact magique pourrait être utile."], messages=["ja"])
+                      self.set_text(22, messages=["ja"])
                       self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])  
                     elif b == "pyramide.bam" and self.chapitre == 4:
                       self.chapitre = 5 
@@ -2197,7 +2198,7 @@ class SetLevel(FSM):
           article = self.inventaire_mgr.get_item()
           taskMgr.remove("update_invent")
           if article == "Amulette":
-            self.OkDialog = OkDialog(text="Impossible de consommer cet article.", command=self.inutile)
+            self.OkDialog = OkDialog(text=self.story["items"][1], command=self.inutile)
           else:
             self.player.inventaire[article] -= 1
             if self.player.inventaire[article] < 1:
