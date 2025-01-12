@@ -147,6 +147,7 @@ class SetLevel(FSM):
         self.portails = {}
         self.triggers = []
         self.murs = []
+        self.monstres = {}
         self.save_statues = {}
         self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
         #-----------------Autres variables-----------------------
@@ -761,7 +762,7 @@ class SetLevel(FSM):
         elif self.chapitre == 1:
             self.request("Cinematique")
         #-----------------On charge la map-----------------------------------
-        elif self.chapitre >= 2 and self.chapitre <= 4:
+        elif self.chapitre >= 2 and self.chapitre <= 5:
             Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
             self.fade_out("Map")
         #------------Générique---------------------------
@@ -1210,14 +1211,10 @@ class SetLevel(FSM):
             self.transition.fadeIn(2) 
         elif self.chapitre == 5:
           taskMgr.remove("update")
-          a_light = AmbientLight("aa")
-          a_light_np = render.attachNewNode(a_light)
-          self.actuals_light.append(a_light_np)
-          render.setLight(a_light_np)  
           point_light = PointLight("point_light")
-          point_light.setColor((0.85, 0.8, 0.1, 1))
-          point_light_np = render.attachNewNode(point_light)
-          point_light_np.setPos(0, 0, 1)
+          point_light.setColor((0.7, 0.6, 0, 0.5))
+          point_light_np = self.player.attachNewNode(point_light)
+          point_light_np.setPos(0, 0, 20)
           self.actuals_light.append(point_light_np)
           render.setLight(point_light_np)
           self.inventaire_mgr.cacher()
@@ -1422,6 +1419,7 @@ class SetLevel(FSM):
             self.pnj_bonus.cleanup()
             self.pnj_bonus.removeNode()
         elif self.chapitre == 4:
+          self.current_point = "save_ignirift"
           self.amulette.removeNode()
           self.player.inventaire["Amulette"] = 1  
         elif self.chapitre == 5:
@@ -1440,6 +1438,9 @@ class SetLevel(FSM):
         for pnj in self.pnjs:
             self.pnjs[pnj].cleanup()
             self.pnjs[pnj].removeNode()
+        for pnj in self.monstres:
+            self.monstres[pnj].cleanup()
+            self.monstres[pnj].removeNode()
         for objet in self.objects:
             objet.object.removeNode()
         for mur in self.murs:
@@ -1451,6 +1452,7 @@ class SetLevel(FSM):
             self.save_statues[statue][1].removeNode()
         self.objects = []
         self.murs = []
+        self.monstres = {}
         self.current_pnj = None
         self.current_porte = None
         self.pnjs = {}
@@ -1569,6 +1571,14 @@ class SetLevel(FSM):
             self.pnjs[pnj] = a
         for pnj in self.pnjs:
             self.pnjs[pnj].reparentTo(render)
+        #------------------Les monstres--------------------------------
+        for pnj in data[self.current_map][7]:
+            info = data[self.current_map][7][pnj]
+            a = self.return_monstre(pnj)
+            a.setPos(info[0], info[1], info[2])
+            self.monstres[pnj] = a
+        for pnj in self.monstres:
+            self.monstres[pnj].reparentTo(render)
         #-------------Les points de sauvegardes------------------------
         for save in data[self.current_map][3]:
             noeud = CollisionNode(save)
@@ -1706,6 +1716,17 @@ class SetLevel(FSM):
         elif pnj == "assassin":
             return Assassin_repenti() 
         return PNJ()
+
+    def return_monstre(self, pnj="golem"):
+        """
+        Méthode permettant de renvoyer la bonne classe en fonction du Monstre choisi.
+        ------------------------------------------------------------------------------
+        pnj -> str
+        return -> Monster (ou classe qui en hérite)
+        """ 
+        if pnj == "golem":
+            return Golem()
+        return Monster()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
         """
@@ -2494,7 +2515,7 @@ class SetLevel(FSM):
             self.save(file=self.actual_file)
             self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.update_after_save) #Sauvegarde effectuée.
         else:
-            self.update_after_save(False)
+            self.update_after_save(True)
 
     def update_after_save(self, inutile):
         """
