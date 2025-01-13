@@ -1662,10 +1662,17 @@ class SetLevel(FSM):
         ----------------------------------------------------------------------
         return -> None
         """
-        if self.map == "Arduny.bam":
+        if self.current_map == "Arduny.bam":
             light = DirectionalLight("dlight")
             light.color = (0.9, 0.9, 0.8, 1)
             light_np = render.attachNewNode(light)
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+        elif self.current_map == "pyramide.bam":
+            light = PointLight("lanterne")
+            light.color = (2, 2, 0.25, 1)
+            light_np = self.player.attachNewNode(light)
+            light_np.setPos((0, 1, 1))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         else:
@@ -1869,6 +1876,9 @@ class SetLevel(FSM):
         for pnj in self.pnjs:
             self.pnjs[pnj].cleanup()
             self.pnjs[pnj].removeNode()
+        for pnj in self.monstres:
+            self.monstres[pnj].cleanup()
+            self.monstres[pnj].removeNode()
         for objet in self.objects:
             if type(objet) is Coffre:
                 objet.object.cleanup()

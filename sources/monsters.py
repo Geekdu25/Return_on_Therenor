@@ -24,7 +24,7 @@ class Monster(Actor):
             if os.path.exists(f"../data/models/{name}-{anim}.bam"):
                 dico[anim] = f"../data/models/{name}-{anim}.bam"
         Actor.__init__(self, name+".bam", dico)
-        self.name = name        
+        self.name = name
         self.vies = vies
 
 #------------------------------Tous les monstres-------------------------------
@@ -43,14 +43,15 @@ class Golem(Monster):
     Monster.__init__(self, name="golem", vies = 10)
     self.setScale(25)
     light = PointLight("lumiere_golem")
-    light.setColor((0.1, 0.9, 0.3, 0.9)) 
+    light.setColor((0, 0, 0, 1))
     light_np = self.attachNewNode(light)
-    self.setLight(light_np) 
+    light_np.setPos((0, 0, 1))
+    self.setLight(light_np)
     self.col = CollisionNode("golem")
     self.col.addSolid(CollisionSphere((0, 0, 4.5), 5))
     self.col.setIntoCollideMask(BitMask32.bit(0))
     self.col_np = self.attachNewNode(self.col)
-    
+
 
 class Zmeyevick(Monster):
     def __init__(self):
