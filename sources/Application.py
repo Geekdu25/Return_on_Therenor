@@ -460,7 +460,7 @@ class SetLevel(FSM):
         """
         if self.current_pnj == "mage" and self.chapitre == 3:
           self.chapitre = 4
-          self.fade_out("Cinematique")  
+          self.fade_out("Cinematique")
         self.music.setVolume(1)
         taskMgr.add(self.update, "update")
         self.accept("out", self.out)
@@ -625,7 +625,7 @@ class SetLevel(FSM):
         self.menu = True
         #-----------------------On charge les textes------------------------------------
         self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, -0.8), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
-        self.image_logo = OnscreenImage("../data/pictures/Logo_Final_RoT.png", pos=Vec3(0, 0, 0.1), scale=(0.8, 1, 0.8))   
+        self.image_logo = OnscreenImage("../data/pictures/Logo_Final_RoT.png", pos=Vec3(0, 0, 0.1), scale=(0.8, 1, 0.8))
         #--------------On modifie la caméra (position, lentille)-------------
         base.cam.node().getLens().setFov(70)
         #--------------------Gestion des touches----------------------------
@@ -1189,7 +1189,7 @@ class SetLevel(FSM):
             a_light = AmbientLight("aa")
             a_light_np = render.attachNewNode(a_light)
             self.actuals_light.append(a_light_np)
-            render.setLight(a_light_np)  
+            render.setLight(a_light_np)
             point_light = PointLight("point_light")
             point_light.setColor((8.5, 8, 5, 1))
             point_light_np = render.attachNewNode(point_light)
@@ -1204,11 +1204,11 @@ class SetLevel(FSM):
             self.amulette.setHpr(180, 90, 0)
             self.amulette.setScale(2)
             self.s = Sequence(self.amulette.hprInterval(5, Vec3(360, 270, 10), startHpr=Vec3(270, 90, 30)), self.amulette.hprInterval(5, Vec3(270, 89, 30), startHpr=Vec3(360, 270, 10)))
-            self.s.loop()  
+            self.s.loop()
             base.cam.lookAt(self.amulette)
             self.set_text(21, messages=["texte_ok"])
-            self.accept("texte_ok", self.fade_out, extraArgs=["Map"]) 
-            self.transition.fadeIn(2) 
+            self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
+            self.transition.fadeIn(2)
         elif self.chapitre == 5:
           taskMgr.remove("update")
           point_light = PointLight("point_light")
@@ -1218,19 +1218,19 @@ class SetLevel(FSM):
           self.actuals_light.append(point_light_np)
           render.setLight(point_light_np)
           self.inventaire_mgr.cacher()
-          self.player_interface.cacher()   
+          self.player_interface.cacher()
           self.load_map("pyramide.bam")
           self.player.show()
           self.player.setPos((0, 0, 0))
           self.player.setHpr((0, 0, 0))
           base.cam.setPos((0, 3, 3))
-          base.cam.lookAt(self.player)   
+          base.cam.lookAt(self.player)
           self.ignore_touches()
           self.s = Parallel(base.cam.posInterval(5, Vec3(0, 3, 0)), base.cam.hprInterval(5, Vec3(180, 0, 0)))
-          self.s.start() 
+          self.s.start()
           self.set_text(20, messages=["texte_ok"])
           self.current_point = "save_pyramide"
-          self.accept("texte_ok", self.fade_out, extraArgs=["Map"])  
+          self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
         taskMgr.add(self.update_cinematique, "update_cinematique")
@@ -1347,7 +1347,7 @@ class SetLevel(FSM):
             self.ignore("texte_ok")
             self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
             self.travel = 0
-            self.s.finish() 
+            self.s.finish()
             self.set_text(19, ["texte_ok"])
         if task is not None:
             return task.done
@@ -1412,18 +1412,19 @@ class SetLevel(FSM):
             self.chapitre = 2
         elif self.chapitre == 3:
             self.s.finish()
-            del self.s  
+            del self.s
             self.current_point = "save_village"
             del self.travel
             self.player.col_np = self.player.attachNewNode(self.player.col)
             self.pnj_bonus.cleanup()
             self.pnj_bonus.removeNode()
+            taskMgr.doMethodLater(1.1, self.music.setVolume, "volume", extraArgs=[1])
         elif self.chapitre == 4:
           self.current_point = "save_ignirift"
           self.amulette.removeNode()
-          self.player.inventaire["Amulette"] = 1  
+          self.player.inventaire["Amulette"] = 1
         elif self.chapitre == 5:
-          self.s.finish()   
+          self.s.finish()
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
@@ -1539,6 +1540,7 @@ class SetLevel(FSM):
             self.music = base.loader.loadSfx(data[self.current_map][0])
             self.music.setLoop(True)
             self.music.play()
+        self.music.setVolume(1)
         #---------------------Gestion de la caméra du joueur----------------
         if not hasattr(self.player, "followcam"):
                 self.player.create_camera()
@@ -1714,7 +1716,7 @@ class SetLevel(FSM):
         elif pnj == "etudiante":
             return Etudiante_amoureuse()
         elif pnj == "assassin":
-            return Assassin_repenti() 
+            return Assassin_repenti()
         return PNJ()
 
     def return_monstre(self, pnj="golem"):
@@ -1723,7 +1725,7 @@ class SetLevel(FSM):
         ------------------------------------------------------------------------------
         pnj -> str
         return -> Monster (ou classe qui en hérite)
-        """ 
+        """
         if pnj == "golem":
             return Golem()
         return Monster()
@@ -1914,13 +1916,13 @@ class SetLevel(FSM):
             elif b in self.portails:
                 if type(self.portails[b][1]) is Portail:
                     if b == "pyramide.bam" and not "Amulette" in self.player.inventaire:
-                      taskMgr.remove("update")   
+                      taskMgr.remove("update")
                       self.set_text(22, messages=["ja"])
-                      self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])  
+                      self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])
                     elif b == "pyramide.bam" and self.chapitre == 4:
-                      self.chapitre = 5 
+                      self.chapitre = 5
                       self.fade_out("Cinematique")
-                    else: 
+                    else:
                       self.transition.fadeOut(0.5)
                       taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[b, self.portails[b][1].newpos])
                       if self.portails[b][1].orientation is not None:
