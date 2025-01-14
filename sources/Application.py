@@ -11,6 +11,8 @@ from direct.interval.IntervalGlobal import *
 from direct.interval.LerpInterval import LerpFunc
 from direct.showbase.Transitions import Transitions
 from direct.actor.Actor import Actor
+from direct.particles.Particles import Particles
+from direct.particles.ParticleEffect import ParticleEffect
 #-----------Section spécifique aux fichiers python du dossier-----------
 from personnages import *
 from monsters import *
@@ -1706,6 +1708,22 @@ class SetLevel(FSM):
             fummee.setExpDensity(0.01)
             render.setFog(fummee)
         elif self.current_map == "Ignirift.bam" :
+            base.enableParticles()
+            particles = Particles()
+            particles.setPoolSize(1000)
+            particles.BirthRate(0.1)
+            particles.setLitterSize(10)
+            particles.setLitterSpread(3)
+            particles.setFactory("PointParticleFactory")
+            particles.setRenderer("GeomParticleRenderer")
+            particles.setEmitter("SphereVolumeEmitter")
+            smiley = loader.loadModel("smiley")
+            smiley.setScale(0.1)
+            particles.getRenderer().setGeomNode(smiley.node())
+            particles.enable()
+            self.effect = ParticleEffect("peffect", particles)
+            self.effect.reparentTo(render)
+            self.effect.enable()
             fummee = Fog("Cendres")
             fummee.setColor(3, 0.8, 0.8)
             fummee.setExpDensity(0.03)
