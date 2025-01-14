@@ -1664,8 +1664,16 @@ class SetLevel(FSM):
         """
         if self.current_map == "Arduny.bam":
             light = DirectionalLight("dlight")
-            light.color = (0.9, 0.9, 0.8, 1)
+            light.color = (9, 9, 7, 1)
             light_np = render.attachNewNode(light)
+            light_np.setHpr((0, 230, 0))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+        elif self.current_map == "Ignirift.bam":
+            light = DirectionalLight("dlight")
+            light.color = (8, 5, 5, 1)
+            light_np = render.attachNewNode(light)
+            light_np.setHpr((0, 200, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         elif self.current_map == "pyramide.bam":
@@ -1692,10 +1700,15 @@ class SetLevel(FSM):
             fummee.setColor(0.5, 0.5, 0.55)
             fummee.setExpDensity(0.03)
             render.setFog(fummee)
-        elif self.current_map == "Arduny.bam":
+        elif self.current_map == "Arduny.bam" and random.randint(1, 2) == 1:
             fummee = Fog("Sable")
             fummee.setColor(0.4, 0.4, 0.05)
             fummee.setExpDensity(0.01)
+            render.setFog(fummee)
+        elif self.current_map == "Ignirift.bam" :
+            fummee = Fog("Cendres")
+            fummee.setColor(3, 0.8, 0.8)
+            fummee.setExpDensity(0.03)
             render.setFog(fummee)
         else:
             pass
