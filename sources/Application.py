@@ -1710,15 +1710,15 @@ class SetLevel(FSM):
         elif self.current_map == "Ignirift.bam" :
             base.enableParticles()
             particles = Particles()
-            particles.setPoolSize(1000)
-            particles.BirthRate(0.1)
+            particles.setPoolSize(10000)
+            particles.setBirthRate(0.1)
             particles.setLitterSize(10)
             particles.setLitterSpread(3)
             particles.setFactory("PointParticleFactory")
             particles.setRenderer("GeomParticleRenderer")
             particles.setEmitter("SphereVolumeEmitter")
             smiley = loader.loadModel("smiley")
-            smiley.setScale(0.1)
+            smiley.setScale(1)
             particles.getRenderer().setGeomNode(smiley.node())
             particles.enable()
             self.effect = ParticleEffect("peffect", particles)
@@ -2553,7 +2553,7 @@ class SetLevel(FSM):
         --------------------------------------------------------------
         return -> None
         """
-        self.saveDlg.cleanup()
+        self.saveDlg.destroy()
         if clickedYes:
             self.save(file=self.actual_file)
             self.myOkDialog = OkDialog(text=self.story["gui"][15], command = self.update_after_save) #Sauvegarde effectuée.
