@@ -146,3 +146,18 @@ class Maison_aurelia:
         self.object = loader.loadModel("maison_aurelia.bam")
         self.object.setScale(3)
         self.object.setCollideMask(BitMask32.bit(0))
+
+class Forteresse:
+  """
+  L'ancienne forteresse de la reine.
+  """
+  def __init__(self):
+    """
+    Méthode constructeur.
+    --------------------------
+    return -> Forteresse
+    """
+    self.nom = "forteresse"
+    self.object = loader.loadModel("Forteresse.bam")
+    self.object.setScale(10)
+    self.object.setCollideMask(BitMask32.bit(0))

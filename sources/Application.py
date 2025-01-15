@@ -1519,6 +1519,8 @@ class SetLevel(FSM):
                     objet = Palmier()
                 elif cle[0] == "maison_aurelia":
                     objet = Maison_aurelia()
+                elif cle[0] == "Forteresse":
+                    objet = Forteresse()
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -1568,7 +1570,7 @@ class SetLevel(FSM):
             if len(info) > 6:
                 solid.orientation = info[6]
             self.portails[portail] = (noeud_np, solid)
-            #noeud_np.show() #Décommentez pour voir les portes et les portails.
+            noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
             info = data[self.current_map][1][pnj]
