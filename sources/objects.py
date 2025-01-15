@@ -159,5 +159,5 @@ class Forteresse:
     """
     self.nom = "forteresse"
     self.object = loader.loadModel("Forteresse.bam")
-    self.object.setScale(10)
+    self.object.setScale(100)
     self.object.setCollideMask(BitMask32.bit(0))

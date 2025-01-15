@@ -1745,6 +1745,11 @@ class SetLevel(FSM):
             fummee.setColor(0.4, 0.4, 0.05)
             fummee.setExpDensity(0.01)
             render.setFog(fummee)
+        elif self.current_map == "Crest.bam":
+            fummee = Fog("neige")
+            fummee.setColor(1, 1, 1)
+            fummee.setExpDensity(0.02)
+            render.setFog(fummee)
         elif self.current_map == "Ignirift.bam" :
             base.enableParticles()
             particles = Particles()
@@ -1766,7 +1771,7 @@ class SetLevel(FSM):
             self.particles_effects.append(effect)
             fummee = Fog("Cendres")
             fummee.setColor(0.7, 0.2, 0.2)
-            fummee.setExpDensity(random.randint(0, 20)/100)
+            fummee.setExpDensity(random.randint(0, 50)/1000)
             render.setFog(fummee)
         else:
             pass
