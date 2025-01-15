@@ -151,6 +151,8 @@ class SetLevel(FSM):
         self.murs = []
         self.monstres = {}
         self.save_statues = {}
+        self.particles_effects = []
+        self.sun = None 
         self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
         #-----------------Autres variables-----------------------
         self.chapitre = 0
@@ -1657,6 +1659,16 @@ class SetLevel(FSM):
         if task is not None:
             return task.done
 
+    def load_sun(self):
+      """
+      Méthode permettant d'ajouter un soleil à la scène.
+      ---------------------------------------------------
+      return -> None
+      """
+      self.sun = loader.loadModel("soleil.bam")
+      self.sun.setScale(100)
+      self.sun.setPos((0, -2000, 2000))
+      self.sun.reparentTo(render)
 
     def load_light(self):
         """
@@ -1664,11 +1676,15 @@ class SetLevel(FSM):
         ----------------------------------------------------------------------
         return -> None
         """
+        if self.sun is not None:
+          self.sun.removeNode()
+          self.sun = None 
         if self.current_map == "Arduny.bam":
+            self.load_sun()
             light = DirectionalLight("dlight")
             light.color = (9, 9, 7, 1)
             light_np = render.attachNewNode(light)
-            light_np.setHpr((0, 230, 0))
+            light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         elif self.current_map == "Verdantia.bam":
@@ -1714,6 +1730,9 @@ class SetLevel(FSM):
         -----------------------------------------------------------------------
         return -> None
         """
+        for p in self.particles_effects:
+          p.removeNode() 
+        self.particles_effects = []  
         if self.current_map == "village_pecheurs.bam":
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
@@ -1738,10 +1757,11 @@ class SetLevel(FSM):
             smiley.setScale(6)
             particles.getRenderer().setGeomNode(smiley.node())
             particles.enable()
-            self.effect = ParticleEffect("peffect", particles)
-            self.effect.reparentTo(render)
-            self.effect.setPos((0, 0, 50)) 
-            self.effect.enable()
+            effect = ParticleEffect("peffect", particles)
+            effect.reparentTo(render)
+            effect.setPos((0, 0, 50)) 
+            effect.enable()
+            self.particles_effects.append(effect)
             fummee = Fog("Cendres")
             fummee.setColor(0.7, 0.2, 0.2)
             fummee.setExpDensity(random.randint(0, 20)/100)
@@ -1938,6 +1958,12 @@ class SetLevel(FSM):
         if hasattr(self, "eau"):
             self.eau.removeNode()
             del self.eau
+        if self.sun is not None:
+          self.sun.removeNode()
+          self.sun = None
+        for p in self.particles_effects:
+          p.removeNode() 
+        self.particles_effects = []  
         self.save_statues = {}
         self.antimur.clearInPatterns()
         self.antimur.clearOutPatterns()
