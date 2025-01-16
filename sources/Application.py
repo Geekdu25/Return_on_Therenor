@@ -152,7 +152,7 @@ class SetLevel(FSM):
         self.monstres = {}
         self.save_statues = {}
         self.particles_effects = []
-        self.sun = None 
+        self.sun = None
         self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
         #-----------------Autres variables-----------------------
         self.chapitre = 0
@@ -1281,6 +1281,7 @@ class SetLevel(FSM):
             self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
             self.music.setLoop(True)
             self.music.play()
+            self.music.setVolume(0.3)
             self.transition.fadeIn(2)
             self.set_text(1, ["Fini"])
             self.accept("Fini", self.change_cine, extraArgs=[1])
@@ -1570,7 +1571,7 @@ class SetLevel(FSM):
             if len(info) > 6:
                 solid.orientation = info[6]
             self.portails[portail] = (noeud_np, solid)
-            noeud_np.show() #Décommentez pour voir les portes et les portails.
+            #noeud_np.show() #Décommentez pour voir les portes et les portails.
         #------------------Les pnjs--------------------------------
         for pnj in data[self.current_map][1]:
             info = data[self.current_map][1][pnj]
@@ -1680,7 +1681,7 @@ class SetLevel(FSM):
         """
         if self.sun is not None:
           self.sun.removeNode()
-          self.sun = None 
+          self.sun = None
         if self.current_map == "Arduny.bam":
             self.load_sun()
             light = DirectionalLight("dlight")
@@ -1733,8 +1734,8 @@ class SetLevel(FSM):
         return -> None
         """
         for p in self.particles_effects:
-          p.removeNode() 
-        self.particles_effects = []  
+          p.removeNode()
+        self.particles_effects = []
         if self.current_map == "village_pecheurs.bam":
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
@@ -1766,7 +1767,7 @@ class SetLevel(FSM):
             particles.enable()
             effect = ParticleEffect("peffect", particles)
             effect.reparentTo(render)
-            effect.setPos((0, 0, 50)) 
+            effect.setPos((0, 0, 50))
             effect.enable()
             self.particles_effects.append(effect)
             fummee = Fog("Cendres")
@@ -1969,8 +1970,8 @@ class SetLevel(FSM):
           self.sun.removeNode()
           self.sun = None
         for p in self.particles_effects:
-          p.removeNode() 
-        self.particles_effects = []  
+          p.removeNode()
+        self.particles_effects = []
         self.save_statues = {}
         self.antimur.clearInPatterns()
         self.antimur.clearOutPatterns()
@@ -2240,7 +2241,7 @@ class SetLevel(FSM):
         self.title = OnscreenText("Aide :", scale=0.15, pos=(-1.2, 0.63), align=TextNode.ALeft)
         liste_textes = [self.story["gui"][20]+self.keys_data["Avancer"].capitalize(), self.story["gui"][21]+self.keys_data["Changer le point de vue"].capitalize(),
                             self.story["gui"][22]+self.keys_data["Courir"].capitalize(), self.story["gui"][23]+self.keys_data["Inventaire"].capitalize(), self.story["gui"][24]+self.keys_data["Interagir"].capitalize(),
-                            self.story["gui"][25], self.story["gui"][26]]
+                            self.story["gui"][25], self.story["gui"][26], self.story["gui"][30]]
         z = 0.5
         self.real_liste = []
         for element in liste_textes:
@@ -2362,8 +2363,6 @@ class SetLevel(FSM):
             return Vec3(0.1, 0, 0.5), self.story["map"][7]
         elif self.current_map == "Crest.bam":
             return Vec3(0, 0, 0), self.story["map"][8]
-        elif self.current_map == "forteresse.bam":
-            return Vec3(0.05, 0, 0.1), self.story["map"][9]
         return Vec3(0, 0, 0), "???"
 
     def change_index_invent(self, dir="left"):
