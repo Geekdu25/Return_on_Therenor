@@ -6,10 +6,10 @@ class ManetteCam():
         self.camera = camera
         self.target = target
         self.dummy = self.target.attachNewNode("cam" + target.getName())
-        self.dummy.setZ(self.dummy, 1)
+        self.dummy.setZ(self.dummy, 10)
         self.dummy.setH(180)
         self.camera.reparentTo(self.dummy)
-        self.camera.setPos(self.camera, Vec3(0, -2, 0))
+        self.camera.setPos(self.camera, Vec3(0, -20, 0))
         self.active = True
         self.vue = True
         camera.node().getLens().setFov(100)

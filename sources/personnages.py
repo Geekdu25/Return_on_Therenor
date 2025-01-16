@@ -11,7 +11,7 @@ class Player(Actor):
     """
     def __init__(self):
         #-------------Initialisation--------------------------------------
-        Actor.__init__(self, "../models/error.bam")
+        Actor.__init__(self, "../models/base_prota.bam")
         #----------------------Noais et autres infos de jeu--------------------------------
         self.noais = 0
         self.nom = "Link"
@@ -23,14 +23,15 @@ class Player(Actor):
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------
-        self.vitesse = 2.5
+        self.vitesse = 35
         self.walk = False
         self.reverse = False
         self.right = False
         self.left = False
         self.setHpr(90, 0, 0)
-        self.setScale(70)
+        self.setScale(3)
         self.gravite = 1.3
+        self.loop("attaque")
         #---------------Section de gestion des collisions------------------
         self.col = CollisionNode('player_sphere')
         self.col.addSolid(CollisionSphere((0, 0, 0.65), 0.65))

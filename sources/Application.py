@@ -1075,11 +1075,6 @@ class SetLevel(FSM):
         self.nameEnt = DirectEntry(scale = 0.08, pos = Vec3(-0.4, 0, 0.15), width = 10)
         self.nameLbl = DirectLabel(text = self.story["gui"][9], pos = Vec3(0, 0, 0.4), scale = 0.1, textMayChange = 1, frameColor = Vec4(1, 1, 1, 1)) #Salutations jeune aventurier, quel est ton nom ?
         self.helloBtn = DirectButton(text =self.story["gui"][10], scale = 0.1, command = self.setName, pos = Vec3(0, 0, -0.1)) #Confirmer
-        self.gender = [0]
-        self.genderRdos = [DirectRadioButton(text = self.story["gui"][16], variable = self.gender, value = [0], scale = 0.05, pos = Vec3(-0.08, 0, 0.05)), #Homme
-        DirectRadioButton(text = self.story["gui"][17], variable = self.gender, value = [1], scale = 0.05, pos = Vec3(0.16, 0, 0.05))] #Femme
-        for btn in self.genderRdos:
-            btn.setOthers(self.genderRdos)
 
     def exitInit(self):
         """
@@ -1087,14 +1082,6 @@ class SetLevel(FSM):
         --------------------------------------------------------
         return -> None
         """
-        if self.gender[0]:
-            self.player.sexe = "feminin"
-        else:
-            self.player.sexe = "masculin"
-        del self.gender
-        for btn in self.genderRdos:
-            btn.removeNode()
-        del self.genderRdos
         self.music.stop()
         self.chapitre = 1
 
@@ -1256,7 +1243,7 @@ class SetLevel(FSM):
             self.player.show()
             self.player.setPos(200, -400, 0)
             self.player.setH(180)
-            self.player.setScale(110)
+            self.player.setScale(10)
             if hasattr(self, "map"):
                 if self.map is not None:
                     self.map.removeNode()
@@ -1302,7 +1289,7 @@ class SetLevel(FSM):
             render.setLight(light_np)
             self.actuals_light = [light_np]
             base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
-            self.player.setScale(70)
+            self.player.setScale(3)
             self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
             self.map.reparentTo(render)
             self.map.setScale(10)
