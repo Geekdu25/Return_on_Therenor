@@ -8,6 +8,9 @@ Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifi
 Le descendant du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
 
 # 2- Jouabilité
+Return on Therenor est un jeu d'action-aventure où le joueur va passer la plupart de son temps à explorer l'île de Therenor.
+Voici une capture d'écran du jeu :
+<img src="data/pictures/image_de_jeu.PNG" alt="Capture d'écran de jeu" title="Capture d'écran du jeu" />
 <h2>Commandes :</h2>
 Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
