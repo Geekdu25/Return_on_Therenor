@@ -55,7 +55,7 @@ class Golem(Monster):
 
 class Zmeyevick(Monster):
     def __init__(self):
-        Monster.__init__(self, name="zmeyevick", vies=20)
+        Monster.__init__(self, name="Zmeyevich", vies=20)
 
 class Sorcier(Monster):
     def __init__(self):

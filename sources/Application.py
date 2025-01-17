@@ -1543,7 +1543,7 @@ class SetLevel(FSM):
         self.player.followcam.dummy.setHpr(270, 0, 0)
         self.player.followcam.camera.setHpr(0, 0, 0)
         self.player.followcam.camera.setPos(0, 0, 0)
-        self.player.followcam.camera.setPos(0, -25, 0)
+        self.player.followcam.camera.setPos(0, -16, 0)
         #----------Les portes-----------------------
         for portail in data[self.current_map][2]:
             noeud = CollisionNode(portail)
@@ -1799,6 +1799,8 @@ class SetLevel(FSM):
         """
         if pnj == "golem":
             return Golem()
+        elif pnj == "Zmeyevick":
+            return Zmeyevick()
         return Monster()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
