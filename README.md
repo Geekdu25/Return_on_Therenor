@@ -10,7 +10,7 @@ Le descendant du légendaire héros va devoir prendre la route pour retourner su
 # 2- Jouabilité
 Return on Therenor est un jeu d'action-aventure où le joueur va passer la plupart de son temps à explorer l'île de Therenor.
 Voici une capture d'écran du jeu :
-<img src="data/pictures/image_de_jeu.PNG" alt="Capture d'écran de jeu" title="Capture d'écran du jeu" />
+<img src="data/pictures/readme/image_de_jeu.PNG" alt="Capture d'écran de jeu" title="Capture d'écran du jeu" />
 <h2>Commandes :</h2>
 Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
@@ -32,6 +32,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE AUTHORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</b>
 <h2>Blender</h2>
+<img src="data/pictures/readme/blender_logo.png" alt="Logo de Blender" title="Logo de Blender" />
 C'est grâce au logiciel blender et à sa gratuité que nous avons pu créer de magnifiques environements en 3D pour notre jeu.
 Plus d'informations sur <a href="https://www.blender.org" target="_blank">blender.org</a>.
 <h2>Sweet Home 3D</h2>
