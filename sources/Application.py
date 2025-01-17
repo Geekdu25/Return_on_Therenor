@@ -1242,7 +1242,7 @@ class SetLevel(FSM):
                 self.player.followcam.set_active(False)
             self.player.show()
             self.player.setPos(200, -400, 0)
-            self.player.setH(180)
+            self.player.setH(90)
             self.player.setScale(10)
             if hasattr(self, "map"):
                 if self.map is not None:
@@ -1297,8 +1297,8 @@ class SetLevel(FSM):
             self.lit.reparentTo(render)
             self.lit.setPos((-290, 120, 10))
             self.lit.setHpr((270, 0, 0))
-            self.lit.setScale(15)
-            self.player.setPosHpr(-282, 50, 50, 0, 270, 0)
+            self.lit.setScale(40)
+            self.player.setPosHpr(-282, 50, 50, 0, 90, 0)
             self.transition.fadeIn(2)
             self.chapitre_step = 2
             s = Sequence(Parallel(base.cam.posInterval(7, Vec3(-270, 120, 150), startPos=Vec3(0, 10, 90)), base.cam.hprInterval(7, Vec3(0, -70, 0), startHpr=Vec3(55, 0, 0))), Func(self.set_text, 3, ["texte_ok"]))
@@ -1540,10 +1540,10 @@ class SetLevel(FSM):
                 self.player.create_camera()
         if not self.player.followcam.active:
             self.player.followcam.set_active(True)
-        self.player.followcam.dummy.setHpr(180, 0, 0)
+        self.player.followcam.dummy.setHpr(270, 0, 0)
         self.player.followcam.camera.setHpr(0, 0, 0)
         self.player.followcam.camera.setPos(0, 0, 0)
-        self.player.followcam.camera.setPos(0, -2, 0)
+        self.player.followcam.camera.setPos(0, -25, 0)
         #----------Les portes-----------------------
         for portail in data[self.current_map][2]:
             noeud = CollisionNode(portail)
@@ -1839,6 +1839,7 @@ class SetLevel(FSM):
         """
         #On montre le joueur.
         self.player.show()
+        self.player.setScale(8)
         self.accept("t", self.player_interface.enlever_hp, extraArgs=[5])
         #On cache le curseur de la souris.
         properties = WindowProperties()
@@ -2067,6 +2068,7 @@ class SetLevel(FSM):
         """
         if message == "arrow_up":
             self.player.walk = True
+            self.player.loop('Marche.001(real)')
         elif message == "arrow_up-up":
             self.player.walk = False
             self.player.stop()
@@ -2160,9 +2162,9 @@ class SetLevel(FSM):
         #-----------------------Section mouvements du joueur------------------------
         self.player.setZ(self.player, -self.player.gravite*dt)
         if self.player.walk:
-            self.player.setY(self.player, -self.player.vitesse*globalClock.getDt())
+            self.player.setX(self.player, self.player.vitesse*globalClock.getDt())
         if self.player.reverse:
-            self.player.setY(self.player, self.player.vitesse*globalClock.getDt())
+            self.player.setX(self.player, -self.player.vitesse*globalClock.getDt())
         if self.player.right:
             self.player.setH(self.player, -self.player.vitesse*20*globalClock.getDt())
         if self.player.left:

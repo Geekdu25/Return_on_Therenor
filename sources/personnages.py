@@ -23,7 +23,7 @@ class Player(Actor):
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------
-        self.vitesse = 35
+        self.vitesse = 20
         self.walk = False
         self.reverse = False
         self.right = False
@@ -34,10 +34,13 @@ class Player(Actor):
         self.loop("attaque")
         #---------------Section de gestion des collisions------------------
         self.col = CollisionNode('player_sphere')
-        self.col.addSolid(CollisionSphere((0, 0, 0.65), 0.65))
+        self.col.addSolid(CollisionSphere((0, 0, 8.25), 8))
         self.col.setFromCollideMask(BitMask32.bit(0))
         self.col.setIntoCollideMask(BitMask32.allOff())
         self.col_np = self.attachNewNode(self.col)
+        self.setPlayRate(3.0, 'Marche.001(real)')
+        #self.col_np.show()
+        #print(self.getAnimNames())
         self.mode = True
 
     def ajoute_item(self, item="Vodka"):
@@ -116,7 +119,7 @@ class Mage_cache(PNJ):
         self.object= "amulette"#amulette qui permet d'ouvrir un portail pour aller dans la forteresse plus rapidement
         self.nom = "Axil"
         self.col.setName("mage")
-    
+
 class Inventeur(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
@@ -139,7 +142,7 @@ class Enfant_prodige(PNJ):
         self.ajoute_item(item="poisson") -=1
         self.ajoute_item(item="Vodka") +=1
         return self.optention"""
-    
+
 class Archer(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
