@@ -1115,7 +1115,7 @@ class SetLevel(FSM):
     def enterMini_tuto(self):
         self.tuto = OnscreenText(self.story["gui"][27]+self.keys_data["Interagir"].capitalize()+self.story["gui"][28], pos=(0, 0.4), scale=(0.13, 0.13), fg=(1, 1, 1, 1))
         self.ignore(self.keys_data["Interagir"])
-        self.accept(self.keys_data["Interagir"], self.fade_out, extraArgs=["Cinematique"])
+        self.acceptOnce(self.keys_data["Interagir"], self.fade_out, extraArgs=["Cinematique"])
 
     def exitMini_tuto(self):
         self.tuto.removeNode()
@@ -1145,7 +1145,7 @@ class SetLevel(FSM):
             self.texture.synchronizeTo(self.son)
             self.son.play()
             self.ignore(self.keys_data["Interagir"])
-            self.accept(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
+            self.acceptOnce(self.keys_data["Interagir"], self.texture.setTime, extraArgs=[64])
         elif self.chapitre == 3:
             self.load_map("village_pecheurs.bam")
             render.clearFog()
@@ -1160,7 +1160,7 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.player.show()
             self.player.col_np.removeNode()
-            self.player.setPos((-490, 500, 290))
+            self.player.setPos((-490, 500, 250))
             self.player.setHpr((270, 0, 0))
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
@@ -1168,7 +1168,7 @@ class SetLevel(FSM):
             self.accept(self.keys_data["Interagir"], self.check_interact)
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
-            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Parallel(self.player.posInterval(2, Vec3(-480, 300, 290)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.set_text, 15, ["texte_ok"]))
+            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Func(self.player.loop, "Marche.001(real)"), Parallel(self.player.posInterval(2, Vec3(-480, 300, 250)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.player.stop), Func(self.set_text, 15, ["texte_ok"]))
             s.start()
             self.accept("texte_ok", self.change_cine, extraArgs=[5])
             self.transition.fadeIn(2)
@@ -1242,6 +1242,7 @@ class SetLevel(FSM):
             if hasattr(self.player, "followcam"):
                 self.player.followcam.set_active(False)
             self.player.show()
+            self.player.pose("Marche.001(real)", 1)  
             self.player.setPos(200, -400, 0)
             self.player.setH(90)
             self.player.setScale(10)
@@ -1290,16 +1291,17 @@ class SetLevel(FSM):
             render.setLight(light_np)
             self.actuals_light = [light_np]
             base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
-            self.player.setScale(3)
+            self.player.setScale(8)
             self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
             self.map.reparentTo(render)
             self.map.setScale(10)
             self.lit = loader.loadModel("lit.bam")
             self.lit.reparentTo(render)
-            self.lit.setPos((-290, 120, 10))
+            self.lit.setPos((-290, 95, 5))
             self.lit.setHpr((270, 0, 0))
-            self.lit.setScale(40)
-            self.player.setPosHpr(-282, 50, 50, 0, 90, 0)
+            self.lit.setScale(15)
+            self.player.setPosHpr(-280, 25, 45, 270, 0, 270)
+            self.player.pose("Marche.001(real)", 17)
             self.transition.fadeIn(2)
             self.chapitre_step = 2
             s = Sequence(Parallel(base.cam.posInterval(7, Vec3(-270, 120, 150), startPos=Vec3(0, 10, 90)), base.cam.hprInterval(7, Vec3(0, -70, 0), startHpr=Vec3(55, 0, 0))), Func(self.set_text, 3, ["texte_ok"]))
@@ -1543,7 +1545,6 @@ class SetLevel(FSM):
             self.player.followcam.set_active(True)
         self.player.followcam.dummy.setHpr(270, 0, 0)
         self.player.followcam.camera.setHpr(0, 0, 0)
-        self.player.followcam.camera.setPos(0, 0, 0)
         self.player.followcam.camera.setPos(0, -16, 0)
         #----------Les portes-----------------------
         for portail in data[self.current_map][2]:
@@ -2291,6 +2292,7 @@ class SetLevel(FSM):
         self.music.setVolume(0.6)
         self.croix_image.setPos(self.get_pos_croix()[0])
         self.lieu_text.setText(self.get_pos_croix()[1])
+        self.inventaire_mgr.weapons = self.player.armes
         self.inventaire_mgr.creer_inventaire()
         properties = WindowProperties()
         properties.setCursorHidden(False)
@@ -2317,6 +2319,10 @@ class SetLevel(FSM):
               a_dire = self.story["items"][0]
               self.player_interface.ajouter_hp(5)
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
+        elif self.index_invent == 1 and len(self.player.armes) > 0:
+          self.player.current_arme = self.inventaire_mgr.get_arme()
+          if self.player.current_arme == "epee":
+            self.player.epee.show() 
 
 
     def inutile(self, inutile=None):
@@ -2387,6 +2393,7 @@ class SetLevel(FSM):
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione-1)
                 elif dir == "down":
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione+1)
+          
 
     def update_invent(self, task):
         """
@@ -2579,7 +2586,7 @@ class SetLevel(FSM):
             self.player.nom = "_"
             self.player.noais = 0
             self.player.inventaire = {}
-            self.player.armes = {}
+            self.player.armes = []
             self.player.sexe = "masculin"
             self.current_point = "save_heros"
         fichier = open(self.get_path()+f"/save_{file}.txt", "wt")

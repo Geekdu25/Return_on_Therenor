@@ -20,6 +20,7 @@ class Player(Actor):
         self.mana = 15
         self.mana_max = 15
         self.armes = []
+        self.current_arme = None
         self.inventaire = {}
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------
@@ -38,14 +39,14 @@ class Player(Actor):
         self.col.setFromCollideMask(BitMask32.bit(0))
         self.col.setIntoCollideMask(BitMask32.allOff())
         self.col_np = self.attachNewNode(self.col)
-        self.main_droite = self.exposeJoint(None, "modelRoot", "Bone.010")
+        self.main_droite = self.exposeJoint(None, "modelRoot", "Bone.006")
         self.epee = loader.loadModel("../data/models/epee.bam")
         self.epee.reparentTo(self.main_droite)
-        #self.epee.hide()
+        self.epee.setScale(0.05)
+        self.epee.setPos((0, 0, 0.575))
+        self.epee.setHpr((-55, 270, 0))
+        self.epee.hide()
         self.setPlayRate(3.0, 'Marche.001(real)')
-        #self.col_np.show()
-        #print(self.getAnimNames())
-        self.mode = True
 
     def ajoute_item(self, item="Vodka"):
         """

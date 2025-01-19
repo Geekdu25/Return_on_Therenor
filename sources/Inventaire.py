@@ -224,6 +224,9 @@ class Inventaire(DirectObject):
 
     def get_item(self):
         return self.inventaire_liste[self.item_selectione]
+    
+    def get_arme(self):
+        return self.weapons[self.arme_en_main]
 
 
     def cacher(self):
