@@ -30,7 +30,7 @@ class Player(Actor):
         self.left = False
         self.setHpr(90, 0, 0)
         self.setScale(3)
-        self.gravite = 1.3
+        self.gravite = 15
         self.loop("attaque")
         #---------------Section de gestion des collisions------------------
         self.col = CollisionNode('player_sphere')
@@ -38,6 +38,10 @@ class Player(Actor):
         self.col.setFromCollideMask(BitMask32.bit(0))
         self.col.setIntoCollideMask(BitMask32.allOff())
         self.col_np = self.attachNewNode(self.col)
+        self.main_droite = self.exposeJoint(None, "modelRoot", "Bone.010")
+        self.epee = loader.loadModel("../data/models/epee.bam")
+        self.epee.reparentTo(self.main_droite)
+        #self.epee.hide()
         self.setPlayRate(3.0, 'Marche.001(real)')
         #self.col_np.show()
         #print(self.getAnimNames())

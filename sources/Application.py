@@ -463,6 +463,7 @@ class SetLevel(FSM):
         return -> None
         """
         if self.current_pnj == "mage" and self.chapitre == 3:
+          self.ignore("space")
           self.chapitre = 4
           self.fade_out("Cinematique")
         self.music.setVolume(1)
@@ -1150,7 +1151,7 @@ class SetLevel(FSM):
             render.clearFog()
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
-            fummee.setExpDensity(0.001)
+            fummee.setExpDensity(0.0005)
             render.setFog(fummee)
             self.pnj_bonus = Pecheur()
             self.pnj_bonus.reparentTo(render)
@@ -1159,8 +1160,8 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.player.show()
             self.player.col_np.removeNode()
-            self.player.setPos((-480, 500, 290))
-            self.player.setHpr((0, 0, 0))
+            self.player.setPos((-490, 500, 290))
+            self.player.setHpr((270, 0, 0))
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
             self.ignore_touches()
@@ -1726,17 +1727,17 @@ class SetLevel(FSM):
         if self.current_map == "village_pecheurs.bam":
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
-            fummee.setExpDensity(0.03)
+            fummee.setExpDensity(0.015)
             render.setFog(fummee)
         elif self.current_map == "Arduny.bam" and random.randint(1, 2) == 1:
             fummee = Fog("Sable")
             fummee.setColor(0.4, 0.4, 0.05)
-            fummee.setExpDensity(0.01)
+            fummee.setExpDensity(0.005)
             render.setFog(fummee)
         elif self.current_map == "Crest.bam":
             fummee = Fog("neige")
             fummee.setColor(1, 1, 1)
-            fummee.setExpDensity(0.02)
+            fummee.setExpDensity(0.01)
             render.setFog(fummee)
         elif self.current_map == "Ignirift.bam" :
             base.enableParticles()
@@ -1759,7 +1760,7 @@ class SetLevel(FSM):
             self.particles_effects.append(effect)
             fummee = Fog("Cendres")
             fummee.setColor(0.7, 0.2, 0.2)
-            fummee.setExpDensity(random.randint(0, 50)/1000)
+            fummee.setExpDensity(random.randint(0, 25)/1000)
             render.setFog(fummee)
         else:
             pass
@@ -1841,6 +1842,7 @@ class SetLevel(FSM):
         """
         #On montre le joueur.
         self.player.show()
+        self.player.pose("Marche.001(real)", 1)
         self.player.setScale(8)
         self.accept("t", self.player_interface.enlever_hp, extraArgs=[5])
         #On cache le curseur de la souris.
