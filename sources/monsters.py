@@ -52,7 +52,11 @@ class Golem(Monster):
     self.col.setIntoCollideMask(BitMask32.bit(0))
     self.col_np = self.attachNewNode(self.col)
 
-
+class Bonhomme_de_neige(Monster):
+    def __init__(self):
+        Monster.__init__(self, name="bonhomme_de_neige", vies=3)
+        self.setScale(10)
+        
 class Zmeyevick(Monster):
     def __init__(self):
         Monster.__init__(self, name="Zmeyevich", vies=20)
