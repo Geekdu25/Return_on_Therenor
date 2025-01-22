@@ -4,7 +4,7 @@ Un jeu en 3 dimensions crée par Tyméo Bonvicini-Renaud, Alexandrine Charette, 
 <br />
 <br />
 
-<img src="data/pictures/readme/Photo_du_groupe.png" alt="Photo du groupe" title="Photo du groupe" />
+<center><img src="data/pictures/readme/Photo_du_groupe.png" alt="Photo du groupe" title="Photo du groupe" /></center>
 
 <br />
 <br />
