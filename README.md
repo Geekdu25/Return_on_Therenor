@@ -25,6 +25,9 @@ En mode clavier, utilisez la souris pour tourner.
 
 # 3- Bibliothèques et logiciels utilisés
 <h2>Panda3D</h2>
+
+<img src="data/pictures/readme/Logo_de_Panda3D.png" alt="Logo de Panda3D" title="Logo de Panda3D" />
+
 Le moteur de jeu utilisé dans ce jeu est Panda 3D, moteur de jeu conçu par l'université Carnegie-Mellon University de Pitsburgh en Pennsylvanie et par Disney Online.
 Un grand merci à eux ! <a href="https://www.panda3d.org" target="_blank">Lien vers le site de Panda3D</a>
 Ah oui, voici la license de Panda3D :
