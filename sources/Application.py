@@ -30,7 +30,7 @@ class YesNoDialog(DirectDialog):
     Il s'agit de la même classe que celle présente avec Panda3d, mais on traduit Yes et No par Oui et Non.
     """
     def __init__(self, parent = None, **kw):
-        optiondefs = (('buttonTextList',  ['Oui', 'Non'],       DGG.INITOPT), ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),)
+        optiondefs = (('buttonTextList',  ['Oui', 'Non'], DGG.INITOPT), ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),)
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(YesNoDialog)
@@ -1659,7 +1659,8 @@ class SetLevel(FSM):
       """
       self.sun = loader.loadModel("soleil.bam")
       self.sun.setScale(100)
-      self.sun.setPos((0, -2000, 2000))
+      self.sun.clearLight()
+      self.sun.setPos((0, -2000, 5000))
       self.sun.reparentTo(render)
 
     def load_light(self):
@@ -1679,6 +1680,11 @@ class SetLevel(FSM):
             light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
+            light = AmbientLight("Lumière ambiante")
+            light.color = (0.8, 0.8, 0.8, 1)
+            light_np = render.attachNewNode(light)
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
         elif self.current_map == "Verdantia.bam":
             light = DirectionalLight("dlight")
             light.color = (2, 2, 1.5, 1)
@@ -1686,7 +1692,7 @@ class SetLevel(FSM):
             light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            light = AmbientLight("dlight")
+            light = AmbientLight("Lumière ambiante")
             light.color = (0.8, 0.8, 0.5, 1)
             light_np = render.attachNewNode(light)
             render.setLight(light_np)
@@ -1873,6 +1879,7 @@ class SetLevel(FSM):
         self.accept("into", self.into)
         self.accept("out", self.out)
         self.accept("h", self.help)
+        self.accept(self.keys_data["Attaquer"], self.attaque)
         taskMgr.remove("update")
         taskMgr.add(self.update, "update")
 
@@ -1890,11 +1897,37 @@ class SetLevel(FSM):
         self.ignore(self.keys_data["Courir"]+"-up")
         self.ignore(self.keys_data["Inventaire"])
         self.ignore(self.keys_data["Interagir"])
+        self.ignore(self.keys_data["Attaquer"])
         self.ignore("into")
         self.ignore("out")
         self.ignore("h")
         taskMgr.remove("update")
 
+    def attaque(self):
+        """
+        Méthode permettant au joueur de donner un coup d'épée.
+        -------------------------------------------------------
+        return -> None
+        """
+        if self.player.current_arme is not None:
+          taskMgr.remove("apres attaque")  
+          self.player.play("Attaque")
+          self.player.epee.setHpr((-90, 270, 0))
+          taskMgr.doMethodLater(1, self.apres_attaque, "apres attaque")
+    
+    def apres_attaque(self, task):
+        """
+        Méthode permettant de remettre le joueur 
+        dans une pose normale après une attaque.
+        -----------------------------------------
+        task -> task
+        return -> task.done
+        """      
+        if not self.player.getAnimControl('Marche.001(real)').isPlaying():
+          self.player.pose("Marche.001(real)", 1)
+        self.player.epee.setHpr((-55, 270, 0))
+        return task.done
+        
     def load_save(self, task=None):
         """
         Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
@@ -2320,9 +2353,15 @@ class SetLevel(FSM):
               self.player_interface.ajouter_hp(5)
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
         elif self.index_invent == 1 and len(self.player.armes) > 0:
+          vieille_arme = self.player.current_arme
           self.player.current_arme = self.inventaire_mgr.get_arme()
-          if self.player.current_arme == "epee":
-            self.player.epee.show() 
+          if self.player.current_arme == vieille_arme:
+              if self.player.current_arme == "epee":
+                self.player.epee.hide() 
+              self.player.current_arme = None  
+          else:
+            if self.player.current_arme == "epee":
+              self.player.epee.show() 
 
 
     def inutile(self, inutile=None):
@@ -2593,8 +2632,17 @@ class SetLevel(FSM):
         info = [self.player.nom, str(self.chapitre), str(self.current_point), str(self.player.vies), str(self.player.maxvies), str(self.player.noais), self.player.sexe]
         fichier.writelines([donnee +"|" for donnee in info])
         fichier.close()
+        string = "["
+        i = 0
+        for item in self.player.armes:
+            i += 1
+            string += f'"{item}"'
+            if i < len(self.player.armes):
+                string += ", "
+        del i    
+        string += "]"
         fichier = open(self.get_path()+f'/invent_{file}.json', "wt")
-        fichier.writelines(['{"Armes":'+str(self.player.armes)+', "Objets":'+json.dumps(self.player.inventaire)+'}'])
+        fichier.writelines(['{"Armes":'+string+', "Objets":'+json.dumps(self.player.inventaire)+'}'])
         fichier.close()
 
     def will_save(self, clickedYes):
@@ -2691,7 +2739,7 @@ class SetLevel(FSM):
         #--------------Création du fichier de mappage de touches-------------------------------
         if not os.path.exists(path+"/keys.json"):
             file = open(path+"/keys.json", "wt")
-            file.writelines(['[{"Avancer":"z", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"lshift", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Recentrer":"l"}]'])
+            file.writelines(['[{"Avancer":"z", "Monter la camera":"i", "Descendre la camera":"k", "Camera a droite":"l", "Camera a gauche":"j", "Courir":"lshift", "Interagir":"space", "Inventaire":"e", "Changer le point de vue":"a", "Attaquer":"c"}]'])
             file.close()
         #----------------Création du fichier pour enregistrer les variables communes à tous les joueurs (ex : langue)---------------------
         if not os.path.exists(path+"/global.txt"):

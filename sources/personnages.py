@@ -46,6 +46,7 @@ class Player(Actor):
         self.epee.setPos((0, 0, 0.575))
         self.epee.setHpr((-55, 270, 0))
         self.epee.hide()
+        self.setPlayRate(5.0, 'Attaque')
         self.setPlayRate(3.0, 'Marche.001(real)')
 
     def ajoute_item(self, item="Vodka"):
