@@ -2,6 +2,7 @@
 <img src="data/pictures/readme/Logo_Final_RoT.png" alt="Logo de Return on Therenor" title="Logo de Return on Therenor" />
 Un jeu en 3 dimensions crée par Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora et Etienne Pacault pour <a href="https://www.trophees-nsi.fr" target="_blank">les trophées NSI 2025</a>.
 <br />
+<br />
 
 <img src="data/pictures/readme/Photo_du_groupe.png" alt="Photo du groupe" title="Photo du groupe" />
 
