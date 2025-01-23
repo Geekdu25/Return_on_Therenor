@@ -1438,6 +1438,8 @@ class SetLevel(FSM):
             self.monstres[pnj].cleanup()
             self.monstres[pnj].removeNode()
         for objet in self.objects:
+            if objet.nom == "coffre":
+                objet.object.cleanup()
             objet.object.removeNode()
         for mur in self.murs:
             mur.removeNode()
@@ -1704,7 +1706,7 @@ class SetLevel(FSM):
             light_np.setHpr((0, 200, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            light = AmbientLight("dlight")
+            light = AmbientLight("Lumière ambiante")
             light.color = (0.7, 0.7, 0.7, 1)
             light_np = render.attachNewNode(light)
             render.setLight(light_np)
@@ -1714,6 +1716,11 @@ class SetLevel(FSM):
             light.color = (2, 2, 0.25, 1)
             light_np = self.player.attachNewNode(light)
             light_np.setPos((0, 1, 1))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+            light = AmbientLight("Lumière ambiante")
+            light.color = (0.8, 0.8, 0.5, 1)
+            light_np = render.attachNewNode(light)
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         else:
@@ -1809,6 +1816,8 @@ class SetLevel(FSM):
             return Golem()
         elif pnj == "Zmeyevick":
             return Zmeyevick()
+        elif pnj == "bonhomme_de_neige":
+            return Bonhomme_de_neige()    
         return Monster()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
@@ -1983,7 +1992,7 @@ class SetLevel(FSM):
             self.monstres[pnj].cleanup()
             self.monstres[pnj].removeNode()
         for objet in self.objects:
-            if type(objet) is Coffre:
+            if objet.nom == "coffre":
                 objet.object.cleanup()
             objet.object.removeNode()
         for statue in self.save_statues:
