@@ -1169,7 +1169,7 @@ class SetLevel(FSM):
             taskMgr.remove("update")
             self.player.show()
             self.player.col_np.removeNode()
-            self.player.setPos((-490, 500, 250))
+            self.player.setPos((-490, 500, 275))
             self.player.setHpr((270, 0, 0))
             base.cam.setPos((-200, 500, 500))
             base.cam.setHpr((180, 0, 0))
@@ -1177,7 +1177,7 @@ class SetLevel(FSM):
             self.accept(self.keys_data["Interagir"], self.check_interact)
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
-            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Func(self.player.loop, "Marche.001(real)"), Parallel(self.player.posInterval(2, Vec3(-480, 300, 250)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.player.stop), Func(self.set_text, 15, ["texte_ok"]))
+            s = Sequence(Parallel(base.cam.posInterval(4, Vec3(-200, 200, 500)), base.cam.hprInterval(4, Vec3(90, -30, 0))), Func(self.player.loop, "Marche.001(real)"), Parallel(self.player.posInterval(2, Vec3(-480, 300, 275)), base.cam.posInterval(2, Vec3(-240, 200, 475))), Func(self.player.stop), Func(self.set_text, 15, ["texte_ok"]))
             s.start()
             self.accept("texte_ok", self.change_cine, extraArgs=[5])
             self.transition.fadeIn(2)
@@ -1234,6 +1234,16 @@ class SetLevel(FSM):
           self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
+        elif self.chapitre == 949:
+            taskMgr.remove("update")  
+            self.ignore_touches()
+            base.cam.setPos(0, -10, 0)
+            base.cam.setHpr((0, 0, 0))
+            self.tsar_bomba = loader.loadModel()
+            self.tsar_bomba.reparentTo(render)
+            self.tasar_bomba.hprInterval(4, (270, 0, 0), startHpr=(0, 0, 0)).loop()
+            self.set_text(23, messages=["launch_generique"])
+            self.accept("launch_generique", self.request, extraArgs=["Generique"])
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
 
@@ -1429,6 +1439,8 @@ class SetLevel(FSM):
           self.player.inventaire["Amulette"] = 1
         elif self.chapitre == 5:
           self.s.finish()
+        elif self.chapitre == 949:
+            self.tsar_bomba.removeNode()  
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
@@ -2369,6 +2381,9 @@ class SetLevel(FSM):
             if article == "Vodka":
               a_dire = self.story["items"][0]
               self.player_interface.ajouter_hp(5)
+            elif article == "Tsar bomba":
+                a_dire = self.story["items"][5]  
+                self.solution_finale = True
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
         elif self.index_invent == 1 and len(self.player.armes) > 0:
           vieille_arme = self.player.current_arme
@@ -2393,6 +2408,9 @@ class SetLevel(FSM):
         taskMgr.add(self.update_invent, "update_invent")
         self.inventaire_mgr.creer_inventaire()
         self.activing = False
+        if hasattr(self, "solution_finale"):
+            self.chapitre = 949
+            self.request("Cinematique")
 
 
     def get_pos_croix(self):
