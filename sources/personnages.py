@@ -35,7 +35,7 @@ class Player(Actor):
         self.loop("attaque")
         #---------------Section de gestion des collisions------------------
         self.col = CollisionNode('player_sphere')
-        self.col.addSolid(CollisionSphere((0, 0, 8.25), 8))
+        self.col.addSolid(CollisionSphere((0, 0, 7.5), 7))
         self.col.setFromCollideMask(BitMask32.bit(0))
         self.col.setIntoCollideMask(BitMask32.allOff())
         self.col_np = self.attachNewNode(self.col)
