@@ -800,7 +800,7 @@ class SetLevel(FSM):
         self.skybox.reparentTo(render)
         dico = {"francais":0, "deutsch":1, "português":2}
         self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
-        self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "deutsch"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
+        self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "deutsch", "português"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
         self.exit_button = DirectButton(text="Retour", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Trois_fichiers"])
         if self.langue == "deutsch":
             self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
