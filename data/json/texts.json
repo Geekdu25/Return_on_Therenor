@@ -4,7 +4,7 @@
 "Appuyez sur F1 pour recommencer.", "Sauvegarde effectuée !", "Homme", "Femme", "Paramétrage des touches", "Modifier", "Avancer : ", "Changer le point de vue : ", "Courir : ", "Inventaire : ", "Interagir : ",
 "H : Afficher ce message d'aide", "Appuyez sur H ou échap pour quitter ce menu", "Pour passer les diaogues ou les cinématiques, \nappuyez sur la touche que vous avez défini pour interagir,\n soit la touche ", ".\n\nAllez-y, essayez !",
 "Appuyez sur Entrée pour consommmer un item.", "Utilisez votre souris pour tourner."],
-"items":["Miam ! De la vodka ! (Vous récupérez 5 hp).", "Impossible de consommer cet article.", "Cet article a été ajouté à votre inventaire.", "Ici, on paie avant de consommer.", "Ca ne sert à rien d'acheter la même arme deux fois."],
+"items":["Miam ! De la vodka ! (Vous récupérez 5 hp).", "Impossible de consommer cet article.", "Cet article a été ajouté à votre inventaire.", "Ici, on paie avant de consommer.", "Ca ne sert à rien d'acheter la même arme deux fois.", "Attention ! Explosion déclenchée.\nPlus que 5 secondes avant l'explosion."],
 "trigger":["Voulez-vous rendre à Marelys ?", "Voulez-vous revenir au village des pêcheurs ?"],
 "map":["Pyramide antique", "Marelys, région océanique", "Village des pêcheurs", "Verantia, région forestière", "Manoir des chasseurs", "Ignirift, terre volcanique", "Maison d'Aurélia", "Arduny, contrée aride", "Crest, terre gelée", "Ancienne forteresse de la reine"],
 "0":["Hé ", "Vite, debout !", "Il s'est passé quelque chose de grave !"],
@@ -30,13 +30,14 @@
 "19":["Dès que tu auras acheté \nl'équipement nécessaire chez le marchand...", "Tu pourras te présenter sur le ponton \nde l'embarcadère et prendre la mer."],
 "20":["Ô toi qui est rentré dans l'antique pyramide...", "Ô toi qui entends ma voix...", "Je suis le gardien de ces lieux...", "Toi qui es en quête de toi aïeul, retrouve-moi...", "Je répondrai à tes questions...", "Mais prends garde à ne pas te perdre...", "Car cette pyramide est vaste..."],
 "21":["Vous obtenez l'amulette magique.", "Son pouvoir sacré dissippe les protections magiques !"],
-"22":["Une puissante protection magique empêche quiconque d'entrer.", "Un artefact magique pourrait être utile."]},
+"22":["Une puissante protection magique empêche quiconque d'entrer.", "Un artefact magique pourrait être utile."],
+"23":["Vous avez été obligé de sacrifier votre vie, \nTherenor, et la vie des êtres qui vous sont chers.", "Mais cela était nécessaire pour protéger \nle reste du monde de la renaissance de Zmeyevick.", "Bien joué !"]},
 "deutsch":{"gui":["Wollen Sie speichern ?", "Drücken Sie F1, um zu beginnen.", "Leere Datei", "Beginnen", "Löschen", "Tastenzuordnung", "Sprache ändern", "Sind Sie sicher, dass Sie die Daten löschen? (Gelöschte Daten können nicht wiederhergestellt werden)",
 "Zurück", "Grüße junger Abenteurer, wie ist dein Name?", "Bestätigen", "Ist alles gut ?", "Bitte schließen Sie Ihren Controller erneut an", "Sind Sie sicher, dass Sie beenden wollen ?\n(Nicht gespeicherte Daten werden gelöscht)",
 "Drücken Sie F1 um neu zu beginnen.", "Speichern durchgeführt !", "Männlich", "Weiblich", "Einrichten der Tasten", "Bearbeiten", "Vorrücken: ", "Den Blickwinkel ändern : ", "Laufen : ", "Inventar : ", "Interagieren",
 "H : Diese Hilfemeldung anzeigen", "Drücken Sie H oder Esc, um dieses Menü zu verlassen.", "Um Dialoge oder Filmsequenzen zu überspringen,\n drücken Sie die Taste, die Sie für die Interaktion festgelegt haben,\n also die Taste :", "\n\nProbieren Sie es aus !",
 "Drücken Sie Eingabe, um ein Item zu konsumieren.", "Benutzen Sie Ihre Maus zum Drehen."],
-"items":["Lecker! Wodka! (Sie erhalten 5hp zurück)", "Es ist unmöglich, diesen Gegenstand zu konsumieren.", "Dieser Artikel wurde zu Ihrem Inventar hinzugefügt.", "Hier zahlt man, bevor man konsumiert.", "Es ist sinnlos, dieselbe Waffe zweimal zu kaufen."],
+"items":["Lecker! Wodka! (Sie erhalten 5hp zurück)", "Es ist unmöglich, diesen Gegenstand zu konsumieren.", "Dieser Artikel wurde zu Ihrem Inventar hinzugefügt.", "Hier zahlt man, bevor man konsumiert.", "Es ist sinnlos, dieselbe Waffe zweimal zu kaufen.", "Achtung! Explosion ausgelöst.\nNur noch 5 Sekunden bis zur Explosion."],
 "trigger":["Wollen Sie nach Marelys gehen ?", "Möchten Sie zum Fischerdorf zurückkehren?"],
 "map":["Antike Pyramide", "Marelys, ozeanische Region", "Dorf der Fischer", "Verdantia, Waldland", "Jägervilla", "Ignirift, vulkanisches Land", "Aurelias Haus", "Arduny, ein trockenes Land", "Crest, gefrorenes Land", "Ehemalige Festung der Königin"],
 "0":["Hey ", "Schnell, steh auf !", "Es ist etwas schlimmes passiert !"],
@@ -61,5 +62,6 @@
 "19":["Sobald du die nötige Ausrüstung\n beim Händler gekauft hast... ", "Dann kannst du dich auf dem Steg\n der Anlegestelle melden und in See stechen!"],
 "20":["O du, der du in die uralte Pyramide zurückgekehrt bist...", "O du, der du meine Stimme hörst...", "Ich bin der Wächter dieses Ortes...", "Du, der du auf der Suche nach deinem Ahn bist, finde mich...", "Ich werde deine Fragen beantworten...", "Aber pass auf, dass du dich nicht verirrst...", "Denn diese Pyramide ist groß..."],
 "21":["Sie erhalten das magische Amulett.", "Seine heilige Kraft zerstreut magischen Schutz."],
-"22":["Ein mächtiger magischer Schutz verhindert, dass jemand eintritt. ", "Ein magisches Artefakt könnte hilfreich sein."]}
+"22":["Ein mächtiger magischer Schutz verhindert, dass jemand eintritt. ", "Ein magisches Artefakt könnte hilfreich sein."],
+"23":["Sie waren gezwungen, Ihr Leben zu opfern, \nTherenor, und das Leben der Menschen, die Ihnen lieb und teuer sind.", "Aber es war notwendig, um den Rest der Welt vor der\n Wiedergeburt von Zmeyevick zu schützen.", "Gut gemacht!"]}
 }
