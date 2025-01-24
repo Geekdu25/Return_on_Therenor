@@ -60,6 +60,15 @@ class Player(Actor):
             self.inventaire[item] += 1
         else:
             self.inventaire[item] = 1
+            
+    def ajoute_arme(self, item="Epée"):
+        """
+        Méthode permettant d'ajouter un item dans les armes.
+        -----------------------------------------------------
+        item -> str
+        return -> None
+        """        
+        self.armes.append(item)
 
     def create_camera(self):
         """
@@ -193,4 +202,4 @@ class Magicien(PNJ):
         self.texts = None
         self.commercant = True
         self.texts_vente = 2
-        self.articles = {"Vodka":30, "Tsar Bomba":300, "Cigare cubain":50}
+        self.articles = {"Vodka":30, "Tsar Bomba":300, "Epée":50}

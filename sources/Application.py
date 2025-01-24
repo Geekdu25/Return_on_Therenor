@@ -361,7 +361,7 @@ class SetLevel(FSM):
         taskMgr.add(self.update, "update")
 
 
-    def vente(self, articles={"Vodka":30, "Tsar bomba":300}):
+    def vente(self, articles={"Vodka":30, "Tsar bomba":300, "Epée":50}):
         """
         Fonction qui s'active lorsqu'un pnj commercant est interrogé.
         ---------------------------------------------------------------
@@ -389,11 +389,20 @@ class SetLevel(FSM):
         article -> str
         return -> None
         """
+        armes = ["Epée"]
         if not self.d_actif:
             self.d_actif = True
-            if self.player.noais >= prix:
-                self.player.noais -= prix #On retire de l'argent au joueur $$$$
-                self.player.ajoute_item(article)
+            if self.player.noais >= prix:                
+                if article in armes:
+                    if article in self.player.armes:
+                       self.dialog = OkDialog(text=self.story["items"][4], command=self.cleanup_dialog_vente) 
+                       return None
+                    else:
+                      self.player.noais -= prix #On retire de l'argent au joueur $$$$  
+                      self.player.ajoute_arme(article)
+                else:
+                  self.player.noais -= prix #On retire de l'argent au joueur $$$$  
+                  self.player.ajoute_item(article)
                 self.dialog = OkDialog(text=self.story["items"][2], command=self.cleanup_dialog_vente)
             else:
                 self.dialog = OkDialog(text=self.story["items"][3], command=self.cleanup_dialog_vente)
@@ -1624,7 +1633,7 @@ class SetLevel(FSM):
             noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            noeud_np.show() #Décommentez pour voir les murs.
+            #noeud_np.show() #Décommentez pour voir les murs.
             self.murs.append(noeud_np)
         if self.current_map == "Marelys.bam":
             plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0.8)))
@@ -2365,11 +2374,11 @@ class SetLevel(FSM):
           vieille_arme = self.player.current_arme
           self.player.current_arme = self.inventaire_mgr.get_arme()
           if self.player.current_arme == vieille_arme:
-              if self.player.current_arme == "epee":
+              if self.player.current_arme == "Epée":
                 self.player.epee.hide()
               self.player.current_arme = None
           else:
-            if self.player.current_arme == "epee":
+            if self.player.current_arme == "Epée":
               self.player.epee.show()
 
 
