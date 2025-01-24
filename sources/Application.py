@@ -1234,16 +1234,30 @@ class SetLevel(FSM):
           self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
-        elif self.chapitre == 949:
-            taskMgr.remove("update")  
+        elif self.chapitre == 949:            
+            taskMgr.remove("update")
+            a_light = AmbientLight("aa")
+            a_light_np = render.attachNewNode(a_light)
+            self.actuals_light.append(a_light_np)
+            render.setLight(a_light_np) 
+            point_light = PointLight("point_light")
+            point_light.setColor((7, 6, 5, 0.5))
+            point_light_np = self.player.attachNewNode(point_light)
+            point_light_np.setPos(0, 0, 20)
+            self.actuals_light.append(point_light_np)
+            render.setLight(point_light_np)
+            self.inventaire_mgr.cacher()
+            self.player_interface.cacher()
             self.ignore_touches()
-            base.cam.setPos(0, -10, 0)
+            self.accept(self.keys_data["Interagir"], self.check_interact)
+            base.cam.setPos(0, -15, 2)
             base.cam.setHpr((0, 0, 0))
-            self.tsar_bomba = loader.loadModel()
+            self.tsar_bomba = loader.loadModel("tsar_bomba.bam")
             self.tsar_bomba.reparentTo(render)
-            self.tasar_bomba.hprInterval(4, (270, 0, 0), startHpr=(0, 0, 0)).loop()
+            self.tsar_bomba.hprInterval(4, (270, 0, 0), startHpr=(0, 0, 0)).loop()
             self.set_text(23, messages=["launch_generique"])
             self.accept("launch_generique", self.request, extraArgs=["Generique"])
+            self.transition.fadeIn(2)
         taskMgr.add(self.update_cinematique, "update_cinematique")
 
 
@@ -2381,7 +2395,7 @@ class SetLevel(FSM):
             if article == "Vodka":
               a_dire = self.story["items"][0]
               self.player_interface.ajouter_hp(5)
-            elif article == "Tsar bomba":
+            elif article == "Tsar Bomba":
                 a_dire = self.story["items"][5]  
                 self.solution_finale = True
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
@@ -2408,9 +2422,6 @@ class SetLevel(FSM):
         taskMgr.add(self.update_invent, "update_invent")
         self.inventaire_mgr.creer_inventaire()
         self.activing = False
-        if hasattr(self, "solution_finale"):
-            self.chapitre = 949
-            self.request("Cinematique")
 
 
     def get_pos_croix(self):
@@ -2493,6 +2504,12 @@ class SetLevel(FSM):
         elif self.index_invent == 2:
             self.inventaire_mgr.afficher_items()
             self.indication.show()
+        if hasattr(self, "solution_finale"):
+            self.chapitre = 949
+            self.indication.hide()
+            self.inventaire_mgr.cacher_items()
+            self.fade_out("Cinematique")
+            return task.done    
         return task.cont
 
     def exit_inventaire(self):
