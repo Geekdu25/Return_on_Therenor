@@ -1242,7 +1242,7 @@ class SetLevel(FSM):
             if hasattr(self.player, "followcam"):
                 self.player.followcam.set_active(False)
             self.player.show()
-            self.player.pose("Marche.001(real)", 1)  
+            self.player.pose("Marche.001(real)", 1)
             self.player.setPos(200, -400, 0)
             self.player.setH(90)
             self.player.setScale(10)
@@ -1624,7 +1624,7 @@ class SetLevel(FSM):
             noeud.addSolid(CollisionBox(a, mur[1][0], mur[1][1], mur[1][2]))
             noeud.setCollideMask(BitMask32.bit(0))
             noeud_np = self.map.attachNewNode(noeud)
-            #noeud_np.show() #Décommentez pour voir les murs.
+            noeud_np.show() #Décommentez pour voir les murs.
             self.murs.append(noeud_np)
         if self.current_map == "Marelys.bam":
             plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0.8)))
@@ -1817,7 +1817,7 @@ class SetLevel(FSM):
         elif pnj == "Zmeyevick":
             return Zmeyevick()
         elif pnj == "bonhomme_de_neige":
-            return Bonhomme_de_neige()    
+            return Bonhomme_de_neige()
         return Monster()
 
     def load_triggers(self, map="village_pecheurs_maison_heros.bam"):
@@ -1919,24 +1919,24 @@ class SetLevel(FSM):
         return -> None
         """
         if self.player.current_arme is not None:
-          taskMgr.remove("apres attaque")  
+          taskMgr.remove("apres attaque")
           self.player.play("Attaque")
           self.player.epee.setHpr((-90, 270, 0))
           taskMgr.doMethodLater(1, self.apres_attaque, "apres attaque")
-    
+
     def apres_attaque(self, task):
         """
-        Méthode permettant de remettre le joueur 
+        Méthode permettant de remettre le joueur
         dans une pose normale après une attaque.
         -----------------------------------------
         task -> task
         return -> task.done
-        """      
+        """
         if not self.player.getAnimControl('Marche.001(real)').isPlaying():
           self.player.pose("Marche.001(real)", 1)
         self.player.epee.setHpr((-55, 270, 0))
         return task.done
-        
+
     def load_save(self, task=None):
         """
         Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
@@ -2366,11 +2366,11 @@ class SetLevel(FSM):
           self.player.current_arme = self.inventaire_mgr.get_arme()
           if self.player.current_arme == vieille_arme:
               if self.player.current_arme == "epee":
-                self.player.epee.hide() 
-              self.player.current_arme = None  
+                self.player.epee.hide()
+              self.player.current_arme = None
           else:
             if self.player.current_arme == "epee":
-              self.player.epee.show() 
+              self.player.epee.show()
 
 
     def inutile(self, inutile=None):
@@ -2441,7 +2441,7 @@ class SetLevel(FSM):
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione-1)
                 elif dir == "down":
                     self.inventaire_mgr.item_select(self.inventaire_mgr.item_selectione+1)
-          
+
 
     def update_invent(self, task):
         """
@@ -2648,7 +2648,7 @@ class SetLevel(FSM):
             string += f'"{item}"'
             if i < len(self.player.armes):
                 string += ", "
-        del i    
+        del i
         string += "]"
         fichier = open(self.get_path()+f'/invent_{file}.json', "wt")
         fichier.writelines(['{"Armes":'+string+', "Objets":'+json.dumps(self.player.inventaire)+'}'])
