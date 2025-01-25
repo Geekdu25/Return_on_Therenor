@@ -824,8 +824,8 @@ class SetLevel(FSM):
             self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
             self.exit_button.setText("Zurück")
         elif self.langue == "português":
-            self.textObject.setText("Selecione a sua língua")
-            self.exit_button.setText("Voltar a")     
+            self.textObject.setText("Favor escolhe o seu idioma ")
+            self.exit_button.setText("Voltar")     
 
 
     def exitLanguage(self):
