@@ -712,6 +712,8 @@ class SetLevel(FSM):
         self.sequence.loop()
         #--------------On charge une image pour chaque fichier--------------------------------
         self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
+        for f in self.files:
+            f.setTransparency(TransparencyAttrib.MAlpha)
         noms = []
         path = self.get_path()
         for loop in range(3):
@@ -2356,14 +2358,15 @@ class SetLevel(FSM):
         taskMgr.remove("update")
         self.ignore_touches()
         self.bg_picture = OnscreenImage("file.png", pos=Vec3(0, 0, 0), scale=Vec3(1.2, 1, 0.75))
-        self.title = OnscreenText("Aide :", scale=0.15, pos=(-1.2, 0.63), align=TextNode.ALeft)
+        self.bg_picture.setTransparency(TransparencyAttrib.MAlpha)
+        self.title = OnscreenText("Aide :", scale=0.15, pos=(-0.85, 0.46), align=TextNode.ALeft)
         liste_textes = [self.story["gui"][20]+self.keys_data["Avancer"].capitalize(), self.story["gui"][21]+self.keys_data["Changer le point de vue"].capitalize(),
                             self.story["gui"][22]+self.keys_data["Courir"].capitalize(), self.story["gui"][23]+self.keys_data["Inventaire"].capitalize(), self.story["gui"][24]+self.keys_data["Interagir"].capitalize(),
                             self.story["gui"][25], self.story["gui"][26], self.story["gui"][30]]
-        z = 0.5
+        z = 0.35
         self.real_liste = []
         for element in liste_textes:
-            self.real_liste.append(OnscreenText(element, scale=0.1, pos=(-1.2, z), align=TextNode.ALeft))
+            self.real_liste.append(OnscreenText(element, scale=0.1, pos=(-0.85, z), align=TextNode.ALeft))
             z -= 0.1
         del liste_textes
         self.ignore("h")
@@ -2494,7 +2497,7 @@ class SetLevel(FSM):
         elif self.current_map == "Arduny.bam":
             return Vec3(0.1, 0, 0.5), self.story["map"][7]
         elif self.current_map == "Crest.bam":
-            return Vec3(0, 0, 0), self.story["map"][8]
+            return Vec3(-0.05, 0, 0.4), self.story["map"][8]
         return Vec3(0, 0, 0), "???"
 
     def change_index_invent(self, dir="left"):
