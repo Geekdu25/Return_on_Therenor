@@ -798,9 +798,9 @@ class SetLevel(FSM):
         self.skybox.setDepthWrite(0)
         self.skybox.setLightOff()
         self.skybox.reparentTo(render)
-        dico = {"francais":0, "deutsch":1, "português":2, "english":3}
+        dico = {"français":0, "deutsch":1, "português":2, "english":3}
         self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
-        self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["francais", "deutsch", "português", "english"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
+        self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["français", "deutsch", "português", "english"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
         self.exit_button = DirectButton(text="Retour", scale=0.07, pos=(-0.8, 1, -0.7), command=self.fade_out, extraArgs=["Trois_fichiers"])
         if self.langue == "deutsch":
             self.textObject.setText("Bitte wählen Sie Ihre Sprache.")
@@ -809,7 +809,7 @@ class SetLevel(FSM):
             self.textObject.setText("Favor escolhe o seu idioma.")
             self.exit_button.setText("Voltar") 
         elif self.langue == "english":
-            self.textObject.serText("Please, choose your language.")
+            self.textObject.setText("Please, choose your language.")
             self.exit_button.setText("Back")
 
     def itemSel(self, arg):
@@ -820,7 +820,7 @@ class SetLevel(FSM):
         return -> None
         """
         self.langue = arg
-        if self.langue == "francais":
+        if self.langue == "français":
             self.textObject.setText("Veuillez choisir votre langue.")
             self.exit_button.setText("Retour")
         elif self.langue == "deutsch":
@@ -830,7 +830,7 @@ class SetLevel(FSM):
             self.textObject.setText("Favor escolhe o seu idioma ")
             self.exit_button.setText("Voltar") 
         elif self.langue == "english":
-            self.textObject.serText("Please, choose your language.")
+            self.textObject.setText("Please, choose your language.")
             self.exit_button.setText("Back")
 
     def exitLanguage(self):
@@ -2783,7 +2783,7 @@ class SetLevel(FSM):
         if platform.system() == "Windows":
             if os.path.exists(f"C://users/{os.getlogin()}.AUGUSTINS"):
                 self.augustins = True
-        self.langue = "francais"
+        self.langue = "français"
         path = self.get_path()
         #----------Création du dossier---------------------------
         if not os.path.exists(path):
@@ -2833,7 +2833,7 @@ class SetLevel(FSM):
         return -> None
         """
         if reset:
-            self.langue = "francais"
+            self.langue = "français"
         file = open(self.get_path()+"/global.txt", "wt")
         info = [self.langue]
         file.writelines([donnee +"|" for donnee in info])
