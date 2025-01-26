@@ -684,6 +684,7 @@ class SetLevel(FSM):
         """
         self.ignoreAll()
         self.accept("escape", self.all_close)
+        self.music.stop()
         self.music = loader.loadSfx("para.ogg")
         self.music.setLoop(True)
         self.music.play()
@@ -766,6 +767,10 @@ class SetLevel(FSM):
         return -> None
         """
         self.music.stop()
+        self.player.setPos((0, 0, 0))
+        self.player.setHpr((0, 0, 0))
+        base.cam.setPos((0, 0, 0))
+        base.cam.setHpr((0, 0, 0))
         self.accept(self.keys_data["Interagir"], self.check_interact)
         self.accept("escape", self.all_close)
         base.win.setCloseRequestEvent("escape")
@@ -1340,6 +1345,7 @@ class SetLevel(FSM):
             self.magicien.loop("Immobile")
             self.magicien.reparentTo(render)
             base.cam.setPos(200, -550, 250)
+            base.cam.setHpr((0, 0, 0))
             self.music.stop()
             self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
             self.music.setLoop(True)
@@ -2679,7 +2685,7 @@ class SetLevel(FSM):
         self.transition.fadeIn(0.5)
         self.text_game_over = OnscreenText("Game over", pos=(0, 0), scale=(0.2, 0.2), fg=(0.9, 0, 0, 1))
         self.text_game_over_2 = OnscreenText(self.story["gui"][14], pos=(0, -0.2), scale=(0.1, 0.1), fg=(0.9, 0, 0, 1)) #Appuyez sur F1 pour recommencer.
-        self.accept("f1", self.fade_out, extraArgs=["Map"])
+        self.acceptOnce("f1", self.fade_out, extraArgs=["Map"])
 
     def exitGame_over(self):
         """
