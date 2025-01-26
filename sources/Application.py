@@ -2783,6 +2783,8 @@ class SetLevel(FSM):
         -------------------------------------------------------------------
         return -> None
         """
+        self.player.epee.hide()
+        self.player.current_arme = None
         fichier = open(self.get_path()+f"/save_{file}.txt", "rt")
         i = 0
         for truc in fichier.read().split("|"):
