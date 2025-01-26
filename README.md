@@ -49,7 +49,5 @@ Plus d'informations sur <a href="https://www.blender.org" target="_blank">blende
 De plus, ce jeu a été partiellement conçu avec Sweet Home 3D :
 <b>Projet conçu avec Sweet Home  3D. Contient des modèles 3D et des textures distribués sous licence libre.</b>
 Plus d'informations sur <a href="https://www.sweethome3d.com" target="_blank">https://www.sweethome3d.com</a>
-<h2>Skybox</h2>
-La skybox utilisée dans ce jeu pour simuler le ciel est issue <a href="https://github.com/shaunwa/cbt-panda3d-minecraft">d'un tutoriel</a> sur la création de minecraft en python avec Panda3D.
 <h2>Remerciements</h2>
 Un très grand merci à tous ceux qui ont rendu possible la création de ce projet que ce soit de manière directe ou indirecte.
