@@ -637,16 +637,27 @@ class SetLevel(FSM):
                 self.player.followcam.set_active(False)
         self.hide_gui()
         self.menu = True
+        #-----------------------On charge le modèle du fond-----------------------------
+        self.model = loader.loadModel("salle_du_sacrifice.bam")
+        self.model.reparentTo(render)
+        self.model.setPos((500, 500, 0))
+        self.model.setHpr((270, 0, 0))
+        light = PointLight("Lumière d'un point")
+        light.setColor((4, 4.5, 0.5, 1))
+        light_np = render.attachNewNode(light)
+        render.setLight(light_np)
+        #-----------------------On définit notre séquence-----------------------------
+        self.boucle = Sequence(base.cam.posInterval(10, Vec3(200, -200, 250), startPos=Vec3(200, -500, 250)), base.cam.posInterval(5, Vec3(300, -50, 275), startPos=Vec3(325, -50, 275)),
+         base.cam.posInterval(5, Vec3(-125, -50, 200), startPos=Vec3(-150, -50, 200)))
+        self.boucle.loop()
         #-----------------------On charge les textes------------------------------------
         self.textObject2 = OnscreenText(text=self.story["gui"][1], pos=(0, -0.8), scale=0.07, fg=(1, 1, 1, 1)) #Appuyez sur F1 pour commencer.
-        self.image_logo = OnscreenImage("../data/pictures/Logo_Final_RoT.png", pos=Vec3(0, 0, 0.1), scale=(0.8, 1, 0.8))
+        self.image_logo = OnscreenImage("../data/pictures/Logo_Final_RoT.png", pos=Vec3(0, 0, 0.35), scale=(0.35, 1, 0.35))
         #--------------On modifie la caméra (position, lentille)-------------
         base.cam.node().getLens().setFov(70)
         #--------------------Gestion des touches----------------------------
         self.accept("escape", self.all_close)
         self.acceptOnce("f1", self.fade_out, extraArgs=["Trois_fichiers"])
-
-
 
     def exitMenu(self):
         """
@@ -654,6 +665,11 @@ class SetLevel(FSM):
         -----------------------------------------------------
         return -> None
         """
+        self.boucle.finish()
+        del self.boucle
+        render.clearLight()
+        self.model.removeNode()
+        del self.model
         self.textObject2.remove_node()
         self.image_logo.removeNode()
         del self.image_logo
@@ -672,13 +688,27 @@ class SetLevel(FSM):
         self.music.setLoop(True)
         self.music.play()
         Sequence(LerpFunc(self.music.setVolume, fromData = 0, toData = 1, duration = 1)).start()
-        #-------------------On met la skybox en arrière-plan (on pourra mettre d'autres modèles 3d plus tard)----------------------
-        self.skybox = loader.loadModel("skybox.bam")
-        self.skybox.setScale(10000)
-        self.skybox.setBin('background', 1)
-        self.skybox.setDepthWrite(0)
-        self.skybox.setLightOff()
-        self.skybox.reparentTo(render)
+        #-------------------On met un arrière-plan----------------------
+        light = AmbientLight("ambient light")
+        light_np = render.attachNewNode(light)
+        render.setLight(light_np)
+        self.actuals_light = [light_np]
+        base.cam.setPosHpr(0, 10, 90, 55, 0, 0)
+        self.player.setScale(8)
+        self.map = loader.loadModel("village_pecheurs_maison_heros.bam")
+        self.map.reparentTo(render)
+        self.map.setScale(10)
+        self.lit = loader.loadModel("lit.bam")
+        self.lit.reparentTo(render)
+        self.lit.setPos((-290, 95, 5))
+        self.lit.setHpr((270, 0, 0))
+        self.lit.setScale(15)
+        self.player.setPosHpr(-280, 25, 45, 270, 0, 270)
+        self.player.pose("Marche.001(real)", 17)
+        self.player.show()
+        base.cam.setPos((0, 0, 100))
+        self.sequence = Sequence(base.cam.hprInterval(8, Vec3(80, 0, 0), startHpr=Vec3(0, 0, 0)), Func(base.cam.setHpr, (0, -55, 0)), base.cam.posInterval(10, Vec3(-280, 90, 120), Vec3(-280, 85, 140)), Func(base.cam.setPos, (0, 0, 100)))
+        self.sequence.loop()
         #--------------On charge une image pour chaque fichier--------------------------------
         self.files = [OnscreenImage("file.png", scale=Vec3(0.3, 1, 0.3), pos=Vec3(-0.8+i*0.8, 1, 0)) for i in range(3)]
         noms = []
@@ -739,10 +769,16 @@ class SetLevel(FSM):
         self.accept(self.keys_data["Interagir"], self.check_interact)
         self.accept("escape", self.all_close)
         base.win.setCloseRequestEvent("escape")
-        self.skybox.removeNode()
         for file in self.files:
             file.removeNode()
         del self.files
+        for light in self.actuals_light:
+            light.removeNode()
+        render.clearLight()    
+        self.player.hide()
+        self.map.removeNode()
+        self.lit.removeNode()
+        del self.lit, self.map    
         for button in self.buttons_continue:
             button.removeNode()
         del self.buttons_continue
@@ -756,6 +792,8 @@ class SetLevel(FSM):
         del self.button_mapping
         self.button_langue.removeNode()
         del self.button_langue
+        self.sequence.finish()
+        del self.sequence
 
     def verify(self, file):
         """
@@ -792,12 +830,6 @@ class SetLevel(FSM):
         return -> None
         """
         self.transition.fadeIn(1)
-        self.skybox = loader.loadModel("skybox.bam")
-        self.skybox.setScale(10000)
-        self.skybox.setBin('background', 1)
-        self.skybox.setDepthWrite(0)
-        self.skybox.setLightOff()
-        self.skybox.reparentTo(render)
         dico = {"français":0, "deutsch":1, "português":2, "english":3}
         self.textObject = OnscreenText(text="Veuillez choisir votre langue.", pos=(0, 0.7), scale=0.07, fg=(1, 0.5, 0.5, 1), align=TextNode.ACenter, mayChange=1)
         self.menu = DirectOptionMenu(text="options", scale=0.15, pos=(-0.5, 0, 0), initialitem=dico[self.langue], items=["français", "deutsch", "português", "english"], highlightColor=(0.65, 0.65, 0.65, 1), command=self.itemSel, textMayChange=1)
@@ -842,8 +874,6 @@ class SetLevel(FSM):
         self.save_global()
         with open("../data/json/texts.json", encoding="utf-8") as texts:
             self.story = json.load(texts)[self.langue]
-        self.skybox.removeNode()
-        del self.skybox
         self.textObject.removeNode()
         del self.textObject
         self.menu.removeNode()
