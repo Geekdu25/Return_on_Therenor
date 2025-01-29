@@ -98,8 +98,6 @@ class PNJ(Actor):
         self.texts = 2
         self.setScale(6)
         self.col = CollisionNode(name)
-        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
-        self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.attachNewNode(self.col)
 
     def __str__(self):
@@ -118,40 +116,54 @@ class PNJ(Actor):
 
 class Assassin_repenti(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="pnjs/assassin")
         self.texts= 4
-        self.setScale(40)
+        self.setScale(20)
+        self.setSz(26)
+        self.setP(180)
         self.quetes= 13
         self.object= "collier"
         self.nom = "Phoolan Devi"
         self.col.setName("assassin")
+        self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Mage_cache(PNJ):
     def __init__(self):
-        PNJ.__init__(self,name="magicien", anims=["Immobile"])
+        PNJ.__init__(self,name="pnjs/mage")
         self.texts= 5
-        self.setScale(40)
+        self.setScale(20)
+        self.setSz(26)
         self.object= "amulette"#amulette qui permet d'ouvrir un portail pour aller dans la forteresse plus rapidement
         self.nom = "Axil"
         self.col.setName("mage")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Inventeur(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="pnjs/inventeur")
         self.texts = 6
-        self.setScale(40)
+        self.setScale(20)
+        self.setSz(28)
+        self.setH(270)
         self.nom = "Elia"
         self.col.setName("inventeur")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Enfant_prodige(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="pnjs/enfant")
         self.texts = 7
-        self.setScale(40)
+        self.setScale(15)
+        self.setSz(22)
         self.object = "Vodka"
         self.textquest = 14
         self.nom = "Maryanne"
         self.col.setName("enfant_prodige")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
     """def poisson(self):
         self.ajoute_item(item="poisson") -=1
@@ -160,15 +172,21 @@ class Enfant_prodige(PNJ):
 
 class Archer(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="pnjs/archer")
         self.texts = 8
-        self.setScale(40)
+        self.setScale(20)
+        self.setSz(27)
+        #self.loop(self.getAnimNames()[0])
+        self.setP(180)
+        self.setH(90)
         self.nom = "Robin"
         self.col.setName("archer")
+        self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Etudiant_amoureux(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="magicien")
         self.texts = 9
         self.anecdotes = 11
         self.aide = 12
@@ -176,30 +194,50 @@ class Etudiant_amoureux(PNJ):
         self.nom = "Rodef"
         self.lieu = "tentes des nomades"
         self.col.setName("etudiant")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Etudiante_amoureuse(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="magicien")
         self.texts = 10
         self.setScale(40)
         self.nom = "Alfi"
         self.lieu = "tentes des nomades"
         self.col.setName("etudiante")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
 
 class Pecheur(PNJ):
     def __init__(self):
-        PNJ.__init__(self, name="magicien", anims=["Immobile"])
+        PNJ.__init__(self, name="magicien")
         self.texts = 10
         self.setScale(40)
         self.nom = "Michel"
         self.col.setName("pecheur")
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+
+class Marchand(PNJ):
+    def __init__(self):
+        PNJ.__init__(self, name="pnjs/marchand")
+        self.texts = 10
+        self.setScale(20)
+        self.setSz(28)
+        self.setP(180)
+        self.setH(90)
+        self.texts = None
+        self.commercant = True
+        self.texts_vente = 2
+        self.articles = {"Vodka":30, "Tsar Bomba":300, "Epée":50}
+        self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))    
+        #self.loop(self.getAnimNames()[0])    
 #-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
-        self.setScale(40)
-        self.texts = None
-        self.commercant = True
-        self.texts_vente = 2
-        self.articles = {"Vodka":30, "Tsar Bomba":300, "Epée":50}
+        self.setScale(40)        
+        self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
+        self.col.setIntoCollideMask(BitMask32.bit(0))

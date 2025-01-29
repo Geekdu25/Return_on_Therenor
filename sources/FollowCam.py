@@ -36,7 +36,7 @@ class ManetteCam():
             self.vue = False
             self.target.hide()
             self.dummy.setHpr(270, 0, 0)
-            self.camera.setPos(self.dummy, Vec3(0, -16, 0))
+            self.camera.setPos(self.dummy, Vec3(0, 6, 0))
         else:
             self.vue = True
             self.target.show()

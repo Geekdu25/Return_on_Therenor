@@ -1598,6 +1598,8 @@ class SetLevel(FSM):
                     objet = Maison_aurelia()
                 elif cle[0] == "Forteresse":
                     objet = Forteresse()
+                elif cle[0] == "armoire":
+                    objet = Armoire()    
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -1755,6 +1757,10 @@ class SetLevel(FSM):
         ----------------------------------------------------------------------
         return -> None
         """
+        light = AmbientLight("Lumière ambiante")
+        light_np = render.attachNewNode(light)
+        self.actuals_light.append(light_np)
+        render.setLight(light_np)
         if self.sun is not None:
           self.sun.removeNode()
           self.sun = None
@@ -1766,21 +1772,25 @@ class SetLevel(FSM):
             light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            light = AmbientLight("Lumière ambiante")
-            light.color = (0.8, 0.8, 0.8, 1)
+        elif self.current_map == "village_pecheurs.bam":
+            light = DirectionalLight("dlight")
+            light.color = (1, 1, 1, 1)
             light_np = render.attachNewNode(light)
+            light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
-            self.actuals_light.append(light_np)
+            self.actuals_light.append(light_np)    
+        elif self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam" or self.current_map == "village_pecheurs_maison_pote.bam" or self.current_map == "village_pecheurs_port.bam":    
+            light = DirectionalLight("dlight")
+            light.color = (0.21, 0.21, 0.11, 1)
+            light_np = render.attachNewNode(light)
+            light_np.setHpr((180, 300, 0))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np) 
         elif self.current_map == "Verdantia.bam":
             light = DirectionalLight("dlight")
             light.color = (2, 2, 1.5, 1)
             light_np = render.attachNewNode(light)
             light_np.setHpr((0, 300, 0))
-            render.setLight(light_np)
-            self.actuals_light.append(light_np)
-            light = AmbientLight("Lumière ambiante")
-            light.color = (0.8, 0.8, 0.5, 1)
-            light_np = render.attachNewNode(light)
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         elif self.current_map == "Ignirift.bam":
@@ -1790,11 +1800,6 @@ class SetLevel(FSM):
             light_np.setHpr((0, 200, 0))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            light = AmbientLight("Lumière ambiante")
-            light.color = (0.7, 0.7, 0.7, 1)
-            light_np = render.attachNewNode(light)
-            render.setLight(light_np)
-            self.actuals_light.append(light_np)
         elif self.current_map == "pyramide.bam":
             light = PointLight("lanterne")
             light.color = (2, 2, 0.25, 1)
@@ -1802,16 +1807,7 @@ class SetLevel(FSM):
             light_np.setPos((0, 1, 1))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            light = AmbientLight("Lumière ambiante")
-            light.color = (0.8, 0.8, 0.5, 1)
-            light_np = render.attachNewNode(light)
-            render.setLight(light_np)
-            self.actuals_light.append(light_np)
-        else:
-            light = AmbientLight("Lumière ambiante")
-            light_np = render.attachNewNode(light)
-            self.actuals_light.append(light_np)
-            render.setLight(light_np)
+            
 
     def load_fog(self):
         """
@@ -1825,7 +1821,8 @@ class SetLevel(FSM):
         if self.current_map == "village_pecheurs.bam":
             fummee = Fog("Brume")
             fummee.setColor(0.5, 0.5, 0.55)
-            fummee.setExpDensity(0.015)
+            d = random.randint(2, 150)/10000
+            fummee.setExpDensity(d)
             render.setFog(fummee)
         elif self.current_map == "Arduny.bam" and random.randint(1, 2) == 1:
             fummee = Fog("Sable")
@@ -1887,6 +1884,8 @@ class SetLevel(FSM):
             return Etudiante_amoureuse()
         elif pnj == "assassin":
             return Assassin_repenti()
+        elif pnj == "marchand":
+            return Marchand()    
         return PNJ()
 
     def return_monstre(self, pnj="golem"):

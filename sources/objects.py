@@ -161,3 +161,22 @@ class Forteresse:
     self.object = loader.loadModel("Forteresse.bam")
     self.object.setScale(100)
     self.object.setCollideMask(BitMask32.bit(0))
+    
+class Armoire:
+    """
+    L'armoire du marchand.
+    """    
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ----------------------
+        return -> Armoire
+        """
+        self.nom = "armoire"
+        self.object = loader.loadModel("armoire.bam")
+        self.object.setScale(10)
+        self.col = CollisionNode("armoire")
+        self.col.addSolid(CollisionBox((0, 0, 3), 0.45, 2, 4))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)
