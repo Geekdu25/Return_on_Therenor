@@ -370,12 +370,14 @@ class SetLevel(FSM):
         self.bouton3.destroy()
         del self.bouton1, self.bouton2, self.bouton3
         if info == 1 or info == 2:
+          self.music.setVolume(0.2)  
           if info == 1:
               n = 11
           else:
               n = 12      
           self.set_text(n, messages=["reupdate"])
-        self.reupdate()  
+        else:  
+          self.reupdate()  
         
     def accept_trigger(self, clickedYes):
         """
