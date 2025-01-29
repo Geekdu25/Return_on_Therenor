@@ -1,7 +1,7 @@
 {
 "village_pecheurs.bam":[["bateau",[[350, -1600, 150], [180, 0, 0]]], ["coffre",[[-100, 700, 250], [0, 0, 0]]]],	
 "village_pecheurs_maison_heros.bam":[["lit",[[-290, 120, 10], [270, 0, 0]]]],
-"village_pecheurs_maison_chef.bam":[["lit",[[-190, 0, 0], [0, 0, 0]]]],
+"village_pecheurs_maison_chef.bam":[["armoire",[[-275, 0, 0], [0, 0, 0]]]],
 "Marelys.bam":[["bateau",[[-1000, 1000, -1], [0, 0, 0]]]],
 "pyramide.bam":[["coffre",[[-100, -195, 0], [0, 0, 0]]]],
 "Verdantia.bam":[["manoir", [[1000, 3000, 0], [0, 0, 0]]], ["sapin", [[0, 0, 0], [0, 0, 0]]],["sapin",[[-1999, 1170, 0], [0, 0, 0]]],["sapin",[[-193, -1106, 0], [0, 0, 0]]],
