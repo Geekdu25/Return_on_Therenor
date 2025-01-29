@@ -127,7 +127,7 @@ class SetLevel(FSM):
         """
         FSM.__init__(self, "LevelManager") #Initialisation de notre classe en initialisant la super classe.
         self.debug = False #Le mode debug pourra être activé lors de certains tests (on peut y voir les collisions)
-        #-----------------Variables nécessaires au fonctionnement de la boîte de dialogue----------------
+        #-----------------Variables nécessaires au Méthodenement de la boîte de dialogue----------------
         self.ok = False
         self.reading = False
         self.termine = True
@@ -184,20 +184,12 @@ class SetLevel(FSM):
         base.taskMgr.add(self.update_text, "update_text")
         self.accept("escape", self.all_close)
         base.win.setCloseRequestEvent("escape")
-
-    def __str__(self):
-        """
-        Méthode permettant d'afficher quelque chose lorsque l'on appelle print().
-        -----------------------------------------------------------------------------
-        return -> str
-        """
-        return "Ca n'a aucun, mais alors aucun interet de faire cela.\nPourquoi cette fonction existe-t-elle alors ?\nEtre ou ne pas être, telle est la question."
-
+        
     #--------------------------------------GUI------------------------------
     def load_gui(self):
         """
-        Fonction qui nous permet de charger les éléments 2D (car on n'a besoin de les charger qu'une fois)
-        --------------------------------------------------
+        Méthode qui nous permet de charger les éléments 2D.
+        ----------------------------------------------------
         return -> None
         """
         self.myOkDialog = None
@@ -211,7 +203,7 @@ class SetLevel(FSM):
 
     def hide_gui(self):
         """
-        Fonction permettant de cacher la GUI (utile lors des cinématiques, ou lors d'un tuto).
+        Méthode permettant de cacher la GUI (utile lors des cinématiques, ou lors d'un tuto).
         --------------------------------------------------------------------------------------
         return -> None
         """
@@ -249,9 +241,10 @@ class SetLevel(FSM):
     #-----------------------Méthodes d'interactions (triggers, PNJS, vente...)----------------------------------
     def check_interact(self):
         """
-        Fonction appelée chaque fois que le joueur appuie sur espace.
-        Cela aura pour conséquences de vérifier les portes, les pnjs touchés, ou encore de passer les dialogues.
-        ----------------------------------------------------------------------------------------------
+        Méthode appelée chaque fois que le joueur appuie sur espace.
+        Cela aura pour conséquences de vérifier les portes, 
+        les pnjs touchés, ou encore de passer les dialogues.
+        -------------------------------------------------------------
         return -> None
         """
         reussi = self.check_interact_dial()
@@ -334,12 +327,12 @@ class SetLevel(FSM):
                     money = 100
                 if item != "":
                   self.player.ajoute_item(item)
-                  self.dialog = OkDialog(text="Vous avez obtenu : "+item, command=self.cleanup_dialog_tresor)
+                  self.dialog = OkDialog(text=self.story["items"][6]+item, command=self.cleanup_dialog_tresor)
                   self.dialog.hide()
                   taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
                 elif money > 0:
                   self.player.noais += money
-                  self.dialog = OkDialog(text="Vous avez obtenu : "+str(money)+" noaïs.", command=self.cleanup_dialog_tresor)
+                  self.dialog = OkDialog(text=self.story["items"][6]+str(money)+" noaïs.", command=self.cleanup_dialog_tresor)
                   self.dialog.hide()
                   taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
 
@@ -352,9 +345,9 @@ class SetLevel(FSM):
         properties = WindowProperties()
         properties.setCursorHidden(False)
         base.win.requestProperties(properties)
-        self.bouton1 = DirectButton(text=("Va pour une anecdote."), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
-        self.bouton2 = DirectButton(text=("Aide-moi !"), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
-        self.bouton3 = DirectButton(text=("Non, rien."), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
+        self.bouton1 = DirectButton(text=(self.story["trigger"][4]), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
+        self.bouton2 = DirectButton(text=(self.story["trigger"][3]), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
+        self.bouton3 = DirectButton(text=(self.story["trigger"][2]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
         
     def active_etudiant(self, info=1):
         """
@@ -407,8 +400,8 @@ class SetLevel(FSM):
 
     def vente(self, articles={"Vodka":30, "Tsar bomba":300, "Epée":50}):
         """
-        Fonction qui s'active lorsqu'un pnj commercant est interrogé.
-        ---------------------------------------------------------------
+        Méthode qui s'active lorsqu'un pnj commerçant est interrogé.
+        ------------------------------------------------------------
         articles -> dict
         return -> None
         """
@@ -429,7 +422,7 @@ class SetLevel(FSM):
     def add_article(self, article="Vodka", prix=30):
         """
         Méthode permettant d'ajouter à l'inventaire du joueur un article acheté.
-        -------------------------------------------------------------------------
+        ------------------------------------------------------------------------
         article -> str
         return -> None
         """
@@ -455,7 +448,7 @@ class SetLevel(FSM):
     def cleanup_dialog_vente(self, inutile):
         """
         Méthode permettant d'effacer un pop-up de la vente.
-        ----------------------------------------------------
+        ---------------------------------------------------
         inutile -> bool
         return -> None
         """
@@ -465,7 +458,7 @@ class SetLevel(FSM):
     def cleanup_dialog_tresor(self, inutile):
         """
         Méthode permettant d'enlever le dialogue de découverte d'un trésor.
-        ----------------------------------------------------------------------
+        -------------------------------------------------------------------
         inutile -> bool
         return -> None
         """
@@ -478,7 +471,7 @@ class SetLevel(FSM):
     def exit_vente(self):
         """
         Méthode s'activant quand la transaction avec un pnj est finie.
-        ----------------------------------------------------------------
+        --------------------------------------------------------------
         return -> None
         """
         if not self.d_actif:
@@ -501,7 +494,7 @@ class SetLevel(FSM):
     def update_vente(self, task=None):
         """
         Méthode permettant de mettre à jour la vente.
-        -----------------------------------------------
+        ---------------------------------------------
         task -> task
         return -> task.cont
         """
@@ -512,7 +505,7 @@ class SetLevel(FSM):
     def reupdate(self):
         """
         Méthode permettant de réactiver la méthode update.
-        ----------------------------------------------------
+        --------------------------------------------------
         return -> None
         """
         if self.current_pnj == "mage" and self.chapitre == 3:
@@ -529,8 +522,8 @@ class SetLevel(FSM):
 
     def check_interact_dial(self):
         """
-        "Petite" fonction qui permet de passer les dialogues.
-        ------------------------------------------------------
+        "Petite" méthode qui permet de passer les dialogues.
+        -----------------------------------------------------
         return -> bool
         """
         if not self.reading and not self.termine:
@@ -568,8 +561,8 @@ class SetLevel(FSM):
 
     def set_text(self, numero=0, messages=[]):
         """
-        Fonction qui permet d'afficher un texte.
-        --------------------------------------------------
+        Méthode qui permet d'afficher un texte.
+        ----------------------------------------
         numero -> int
         messages -> list[str]
         return -> None
@@ -610,9 +603,9 @@ class SetLevel(FSM):
 
     def update_text(self, task):
         """
-        Fonction qui met à jour le texte affiché à l'écran.
-        (Il y a sans doute une meilleure solution, mais comme celle-ci fonctionne on la garde)
-        ---------------------------------------------------------------------------------------
+        Méthode qui met à jour le texte affiché à l'écran.
+        (Il y a sans doute une meilleure solution, mais comme celle-ci Méthodene on la garde)
+        --------------------------------------------------------------------------------------
         task -> task
         return -> task.cont
         """
@@ -634,8 +627,8 @@ class SetLevel(FSM):
     #---------------------------Méthodes de changement de state--------------------------------------
     def fade_out(self, state="Menu"):
         """
-        Fonction qui permet au FSM de changer de state avec un fade out visuel et sonore.
-        ----------------------------------------------------------------------------------
+        Méthode qui permet au FSM de changer de state avec un fade out visuel et sonore.
+        ---------------------------------------------------------------------------------
         state -> str
         return None
         """
@@ -646,8 +639,8 @@ class SetLevel(FSM):
 
     def change_state(self, state):
         """
-        Fonction qui fonctionne avec la fonction fade_out.
-        ------------------------------------------------------
+        Méthode qui fonctionne avec la fonction fade_out.
+        --------------------------------------------------
         state -> str
         return -> None
         """
@@ -656,8 +649,8 @@ class SetLevel(FSM):
     #------------------------Méthodes n'entrant dans aucune catégorie--------------------------
     def all_close(self):
         """
-        Fonction pour fermer la fenêtre et quitter le programme.
-        ----------------------------------------------------------
+        Méthode pour fermer la fenêtre et quitter le programme.
+        --------------------------------------------------------
         return -> None
         """
         base.destroy()
@@ -666,8 +659,8 @@ class SetLevel(FSM):
     #---------------------------Ecran titre--------------------------------
     def enterMenu(self):
         """
-        Fonction qui prépare l'écran titre.
-        ------------------------------------------
+        Méthode qui prépare l'écran titre.
+        -----------------------------------
         return -> None
         """
         #--------------Petit fade in visuel et sonore-----------------
@@ -705,8 +698,8 @@ class SetLevel(FSM):
 
     def exitMenu(self):
         """
-        Fonction qui s'acive quand on quitte l'écran titre.
-        -----------------------------------------------------
+        Méthode qui s'acive quand on quitte l'écran titre.
+        ---------------------------------------------------
         return -> None
         """
         self.boucle.finish()
@@ -722,8 +715,8 @@ class SetLevel(FSM):
     #-----------------Section de gestion des trois fichiers de sauvegarde--------------------------------
     def enterTrois_fichiers(self):
         """
-        Fonction qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
-        ------------------------------------------------------------------------------------
+        Méthode qui s'active lorsqu'on entre dans le gestionnaire de fichiers de sauvegarde.
+        -------------------------------------------------------------------------------------
         return -> None
         """
         self.ignoreAll()
@@ -779,8 +772,8 @@ class SetLevel(FSM):
 
     def confirm_erase(self, file=1):
         """
-        Fonction qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
-        ----------------------------------------------------------------------------------------------------
+        Méthode qui crée un petit pop-up qui permet de s'assurer que l'utilisateur veut effacer ses données.
+        -----------------------------------------------------------------------------------------------------
         file -> int
         return -> None
         """
@@ -789,8 +782,8 @@ class SetLevel(FSM):
 
     def erase_file(self, clickedYes, file):
         """
-        Fonction qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
-        ---------------------------------------------------------------------------------------------
+        Méthode qui s'active lorsque l'utilisateur répond au pop-up pour l'effacement de fichier.
+        ------------------------------------------------------------------------------------------
         clickedYes -> bool
         file -> int
         return -> None
@@ -808,8 +801,8 @@ class SetLevel(FSM):
 
     def exitTrois_fichiers(self):
         """
-        Fonction qui s'active lorsque l'on quitte l'état trois_fichiers.
-        ----------------------------------------------------------------------
+        Méthode qui s'active lorsque l'on quitte l'état trois_fichiers.
+        ----------------------------------------------------------------
         return -> None
         """
         self.music.stop()
@@ -850,7 +843,7 @@ class SetLevel(FSM):
         """
         Quand on quitte l'écran titre, on vérifira notre avancement dans l'histoire.
         On agira de différentes manières selon le chapitre auquel le joueur est rendu.
-        ---------------------------------------------------------------------------
+        ------------------------------------------------------------------------------
         return -> None
         """
         self.actual_file = file
@@ -876,8 +869,8 @@ class SetLevel(FSM):
     #--------------------------------Gestion du changement de langue-----------------------------------------------
     def enterLanguage(self):
         """
-        Fonction qui s'active lorsque l'on entre dans l'état de changement de langue.
-        -------------------------------------------------------------------------------
+        Méthode qui s'active lorsque l'on entre dans l'état de changement de langue.
+        -----------------------------------------------------------------------------
         return -> None
         """
         self.transition.fadeIn(1)
@@ -897,7 +890,7 @@ class SetLevel(FSM):
 
     def itemSel(self, arg):
         """
-        Fonction qui s'active dès que l'utilisateur change de langue.
+        Méthode qui s'active dès que l'utilisateur change de langue.
         ----------------------------------------------------------------
         arg -> str
         return -> None
@@ -918,7 +911,7 @@ class SetLevel(FSM):
 
     def exitLanguage(self):
         """
-        Fonction qui s'active lorsque l'on quitte l'état pour changer de langue.
+        Méthode qui s'active lorsque l'on quitte l'état pour changer de langue.
         ---------------------------------------------------------------------------
         return -> None
         """
@@ -935,7 +928,7 @@ class SetLevel(FSM):
     #-------------------------------Gestion du mappage de touches--------------------------------------------------
     def enterMapping(self):
         """
-        Fonction inspirée du script mappingGUI des samples de panda3d.
+        Méthode inspirée du script mappingGUI des samples de panda3d.
         ----------------------------------------------------------------
         Elle se déclenche lorsque l'on entre dans l'état Mapping.
         -------------------------------------------------------------
@@ -1003,9 +996,9 @@ class SetLevel(FSM):
 
     def closeDialog(self, action, newInputType, newInput):
         """
-        Fonction qui s'active lorsque l'on a répondu à la boîte de dialogue
+        Méthode qui s'active lorsque l'on a répondu à la boîte de dialogue
         qui s'affiche quand on change les touches.
-        -------------------------------------------------------------
+        -------------------------------------------------------------------
         action -> str
         newInputType -> str
         newInput -> str
@@ -1031,7 +1024,7 @@ class SetLevel(FSM):
 
     def changeMapping(self, action):
         """
-        Fonction qui permet d'afficher le dialogue pour changer les touches.
+        Méthode qui permet d'afficher le dialogue pour changer les touches.
         ----------------------------------------------------------------------
         action -> str
         return -> None
@@ -1066,8 +1059,8 @@ class SetLevel(FSM):
 
     def watchControls(self, task):
         """
-        Fonction qui vérifie si l'on touche à quelque chose.
-        -------------------------------------------------------
+        Méthode qui vérifie si l'on touche à quelque chose.
+        ----------------------------------------------------
         task -> task
         return -> task.cont
         """
@@ -1085,8 +1078,8 @@ class SetLevel(FSM):
 
     def __makeListItem(self, action, event, index):
         """
-        Fonction appelée pour créer un contenu.
-        ------------------------------------------
+        Méthode appelée pour créer un contenu.
+        ---------------------------------------
         action -> str
         event -> str
         index -> int
@@ -1139,7 +1132,7 @@ class SetLevel(FSM):
 
     def exitMapping(self):
         """
-        Fonction qui s'active lorsque l'on quitte le mappage de touches.
+        Méthode qui s'active lorsque l'on quitte le mappage de touches.
         ---------------------------------------------------------------
         return -> None
         """
@@ -1170,7 +1163,7 @@ class SetLevel(FSM):
     #-------------------------------Paramètres en début de partie (Nom du joueur)-----------------------------------
     def enterInit(self):
         """
-        Fonction qui s'active quand on entre dans les paramètres en début de partie.
+        Méthode qui s'active quand on entre dans les paramètres en début de partie.
         ----------------------------------------------------------------------------
         return -> None
         """
@@ -1180,8 +1173,8 @@ class SetLevel(FSM):
 
     def exitInit(self):
         """
-        Fonction qui s'active quand on quitte ces paramètres.
-        --------------------------------------------------------
+        Méthode qui s'active quand on quitte ces paramètres.
+        -----------------------------------------------------
         return -> None
         """
         self.music.stop()
@@ -1190,15 +1183,15 @@ class SetLevel(FSM):
     def setName(self):
         """
         Petit pop-up de vérification.
-        --------------------------------
+        -----------------------------
         return -> None
         """
         self.acceptDlg = YesNoDialog(text =self.story["gui"][11], command = self.acceptName) #C'est tout bon ?
 
     def acceptName(self, clickedYes):
         """
-        Fonction qui en fonction de la rééponse du joueur commence le jeu ou reste dans les paramètres.
-        --------------------------------------------------------------------------------------------
+        Méthode qui en fonction de la rééponse du joueur commence le jeu ou reste dans les paramètres.
+        -----------------------------------------------------------------------------------------------
         clickedYes -> bool
         return -> None
         """
@@ -1214,11 +1207,21 @@ class SetLevel(FSM):
             self.request("Mini_tuto")
 
     def enterMini_tuto(self):
+        """
+        Méthode qui permet d'afficher le tuto du début sur l'utilisation de la touche d'interaction.
+        --------------------------------------------------------------------------------------------
+        return -> None
+        """
         self.tuto = OnscreenText(self.story["gui"][27]+self.keys_data["Interagir"].capitalize()+self.story["gui"][28], pos=(0, 0.4), scale=(0.13, 0.13), fg=(1, 1, 1, 1))
         self.ignore(self.keys_data["Interagir"])
         self.acceptOnce(self.keys_data["Interagir"], self.fade_out, extraArgs=["Cinematique"])
 
     def exitMini_tuto(self):
+        """
+        Méthode permettant de quitter le tuto.
+        --------------------------------------
+        return -> None
+        """
         self.tuto.removeNode()
         self.ignore(self.keys_data["Interagir"])
         self.accept(self.keys_data["Interagir"], self.check_interact)
@@ -1226,7 +1229,7 @@ class SetLevel(FSM):
     #-------------------------------Cinématiques--------------------------------------
     def enterCinematique(self):
         """
-        Fonction d'entrée dans le state Cinématique.
+        Méthode d'entrée dans le state Cinématique.
         -----------------------------------------------------------------
         return -> None
         """
@@ -2066,7 +2069,7 @@ class SetLevel(FSM):
 
     def load_save(self, task=None):
         """
-        Fonction qui permet de charger la nouvelle position du joueur quand on charge une map.
+        Méthode qui permet de charger la nouvelle position du joueur quand on charge une map.
         --------------------------------------------------------------------------------------
         task -> task
         return -> None
@@ -2156,7 +2159,7 @@ class SetLevel(FSM):
     #----------------------Méthodes de collisions-----------------------------------------
     def into(self, a):
         """
-        Fonction s'activant quand le joueur ou un autre objet from, touche un objet into.
+        Méthode s'activant quand le joueur ou un autre objet from, touche un objet into.
         -----------------------------------------------------------------------------------
         a -> entry (une info sur la collision)
         return -> None
@@ -2219,7 +2222,7 @@ class SetLevel(FSM):
 
     def change_vitesse(self, touche="b"):
         """
-        Fonction qui change la vitesse du joueur si on appuie sur la touche b ou si on la relâche.
+        Méthode qui change la vitesse du joueur si on appuie sur la touche b ou si on la relâche.
         -------------------------------------------------
         touche -> str
         return -> None
@@ -2233,8 +2236,8 @@ class SetLevel(FSM):
 
     def touche_pave(self, message="arrow_up"):
         """
-        Fonction s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
-        Cette fonction pourrait être supprimée, vu que le joueur se dirige maintenant avec la souris.
+        Méthode s'activant quand on appuie sur ou qu'on relache une touche du pavé de flèches.
+        Cette Méthode pourrait être supprimée, vu que le joueur se dirige maintenant avec la souris.
         Mais on la garde pour ne pas avoir de bugs.
         ----------------------------------------------------------------------------------------------
         message -> str
@@ -2262,7 +2265,7 @@ class SetLevel(FSM):
     #-------------------Méthode de mise à jour----------------------------------
     def update(self, task):
         """
-        Fonction appelée à chaque frame pour mettre certaines choses à jour.
+        Méthode appelée à chaque frame pour mettre certaines choses à jour.
         ---------------------------------------------------------
         task -> task
         return -> task.cont
@@ -2353,7 +2356,7 @@ class SetLevel(FSM):
     #--------------------------Pop-ups----------------------------------------
     def confirm_quit(self):
         """
-        Fonction qui s'active quand on joue, et que l'on appuie sur échap.
+        Méthode qui s'active quand on joue, et que l'on appuie sur échap.
         Une boîte de dialogue apparaît et nous demande si l'on est sûr de quitter.
         ------------------------------------------------------------------------------
         return -> None
@@ -2369,7 +2372,7 @@ class SetLevel(FSM):
 
     def quit_confirm(self, clickedYes):
         """
-        Fonction qui se met en marche une fois que le joueur
+        Méthode qui se met en marche une fois que le joueur
         a répondu à la boîte de dialogue pour quitter le jeu.
         -----------------------------------------------------
         clickedYes -> bool
@@ -2434,7 +2437,7 @@ class SetLevel(FSM):
 
     def inventaire(self):
         """
-        Fonction utilisée pour ouvrir l'inventaire
+        Méthode utilisée pour ouvrir l'inventaire
         -------------------------------------------
         return -> None
         """
@@ -2506,7 +2509,7 @@ class SetLevel(FSM):
 
     def inutile(self, inutile=None):
         """
-        Fonction qui permet d'effacer le diaogue ok.
+        Méthode qui permet d'effacer le diaogue ok.
         --------------------------------------------
         inutile -> bool
         return -> None
@@ -2519,7 +2522,7 @@ class SetLevel(FSM):
 
     def get_pos_croix(self):
         """
-        Fonction qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
+        Méthode qui retourne la position de la croix qui indique notre position sur la carte de l'inventaire.
         -----------------------------------------------------------------------
         return -> Vec3
         """
@@ -2545,7 +2548,7 @@ class SetLevel(FSM):
 
     def change_index_invent(self, dir="left"):
         """
-        Fonction qui permet de changer de menu d'inventaire
+        Méthode qui permet de changer de menu d'inventaire
         -------------------------------------------------
         dir -> str
         return -> None
@@ -2576,7 +2579,7 @@ class SetLevel(FSM):
 
     def update_invent(self, task):
         """
-        Fonction appelée à chaque frame dans l'inventaire pour mettre à jour le contenu
+        Méthode appelée à chaque frame dans l'inventaire pour mettre à jour le contenu
         -----------------------------------------------------------------------------
         task -> task
         return -> task.cont
@@ -2607,7 +2610,7 @@ class SetLevel(FSM):
 
     def exit_inventaire(self):
         """
-        Fonction appelée lorsqu'on quitte l'inventaire
+        Méthode appelée lorsqu'on quitte l'inventaire
         --------------------------------------------------
         return -> None
         """
@@ -2632,7 +2635,7 @@ class SetLevel(FSM):
     #----------------------------------Partie pour le generique--------------------------------------------------------------------------
     def enterGenerique(self):
         """
-        Fonction activée quand on entre dans le générique.
+        Méthode activée quand on entre dans le générique.
         -------------------------------------------------
         return -> None
         """
@@ -2664,7 +2667,7 @@ class SetLevel(FSM):
 
     def exitGenerique(self):
         """
-        Fonction activée quand on quitte le générique.
+        Méthode activée quand on quitte le générique.
         -------------------------------------------------
         return -> None
         """
@@ -2676,7 +2679,7 @@ class SetLevel(FSM):
 
     def change_to_menu(self, task):
         """
-        Fonction qui après le générique permet d'accéder à l'écran titre.
+        Méthode qui après le générique permet d'accéder à l'écran titre.
         ------------------------------------------------------------------
         task -> task
         return -> task.done
@@ -2688,7 +2691,7 @@ class SetLevel(FSM):
 
     def update_generique(self, task):
         """
-        Fonction qui met à jour le générique.
+        Méthode qui met à jour le générique.
         --------------------------------------
         task -> task
         return -> task.cont ou task.done
@@ -2708,7 +2711,7 @@ class SetLevel(FSM):
     #-------------------------Fonctions gérant le game over---------------------------------------
     def launch_game_over(self, task):
         """
-        Fonction pour lancer le game over.
+        Méthode pour lancer le game over.
         -----------------------------------
         task -> task
         return -> task.done
@@ -2718,7 +2721,7 @@ class SetLevel(FSM):
 
     def enterGame_over(self):
         """
-        Fonction qui s'active quand on entre dans le game over.
+        Méthode qui s'active quand on entre dans le game over.
         --------------------------------------------------------
         return -> None
         """
@@ -2748,7 +2751,7 @@ class SetLevel(FSM):
 
     def apparaitre_render(self, task):
         """
-        Fonction qui permet de masquer les textes
+        Méthode qui permet de masquer les textes
         de game over et faire apparaître le rendu
         ------------------------------------------
         task -> task
@@ -2762,7 +2765,7 @@ class SetLevel(FSM):
     #---------------------------------Fonctions de traitement des données de sauvegarde.--------------------------------------------------
     def save(self, reset=False, file=1):
         """
-        Fonction qui permet de sauvegarder les données de la partie.
+        Méthode qui permet de sauvegarder les données de la partie.
         ------------------------------------------------------------
         return -> None
         """
@@ -2793,7 +2796,7 @@ class SetLevel(FSM):
 
     def will_save(self, clickedYes):
         """
-        Fonction qui s'active si on touche une statue de sauvegarde.
+        Méthode qui s'active si on touche une statue de sauvegarde.
         --------------------------------------------------------------
         return -> None
         """
@@ -2806,7 +2809,7 @@ class SetLevel(FSM):
 
     def update_after_save(self, inutile):
         """
-        Fonction pour remettre la fonction de mise à jour en éxécution.
+        Méthode pour remettre la Méthode de mise à jour en éxécution.
         ---------------------------------------------------------------
         inutile -> bool
         return -> None
@@ -2822,7 +2825,7 @@ class SetLevel(FSM):
 
     def read(self, file=1):
         """
-        Fonction qui permet de lire les données préalablement enregistrées.
+        Méthode qui permet de lire les données préalablement enregistrées.
         -------------------------------------------------------------------
         return -> None
         """
@@ -2858,7 +2861,7 @@ class SetLevel(FSM):
 
     def init_fichiers(self):
         """
-        Fonction qui permet de créer les fichiers de jeu.
+        Méthode qui permet de créer les fichiers de jeu.
         -------------------------------------------------
         return -> None
         """
@@ -2925,7 +2928,7 @@ class SetLevel(FSM):
 
     def get_path(self):
         """
-        Fonction permettant de donner le chemin d'accès aux données de sauvegarde.
+        Méthode permettant de donner le chemin d'accès aux données de sauvegarde.
         --------------------------------------------------------------------------
         return -> str
         """
@@ -2940,7 +2943,7 @@ class SetLevel(FSM):
     #-------------------------------Méthodes spécifiques à la manette (je ne pense pas qu'il y en aura beaucoup)---------------------------
     def wait_for_gamepad(self, task):
         """
-        Fonction qui vérifie si la manette
+        Méthode qui vérifie si la manette
         qui a été déconnectée est rebranchée.
         --------------------------------------------
         task -> task
