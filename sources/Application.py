@@ -269,6 +269,9 @@ class SetLevel(FSM):
                     self.music.setVolume(0.3)
                     if self.chapitre > 3 and self.current_pnj == "mage":
                       self.set_text(["..."], messages=["reupdate"])
+                    elif self.current_pnj == "etudiant":
+                        self.set_text(self.pnjs[self.current_pnj].texts, messages=["boutons"])
+                        self.acceptOnce("boutons", self.show_etudiant_options)  
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
@@ -340,8 +343,47 @@ class SetLevel(FSM):
                   self.dialog.hide()
                   taskMgr.doMethodLater(1.5, self.dialog.show, "show dialog", extraArgs=[])
 
-
+    def show_etudiant_options(self):
+        """
+        Méthode permettant à l'étudiant de présenter des options au joueur.
+        -------------------------------------------------------------------
+        return -> None
+        """
+        properties = WindowProperties()
+        properties.setCursorHidden(False)
+        base.win.requestProperties(properties)
+        self.bouton1 = DirectButton(text=("Va pour une anecdote."), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
+        self.bouton2 = DirectButton(text=("Aide-moi !"), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
+        self.bouton3 = DirectButton(text=("Non, rien."), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
+        
+    def active_etudiant(self, info=1):
+        """
+        Méthode permettant d'afficher les dialogues de l'étudiant.
+        -----------------------------------------------------------
+        return -> None
+        """    
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        self.bouton1.destroy()
+        self.bouton2.destroy()
+        self.bouton3.destroy()
+        del self.bouton1, self.bouton2, self.bouton3
+        if info == 1 or info == 2:
+          if info == 1:
+              n = 11
+          else:
+              n = 12      
+          self.set_text(n, messages=["reupdate"])
+        self.reupdate()  
+        
     def accept_trigger(self, clickedYes):
+        """
+        Méthode permettant d'exécuter l'action d'un trigger.
+        ----------------------------------------------------
+        clickedYes -> bool
+        return -> None
+        """
         self.triggerDlg.cleanup()
         properties = WindowProperties()
         properties.setCursorHidden(True)
