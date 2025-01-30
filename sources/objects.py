@@ -58,7 +58,7 @@ class Coffre:
     """
     Un coffre avec une animation.
     """
-    def __init__(self, id=0):
+    def __init__(self, id=0, ouvert=False):
         """
         Méthode constructeur.
         -------------------------
@@ -66,9 +66,11 @@ class Coffre:
         """
         self.nom = "coffre"
         self.id = id
-        self.ouvert = False
+        self.ouvert = ouvert
         self.object = Actor("coffre.bam", {"anim":"coffre-ouverture.bam"})
         self.object.setScale(20)
+        if self.ouvert:
+            self.object.pose("anim", 30)
         self.col = CollisionNode("coffre_"+str(id))
         self.col.addSolid(CollisionBox((0, 0, 2), 2, 4, 2))
         self.col.setFromCollideMask(BitMask32.allOff())
@@ -161,11 +163,11 @@ class Forteresse:
     self.object = loader.loadModel("Forteresse.bam")
     self.object.setScale(100)
     self.object.setCollideMask(BitMask32.bit(0))
-    
+
 class Armoire:
     """
     L'armoire du marchand.
-    """    
+    """
     def __init__(self):
         """
         Méthode constructeur.

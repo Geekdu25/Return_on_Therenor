@@ -50,6 +50,17 @@ class Player(Actor):
         self.setPlayRate(5.0, 'Attaque')
         self.setPlayRate(3.0, 'Marche.001(real)')
 
+    def change_etat_coffres(self, map="village_pecheurs.bam", numero=0):
+        """
+        Méthode permettant de changer l'état d'un coffre.
+        -------------------------------------------------
+        return -> None
+        """
+        if map == "village_pecheurs.bam" and numero == 0:
+            self.coffres[0] = 1
+        elif map == "Pyramide.bam" and numero == 0:
+            self.coffres[1] = 1
+
     def ajoute_item(self, item="Vodka"):
         """
         Méthode permettant d'ajouter un item dans l'inventaire.

@@ -311,6 +311,7 @@ class SetLevel(FSM):
             for objet in self.objects:
                 if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
                     if not objet.ouvert:
+                            self.player.change_etat_coffres(self.current_map, objet.id)
                             objet.ouvert = True
                             a = True
                             objet.object.play("anim")
@@ -1633,7 +1634,7 @@ class SetLevel(FSM):
                 elif cle[0] == "bateau":
                     objet = Bateau()
                 elif cle[0] == "coffre":
-                    objet = Coffre(n_coffre)
+                    objet = Coffre(n_coffre, ouvert=self.get_ouvert(self.current_map, n_coffre))
                     n_coffre += 1
                 elif cle[0] == "sapin":
                     objet = Sapin()
@@ -1785,6 +1786,19 @@ class SetLevel(FSM):
         self.accept_touches()
         if task is not None:
             return task.done
+
+    def get_ouvert(self, map="village_pecheurs.bam", numero=0):
+        """
+        Méthode permettant de retourner l'état d'un coffre.
+        ---------------------------------------------------
+        map -> str
+        numero -> int
+        return -> bool
+        """
+        if map == "Pyramide.bam" and numero == 0:
+            return bool(self.player.coffres[1])
+        else:
+            return bool(self.player.coffres[0])
 
     def load_light(self):
         """
@@ -2781,9 +2795,9 @@ class SetLevel(FSM):
         i = 0
         for item in self.player.coffres:
             i += 1
-            string += f'"{item}"'
+            string2 += f'{item}'
             if i < len(self.player.coffres):
-                string += ", "
+                string2 += ", "
         del i
         string2 += "]"
         fichier = open(self.get_path()+f'/invent_{file}.json', "wt")
