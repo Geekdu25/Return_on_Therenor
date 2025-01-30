@@ -64,6 +64,9 @@ class Bonhomme_de_neige(Monster):
 class Zmeyevick(Monster):
     def __init__(self):
         Monster.__init__(self, name="Zmeyevick_fin", vies=20)
+        self.setScale(50)
+        print(self.getAnimNames())
+        self.loop(self.getAnimNames()[0])
 
 class Sorcier(Monster):
     def __init__(self):

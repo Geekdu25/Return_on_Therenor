@@ -247,6 +247,20 @@ class Marchand(PNJ):
         self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
         self.col.setIntoCollideMask(BitMask32.bit(0))
         #self.loop(self.getAnimNames()[0])
+        
+class Golem_pnj(PNJ):
+  def __init__(self):
+    PNJ.__init__(self, name="golem")
+    self.setScale(25)
+    light = PointLight("lumiere_golem")
+    light.setColor((0, 0, 0, 1))
+    light_np = self.attachNewNode(light)
+    light_np.setPos((0, 0, 1))
+    self.setLight(light_np)
+    self.col = CollisionNode("golem")
+    self.col.addSolid(CollisionSphere((0, 0, 4.5), 5))
+    self.col.setIntoCollideMask(BitMask32.bit(0))
+    self.col_np = self.attachNewNode(self.col)        
 #-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):

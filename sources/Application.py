@@ -1331,12 +1331,12 @@ class SetLevel(FSM):
           self.player_interface.cacher()
           self.load_map("pyramide.bam")
           self.player.show()
-          self.player.setPos((0, 0, 0))
-          self.player.setHpr((0, 0, 0))
-          base.cam.setPos((0, 3, 3))
+          self.player.setPos((-30, -20, 0))
+          self.player.setHpr((270, 0, 0))
+          base.cam.setPos((-6, 30, 30))
           base.cam.lookAt(self.player)
           self.ignore_touches()
-          self.s = Parallel(base.cam.posInterval(5, Vec3(0, 3, 0)), base.cam.hprInterval(5, Vec3(180, 0, 0)))
+          self.s = base.cam.posInterval(5, Vec3(-6, 30, 10))
           self.s.start()
           self.set_text(20, messages=["texte_ok"])
           self.current_point = "save_pyramide"
@@ -1947,6 +1947,8 @@ class SetLevel(FSM):
             return Assassin_repenti()
         elif pnj == "marchand":
             return Marchand()
+        elif pnj == "golem_pnj":
+            return Golem_pnj()    
         return PNJ()
 
     def return_monstre(self, pnj="golem"):
@@ -1968,7 +1970,7 @@ class SetLevel(FSM):
         """
         Méthode dans laquelle on rentre toutes les instructions sur nos triggers.
         C'est à dire les collisions "scénaristiques".
-        ------------------------------------------------------------------------------
+        -------------------------------------------------------------------------
         map -> str
         return -> None
         """
