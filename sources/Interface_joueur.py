@@ -1,3 +1,5 @@
+#Projet : Return on Therenor
+#Auteurs : Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora, Etienne Pacault
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.task.Task import Task
@@ -53,7 +55,7 @@ class InterfaceJoueur(DirectObject):
         if self.joueur.vies - enmoins >= 0:
             self.joueur.vies -= enmoins
         else:
-            self.joueur.vies = 0    
+            self.joueur.vies = 0
 
     def ajouter_hp(self, enplus):
         """Méthode qui augmente la quantité de la barre d'hp quand le joueur en gagne"""
@@ -94,7 +96,7 @@ class InterfaceJoueur(DirectObject):
         quoi -> str
         combien -> int
         return -> None
-        """     
+        """
         if quoi == "hp":
             if combien > self.player.vies:
                 self.ajouter_hp(combien-self.player.vies)
@@ -109,12 +111,12 @@ class InterfaceJoueur(DirectObject):
             if combien > self.player.noais:
                 self.ajouter_argent(combien-self.player.noais)
             elif combien < self.player.noais:
-                self.enlever_argent(self.player.noais-combien)                
+                self.enlever_argent(self.player.noais-combien)
 
 
     def update_barres(self):
         """
-        Méthode permettant de mettre à jour 
+        Méthode permettant de mettre à jour
         l'état des barres de mana et de vies.
         ---------------------------------------
         return -> None

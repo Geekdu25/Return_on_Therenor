@@ -1,3 +1,5 @@
+#Projet : Return on Therenor
+#Auteurs : Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora, Etienne Pacault
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 

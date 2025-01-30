@@ -1,8 +1,9 @@
+#Projet : Return on Therenor
+#Auteurs : Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora, Etienne Pacault
 """
-Fichier tiré d'un exemple de Panda3D illustrant le paramétrage des touches par le joueur.
-Nous n'avons pas codé ce programme, mais nous l'avons en partie modifié, c'est pourquoi nous
-citons ses auteurs.
----------------------------------------------------------------------------------------------
+Attention ! Ce fichier tiré d'un exemple de Panda3D illustrant le paramétrage des touches par le joueur.
+Nous n'avons pas codé ce programme, mais nous l'avons en partie modifié, c'est pourquoi nous vous le précisons.
+---------------------------------------------------------------------------------------------------------------
 Rendez-vous sur : https://docs.panda3d.org/1.10/python/more-resources/samples/gamepad
 """
 
@@ -28,12 +29,12 @@ class InputMapping(object):
 
     def unmap(self):
         self.__map[action] = None
-        
+
     def get_map(self):
         dictionnaire = {}
         for machin in self.__map:
             dictionnaire[machin] = self.__map[machin][1]
-        return dictionnaire 
+        return dictionnaire
 
     def formatMapping(self, action):
         mapping = self.__map.get(action)

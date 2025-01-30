@@ -1,3 +1,5 @@
+#Projet : Return on Therenor
+#Auteurs : Tyméo Bonvicini-Renaud, Alexandrine Charette, Rémy Martinot, Noé Mora, Etienne Pacault
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import *
@@ -44,14 +46,14 @@ class Inventaire(DirectObject):
         if self.invent2 is not None:
             self.invent2.removeNode()
         for text in self.weapon_texts:
-            text.removeNode()    
+            text.removeNode()
         self.weapon_texts = []
         self.invent = None
         self.inventaire = self.joueur.inventaire
         self.armes = self.joueur.armes
         self.titre = None
         for text in self.inventaire_texts:
-            text.removeNode()    
+            text.removeNode()
         self.inventaire_texts= []
         self.inventaire_liste = []
         self.invent2 = None
@@ -224,7 +226,7 @@ class Inventaire(DirectObject):
 
     def get_item(self):
         return self.inventaire_liste[self.item_selectione]
-    
+
     def get_arme(self):
         return self.weapons[self.arme_en_main]
 
