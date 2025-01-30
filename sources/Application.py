@@ -2156,6 +2156,8 @@ class SetLevel(FSM):
         self.player.stop()
         self.player.followcam.set_active(False)
         del self.player.followcam
+        base.cam.setPos((0, 0, 0))
+        base.cam.setHpr((0, 0, 0))
 
     #----------------------Méthodes de collisions-----------------------------------------
     def into(self, a):

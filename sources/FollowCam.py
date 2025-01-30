@@ -36,12 +36,14 @@ class ManetteCam():
             self.vue = False
             self.target.hide()
             self.dummy.setHpr(90, 0, 0)
-            self.camera.setPos(self.dummy, Vec3(0, 6, 0))
+            self.camera.setHpr(0, 0, 0)
+            self.camera.setPos(0, 7, 0)
         else:
             self.vue = True
             self.target.show()
-            self.dummy.setHpr(90, 0, 0)
-            self.camera.setPos(self.camera, Vec3(0, 0, 6))
+            self.dummy.setHpr(270, 0, 0)
+            self.camera.setHpr(0, 0, 0)
+            self.camera.setPos(0, -16, 0)
 
 
     def into(self, a):
