@@ -58,10 +58,10 @@ class Bonhomme_de_neige(Monster):
         self.setScale(50)
         self.setPlayRate(3, 'ArmatureAction')
         self.actorInterval("ArmatureAction", loop=1, constrainedLoop=0, duration=1.2, startTime=0, endTime=1.2, startFrame=0, endFrame=47, playRate=3).loop()
-        
+
 class Zmeyevick(Monster):
     def __init__(self):
-        Monster.__init__(self, name="Zmeyevich", vies=20)
+        Monster.__init__(self, name="Zmeyevick_fin", vies=20)
 
 class Sorcier(Monster):
     def __init__(self):

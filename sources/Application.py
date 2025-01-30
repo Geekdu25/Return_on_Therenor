@@ -184,7 +184,7 @@ class SetLevel(FSM):
         base.taskMgr.add(self.update_text, "update_text")
         self.accept("escape", self.all_close)
         base.win.setCloseRequestEvent("escape")
-        
+
     #--------------------------------------GUI------------------------------
     def load_gui(self):
         """
@@ -242,7 +242,7 @@ class SetLevel(FSM):
     def check_interact(self):
         """
         Méthode appelée chaque fois que le joueur appuie sur espace.
-        Cela aura pour conséquences de vérifier les portes, 
+        Cela aura pour conséquences de vérifier les portes,
         les pnjs touchés, ou encore de passer les dialogues.
         -------------------------------------------------------------
         return -> None
@@ -264,7 +264,7 @@ class SetLevel(FSM):
                       self.set_text(["..."], messages=["reupdate"])
                     elif self.current_pnj == "etudiant":
                         self.set_text(self.pnjs[self.current_pnj].texts, messages=["boutons"])
-                        self.acceptOnce("boutons", self.show_etudiant_options)  
+                        self.acceptOnce("boutons", self.show_etudiant_options)
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.accept("reupdate", self.reupdate)
@@ -348,13 +348,13 @@ class SetLevel(FSM):
         self.bouton1 = DirectButton(text=(self.story["trigger"][4]), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
         self.bouton2 = DirectButton(text=(self.story["trigger"][3]), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
         self.bouton3 = DirectButton(text=(self.story["trigger"][2]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
-        
+
     def active_etudiant(self, info=1):
         """
         Méthode permettant d'afficher les dialogues de l'étudiant.
         -----------------------------------------------------------
         return -> None
-        """    
+        """
         properties = WindowProperties()
         properties.setCursorHidden(True)
         base.win.requestProperties(properties)
@@ -363,15 +363,15 @@ class SetLevel(FSM):
         self.bouton3.destroy()
         del self.bouton1, self.bouton2, self.bouton3
         if info == 1 or info == 2:
-          self.music.setVolume(0.2)  
+          self.music.setVolume(0.2)
           if info == 1:
               n = 11
           else:
-              n = 12      
+              n = 12
           self.set_text(n, messages=["reupdate"])
-        else:  
-          self.reupdate()  
-        
+        else:
+          self.reupdate()
+
     def accept_trigger(self, clickedYes):
         """
         Méthode permettant d'exécuter l'action d'un trigger.
@@ -429,16 +429,16 @@ class SetLevel(FSM):
         armes = ["Epée"]
         if not self.d_actif:
             self.d_actif = True
-            if self.player.noais >= prix:                
+            if self.player.noais >= prix:
                 if article in armes:
                     if article in self.player.armes:
-                       self.dialog = OkDialog(text=self.story["items"][4], command=self.cleanup_dialog_vente) 
+                       self.dialog = OkDialog(text=self.story["items"][4], command=self.cleanup_dialog_vente)
                        return None
                     else:
-                      self.player.noais -= prix #On retire de l'argent au joueur $$$$  
+                      self.player.noais -= prix #On retire de l'argent au joueur $$$$
                       self.player.ajoute_arme(article)
                 else:
-                  self.player.noais -= prix #On retire de l'argent au joueur $$$$  
+                  self.player.noais -= prix #On retire de l'argent au joueur $$$$
                   self.player.ajoute_item(article)
                 self.dialog = OkDialog(text=self.story["items"][2], command=self.cleanup_dialog_vente)
             else:
@@ -818,11 +818,11 @@ class SetLevel(FSM):
         del self.files
         for light in self.actuals_light:
             light.removeNode()
-        render.clearLight()    
+        render.clearLight()
         self.player.hide()
         self.map.removeNode()
         self.lit.removeNode()
-        del self.lit, self.map    
+        del self.lit, self.map
         for button in self.buttons_continue:
             button.removeNode()
         del self.buttons_continue
@@ -883,7 +883,7 @@ class SetLevel(FSM):
             self.exit_button.setText("Zurück")
         elif self.langue == "português":
             self.textObject.setText("Favor escolhe o seu idioma.")
-            self.exit_button.setText("Voltar") 
+            self.exit_button.setText("Voltar")
         elif self.langue == "english":
             self.textObject.setText("Please, choose your language.")
             self.exit_button.setText("Back")
@@ -904,7 +904,7 @@ class SetLevel(FSM):
             self.exit_button.setText("Zurück")
         elif self.langue == "português":
             self.textObject.setText("Favor escolhe o seu idioma ")
-            self.exit_button.setText("Voltar") 
+            self.exit_button.setText("Voltar")
         elif self.langue == "english":
             self.textObject.setText("Please, choose your language.")
             self.exit_button.setText("Back")
@@ -1329,12 +1329,12 @@ class SetLevel(FSM):
           self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
-        elif self.chapitre == 949:            
+        elif self.chapitre == 949:
             taskMgr.remove("update")
             a_light = AmbientLight("aa")
             a_light_np = render.attachNewNode(a_light)
             self.actuals_light.append(a_light_np)
-            render.setLight(a_light_np) 
+            render.setLight(a_light_np)
             point_light = PointLight("point_light")
             point_light.setColor((7, 6, 5, 0.5))
             point_light_np = self.player.attachNewNode(point_light)
@@ -1550,7 +1550,7 @@ class SetLevel(FSM):
         elif self.chapitre == 5:
           self.s.finish()
         elif self.chapitre == 949:
-            self.tsar_bomba.removeNode()  
+            self.tsar_bomba.removeNode()
 
     #-----------------------------Map (chargement et state)--------------------------------
     def load_map(self, map="village_pecheurs_maison_heros.bam", position=None, task=None):
@@ -1646,7 +1646,7 @@ class SetLevel(FSM):
                 elif cle[0] == "Forteresse":
                     objet = Forteresse()
                 elif cle[0] == "armoire":
-                    objet = Armoire()    
+                    objet = Armoire()
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -1786,18 +1786,6 @@ class SetLevel(FSM):
         if task is not None:
             return task.done
 
-    def load_sun(self):
-      """
-      Méthode permettant d'ajouter un soleil à la scène.
-      ---------------------------------------------------
-      return -> None
-      """
-      self.sun = loader.loadModel("soleil.bam")
-      self.sun.setScale(100)
-      self.sun.clearLight()
-      self.sun.setPos((0, -2000, 5000))
-      self.sun.reparentTo(render)
-
     def load_light(self):
         """
         Méthode permettant de générer une lumière spécifique pour chaque map.
@@ -1812,7 +1800,6 @@ class SetLevel(FSM):
           self.sun.removeNode()
           self.sun = None
         if self.current_map == "Arduny.bam":
-            self.load_sun()
             light = DirectionalLight("dlight")
             light.color = (9, 9, 7, 1)
             light_np = render.attachNewNode(light)
@@ -1825,14 +1812,14 @@ class SetLevel(FSM):
             light_np = render.attachNewNode(light)
             light_np.setHpr((0, 300, 0))
             render.setLight(light_np)
-            self.actuals_light.append(light_np)    
-        elif self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam" or self.current_map == "village_pecheurs_maison_pote.bam" or self.current_map == "village_pecheurs_port.bam":    
+            self.actuals_light.append(light_np)
+        elif self.current_map == "village_pecheurs_maison_chef.bam" or self.current_map == "village_pecheurs_maison_heros.bam" or self.current_map == "village_pecheurs_maison_pote.bam" or self.current_map == "village_pecheurs_port.bam":
             light = DirectionalLight("dlight")
             light.color = (0.21, 0.21, 0.11, 1)
             light_np = render.attachNewNode(light)
             light_np.setHpr((180, 300, 0))
             render.setLight(light_np)
-            self.actuals_light.append(light_np) 
+            self.actuals_light.append(light_np)
         elif self.current_map == "Verdantia.bam":
             light = DirectionalLight("dlight")
             light.color = (2, 2, 1.5, 1)
@@ -1854,7 +1841,7 @@ class SetLevel(FSM):
             light_np.setPos((0, 1, 1))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
-            
+
 
     def load_fog(self):
         """
@@ -1932,7 +1919,7 @@ class SetLevel(FSM):
         elif pnj == "assassin":
             return Assassin_repenti()
         elif pnj == "marchand":
-            return Marchand()    
+            return Marchand()
         return PNJ()
 
     def return_monstre(self, pnj="golem"):
@@ -2492,7 +2479,7 @@ class SetLevel(FSM):
               a_dire = self.story["items"][0]
               self.player_interface.ajouter_hp(5)
             elif article == "Tsar Bomba":
-                a_dire = self.story["items"][5]  
+                a_dire = self.story["items"][5]
                 self.solution_finale = True
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
         elif self.index_invent == 1 and len(self.player.armes) > 0:
@@ -2605,7 +2592,7 @@ class SetLevel(FSM):
             self.indication.hide()
             self.inventaire_mgr.cacher_items()
             self.fade_out("Cinematique")
-            return task.done    
+            return task.done
         return task.cont
 
     def exit_inventaire(self):
