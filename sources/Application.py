@@ -929,6 +929,13 @@ class SetLevel(FSM):
         del self.exit_button
 
     #-------------------------------Gestion du mappage de touches--------------------------------------------------
+    """
+    Attention ! Cette partie, comme le fichier mappingGui.py n'a pas été
+    entièrement codé par nous, mais seulement en partie modifié.
+    Il fait partie d'un exemple de Panda3D.
+    -------------------------------------------------------------------------------------
+    Rendez-vous sur : https://docs.panda3d.org/1.10/python/more-resources/samples/gamepad
+    """
     def enterMapping(self):
         """
         Méthode inspirée du script mappingGUI des samples de panda3d.
@@ -1133,6 +1140,10 @@ class SetLevel(FSM):
         btn.reparentTo(item)
         return item
 
+    """
+    Fin de l'avertissement. A partir de maintenant, ce code est original est crée entièrement par nous.
+    ---------------------------------------------------------------------------------------------------
+    """
     def exitMapping(self):
         """
         Méthode qui s'active lorsque l'on quitte le mappage de touches.
