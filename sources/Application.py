@@ -2777,8 +2777,17 @@ class SetLevel(FSM):
                 string += ", "
         del i
         string += "]"
+        string2 = "["
+        i = 0
+        for item in self.player.coffres:
+            i += 1
+            string += f'"{item}"'
+            if i < len(self.player.coffres):
+                string += ", "
+        del i
+        string2 += "]"
         fichier = open(self.get_path()+f'/invent_{file}.json', "wt")
-        fichier.writelines(['{"Armes":'+string+', "Objets":'+json.dumps(self.player.inventaire)+'}'])
+        fichier.writelines(['{"Armes":'+string+', "Objets":'+json.dumps(self.player.inventaire)+', "Coffres":'+string2+'}'])
         fichier.close()
 
     def will_save(self, clickedYes):
@@ -2844,6 +2853,7 @@ class SetLevel(FSM):
         fichier.close()
         self.player.inventaire = data["Objets"]
         self.player.armes = data["Armes"]
+        self.player.coffres = data["Coffres"]
         del data
 
     def init_fichiers(self):
@@ -2872,7 +2882,7 @@ class SetLevel(FSM):
         for loop in range(3):
             if not os.path.exists(path+f"/invent_{loop+1}.json"):
                 file = open(path+f"/invent_{loop+1}.json", "wt")
-                file.writelines('{"Armes":[], "Objets":{}}')
+                file.writelines('{"Armes":[], "Objets":{}, "Coffres":[0, 0]}')
                 file.close()
         #--------------Création du fichier de mappage de touches-------------------------------
         if not os.path.exists(path+"/keys.json"):

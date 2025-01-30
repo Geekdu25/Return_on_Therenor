@@ -22,6 +22,7 @@ class Player(Actor):
         self.armes = []
         self.current_arme = None
         self.inventaire = {}
+        self.coffres = [0, 0]
         self.sexe = "masculin"
         #--------------------Quelques paramètres simples-----------------------------------
         self.vitesse = 20
@@ -60,14 +61,14 @@ class Player(Actor):
             self.inventaire[item] += 1
         else:
             self.inventaire[item] = 1
-            
+
     def ajoute_arme(self, item="Epée"):
         """
         Méthode permettant d'ajouter un item dans les armes.
         -----------------------------------------------------
         item -> str
         return -> None
-        """        
+        """
         self.armes.append(item)
 
     def create_camera(self):
@@ -231,13 +232,13 @@ class Marchand(PNJ):
         self.texts_vente = 2
         self.articles = {"Vodka":30, "Tsar Bomba":300, "Epée":50}
         self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
-        self.col.setIntoCollideMask(BitMask32.bit(0))    
-        #self.loop(self.getAnimNames()[0])    
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        #self.loop(self.getAnimNames()[0])
 #-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="magicien", anims=["Immobile"])
-        self.setScale(40)        
+        self.setScale(40)
         self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
         self.col.setIntoCollideMask(BitMask32.bit(0))
