@@ -1940,7 +1940,7 @@ class SetLevel(FSM):
             fummee.setExpDensity(0.01)
             render.setFog(fummee)
         elif self.current_map == "Ignirift.bam" :
-            base.enableParticles()
+            """base.enableParticles()
             particles = Particles()
             particles.setPoolSize(5)
             particles.setBirthRate(0.5)
@@ -1957,10 +1957,10 @@ class SetLevel(FSM):
             effect.reparentTo(render)
             effect.setPos((0, 0, 50))
             effect.enable()
-            self.particles_effects.append(effect)
+            self.particles_effects.append(effect)"""
             fummee = Fog("Cendres")
             fummee.setColor(0.7, 0.2, 0.2)
-            fummee.setExpDensity(random.randint(0, 25)/1000)
+            fummee.setExpDensity(random.randint(0, 150)/10000)
             render.setFog(fummee)
         else:
             pass
