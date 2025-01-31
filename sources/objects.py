@@ -197,10 +197,12 @@ class Panneau:
         """
         self.nom = "panneau_"+str(numero)
         self.text = text
+        self.numero = numero
         self.object = loader.loadModel("panneau.bam")
-        self.object.setScale(10)
-        self.col = CollisionNode("panneau")
-        self.col.addSolid(CollisionBox((0, 0, 3), 0.5, 0.5, 0.5))
+        self.object.setScale(5)
+        self.col = CollisionNode(self.nom)
+        self.col.addSolid(CollisionBox((0, 0, 3), 1, 1, 3))
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
+        self.col_np.show()

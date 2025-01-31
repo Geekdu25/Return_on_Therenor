@@ -270,7 +270,7 @@ class SetLevel(FSM):
                         self.acceptOnce("boutons", self.show_etudiant_options)
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
-                    self.accept("reupdate", self.reupdate)
+                    self.acceptOnce("reupdate", self.reupdate)
                 elif self.pnjs[self.current_pnj].commercant:
                     self.music.setVolume(0.3)
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
@@ -310,7 +310,17 @@ class SetLevel(FSM):
             self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
             self.ignore("out")
         if self.current_panneau is not None:
-            pass
+            for objet in self.objects:
+                if "panneau" in objet.nom and str(objet.numero) == str(self.current_panneau):
+                    if not self.reading and not reussi:
+                      taskMgr.remove("update")
+                      self.ignore("out")
+                      self.ignore("into")
+                      self.ignore("escape")
+                      self.ignore(self.keys_data["Inventaire"])
+                      self.ignore("h")
+                      self.set_text([objet.text], messages=["reupdate"])
+                      self.acceptOnce("reupdate", self.reupdate)
         if self.actual_coffre is not None:
             a = False
             for objet in self.objects:
@@ -685,6 +695,8 @@ class SetLevel(FSM):
         self.model.reparentTo(render)
         self.model.setPos((500, 500, 0))
         self.model.setHpr((270, 0, 0))
+        base.cam.setPos((0, 0, 0))
+        base.cam.setHpr((0, 0, 0))
         light = PointLight("Lumière d'un point")
         light.setColor((4, 4.5, 0.5, 1))
         light_np = render.attachNewNode(light)
@@ -1666,7 +1678,7 @@ class SetLevel(FSM):
                 elif cle[0] == "armoire":
                     objet = Armoire()
                 elif cle[0] == "panneau":
-                    objet = Panneau(text=get_text_panneau(numero_panneau), numero=numero_panneau)
+                    objet = Panneau(text=self.get_text_panneau(numero_panneau), numero=numero_panneau)
                     numero_panneau += 1
                 else:
                     objet = Objet(cle[0])
@@ -1828,21 +1840,21 @@ class SetLevel(FSM):
         return -> str
         """
         if self.current_map == "Marelys.bam" and numero == 0:
-            return self.story["panneaux"][0]
+            return "Arduny"
         elif self.current_map == "Marelys.bam" and numero == 1:
-            return self.story["panneaux"][1]
+            return "Verdantia"
         elif self.current_map == "Verdantia.bam" and numero == 0:
-            return self.story["panneaux"][2]
+            return "Marelys"
         elif self.current_map == "Verdantia.bam" and numero == 1:
-            return self.story["panneaux"][3]
+            return "Ignirift"
         elif self.current_map == "Ignirift.bam" and numero == 0:
-            return self.story["panneaux"][0]
+            return "Verdantia"
         elif self.current_map == "Ignirift.bam" and numero == 1:
-            return self.story["panneaux"][1]
+            return "Arduny"
         elif self.current_map == "Arduny.bam" and numero == 0:
-            return self.story["panneaux"][3]
+            return "Ignirift"
         elif self.current_map == "Arduny.bam" and numero == 1:
-            return self.story["panneaux"][2]
+            return "Marelys"
         return "You've met with a terrible fate, haven't you ?"
 
     def load_light(self):
