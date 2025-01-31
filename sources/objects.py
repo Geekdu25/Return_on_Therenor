@@ -184,3 +184,23 @@ class Armoire:
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
+
+class Panneau:
+    """
+    Les panneaux qui nous indiquent des directions
+    """
+    def __init__(self, text="You've met with a terrible fate, haven't you ?", numero = 0):
+        """
+        Méthode constructeur.
+        ---------------------
+        return -> Panneau
+        """
+        self.nom = "panneau_"+str(numero)
+        self.text = text
+        self.object = loader.loadModel("panneau.bam")
+        self.object.setScale(10)
+        self.col = CollisionNode("panneau")
+        self.col.addSolid(CollisionBox((0, 0, 3), 0.5, 0.5, 0.5))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)

@@ -143,6 +143,7 @@ class SetLevel(FSM):
         self.pnjs = {}
         self.current_porte = None
         self.actual_trigger = None
+        self.current_panneau = None
         self.actual_coffre = None
         base.cTrav = CollisionTraverser() #Le CollisionTraverser, gestionnaire de toutes les collisions.
         if self.debug:
@@ -308,6 +309,8 @@ class SetLevel(FSM):
             self.ignore("escape")
             self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
             self.ignore("out")
+        if self.current_panneau is not None:
+            pass
         if self.actual_coffre is not None:
             a = False
             for objet in self.objects:
@@ -1639,6 +1642,7 @@ class SetLevel(FSM):
         data = json.load(objects_file)
         objects_file.close()
         n_coffre = 0
+        numero_panneau = 0
         if self.current_map in data:
             i = 0
             for cle in data[self.current_map]:
@@ -1661,6 +1665,9 @@ class SetLevel(FSM):
                     objet = Forteresse()
                 elif cle[0] == "armoire":
                     objet = Armoire()
+                elif cle[0] == "panneau":
+                    objet = Panneau(text=get_text_panneau(numero_panneau), numero=numero_panneau)
+                    numero_panneau += 1
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -1813,6 +1820,31 @@ class SetLevel(FSM):
         else:
             return bool(self.player.coffres[0])
 
+    def get_text_panneau(self, numero=0):
+        """
+        Méthode permettant de retourner le texte d'un panneau.
+        ------------------------------------------------------
+        numero -> int
+        return -> str
+        """
+        if self.current_map == "Marelys.bam" and numero == 0:
+            return self.story["panneaux"][0]
+        elif self.current_map == "Marelys.bam" and numero == 1:
+            return self.story["panneaux"][1]
+        elif self.current_map == "Verdantia.bam" and numero == 0:
+            return self.story["panneaux"][2]
+        elif self.current_map == "Verdantia.bam" and numero == 1:
+            return self.story["panneaux"][3]
+        elif self.current_map == "Ignirift.bam" and numero == 0:
+            return self.story["panneaux"][0]
+        elif self.current_map == "Ignirift.bam" and numero == 1:
+            return self.story["panneaux"][1]
+        elif self.current_map == "Arduny.bam" and numero == 0:
+            return self.story["panneaux"][3]
+        elif self.current_map == "Arduny.bam" and numero == 1:
+            return self.story["panneaux"][2]
+        return "You've met with a terrible fate, haven't you ?"
+
     def load_light(self):
         """
         Méthode permettant de générer une lumière spécifique pour chaque map.
@@ -1948,7 +1980,7 @@ class SetLevel(FSM):
         elif pnj == "marchand":
             return Marchand()
         elif pnj == "golem_pnj":
-            return Golem_pnj()    
+            return Golem_pnj()
         return PNJ()
 
     def return_monstre(self, pnj="golem"):
@@ -2194,7 +2226,7 @@ class SetLevel(FSM):
                     if b == "pyramide.bam" and not "Amulette" in self.player.inventaire:
                       taskMgr.remove("update")
                       self.set_text(22, messages=["ja"])
-                      self.accept("ja", taskMgr.add, extraArgs=[self.update, "update"])
+                      self.acceptOnce("ja", taskMgr.add, extraArgs=[self.update, "update"])
                     elif b == "pyramide.bam" and self.chapitre == 4:
                       self.chapitre = 5
                       self.fade_out("Cinematique")
@@ -2213,6 +2245,8 @@ class SetLevel(FSM):
                 self.actual_statue = b
             elif "coffre" in b:
                 self.actual_coffre = b.split("_")[len(b.split("_"))-1]
+            elif "panneau" in b:
+                self.current_panneau = b.split("_")[len(b.split("_"))-1]
 
     def out(self, a):
         """
@@ -2236,6 +2270,8 @@ class SetLevel(FSM):
                 self.actual_trigger = None
             elif "coffre" in b:
                 self.actual_coffre = None
+            elif "panneau" in b:
+                self.current_panneau = None
 
 
     def change_vitesse(self, touche="b"):
