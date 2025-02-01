@@ -155,7 +155,7 @@ class SetLevel(FSM):
         self.monstres = {}
         self.save_statues = {}
         self.particles_effects = []
-        self.sun = None
+        self.hack = False
         self.antimur = CollisionHandlerPusher() #Notre Collision Handler, qui empêchera le joueur de toucher les murs et d'autres choses.
         #-----------------Autres variables-----------------------
         self.chapitre = 0
@@ -269,8 +269,12 @@ class SetLevel(FSM):
                         self.set_text(self.pnjs[self.current_pnj].texts, messages=["boutons"])
                         self.acceptOnce("boutons", self.show_etudiant_options)
                     elif self.current_pnj == "golem_pnj" and self.chapitre == 5:
+                        self.current_pnj = None
                         self.chapitre = 6
                         self.fade_out("Cinematique")
+                    elif self.current_pnj == "golem_pnj" and self.chapitre > 6:
+                        self.set_text(["Où désires-tu aller ?"], messages=["boutons"])
+                        self.acceptOnce("boutons", self.show_golem_options)    
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.acceptOnce("reupdate", self.reupdate)
@@ -390,6 +394,41 @@ class SetLevel(FSM):
           self.set_text(n, messages=["reupdate"])
         else:
           self.reupdate()
+          
+    def show_golem_options(self):
+        """
+        Méthode permettant à l'étudiant de présenter des options au joueur.
+        -------------------------------------------------------------------
+        return -> None
+        """
+        properties = WindowProperties()
+        properties.setCursorHidden(False)
+        base.win.requestProperties(properties)
+        self.bouton1 = DirectButton(text=("Laisse-moi sortir !"), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_golem, extraArgs=[1])
+        self.bouton2 = DirectButton(text=("Direction Crest !"), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_golem, extraArgs=[2])
+        self.bouton3 = DirectButton(text=(self.story["trigger"][2]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_golem, extraArgs=[3])
+
+    def active_golem(self, info=1):
+        """
+        Méthode permettant d'afficher les dialogues de l'étudiant.
+        -----------------------------------------------------------
+        return -> None
+        """
+        properties = WindowProperties()
+        properties.setCursorHidden(True)
+        base.win.requestProperties(properties)
+        self.bouton1.destroy()
+        self.bouton2.destroy()
+        self.bouton3.destroy()
+        del self.bouton1, self.bouton2, self.bouton3
+        if info == 1 or info == 2:
+          if info == 1:  
+            self.current_point = "save_desert"
+          else:
+            self.current_point = "save_crest"    
+          self.fade_out("Map")
+        else:
+          self.reupdate()      
 
     def accept_trigger(self, clickedYes):
         """
@@ -1388,11 +1427,11 @@ class SetLevel(FSM):
           self.golem = Golem_pnj()
           self.golem.reparentTo(render)
           self.golem.setPos((1722, -3350, 0))
-          self.player.setPos((1722, -3275, -4))
+          self.player.setPos((1722, -3275, 25))
           self.player.setHpr((270, 0, 0))
-          base.cam.setPos((1722, -3000, 400))
-          base.cam.setHpr((180, -30, 0))
-          self.s = Sequence(base.cam.hprInterval(10, (180, -40, 0), startHpr=(180, -30, 0)), base.cam.hprInterval(10, (180, -30, 0), startHpr=(180, -40, 0)))
+          base.cam.setPos((1722, -2900, 340))
+          base.cam.setHpr((180, -20, 0))
+          self.s = Sequence(base.cam.hprInterval(10, (180, -30, 0), startHpr=(180, -20, 0)), base.cam.hprInterval(10, (180, -20, 0), startHpr=(180, -30, 0)))
           self.s.loop()
           self.set_text([self.story["24"][0]+self.player.nom+"."]+self.story["24"][1:], messages=["fin_discours"])
           self.acceptOnce("fin_discours", self.change_cine, extraArgs=[11])
@@ -1554,19 +1593,24 @@ class SetLevel(FSM):
             self.model.reparentTo(render)
             self.model.setPos((500, 500, 0))
             self.model.setHpr((270, 0, 0))
-            base.cam.setPos((0, 0, 0))
+            base.cam.setPos((0, 0, 100))
             base.cam.setHpr((0, 0, 0))
+            light = PointLight("Lumière d'un point")
+            light.setColor((4, 4.5, 0.5, 1))
+            light_np = render.attachNewNode(light)
+            render.setLight(light_np)
+            #-----------------------On définit notre séquence-----------------------------
+            self.boucle = Sequence(base.cam.posInterval(10, Vec3(200, -200, 250), startPos=Vec3(200, -500, 250)), base.cam.posInterval(5, Vec3(300, -50, 275), startPos=Vec3(325, -50, 275)),
+             base.cam.posInterval(5, Vec3(-125, -50, 200), startPos=Vec3(-150, -50, 200)))
+            self.boucle.loop()
             self.set_text(25, messages=["fin_discours"])
-            self.acceptOnce("fin_discours", self.change_cine, extraArgs=[10])
+            self.acceptOnce("fin_discours", self.change_cine, extraArgs=[12])
             self.transition.fadeIn(2)
         elif cine == 10:
             self.music.stop()
             self.music = base.loader.loadSfx("Thème_de_Therenor.ogg")
             self.music.setLoop(True)
             self.music.play()  
-            self.transition.fadeOut(0.5)
-            self.model.removeNode()
-            del self.model  
             self.player.show()
             self.golem.show()
             self.pyramide.show()
@@ -1575,14 +1619,18 @@ class SetLevel(FSM):
             self.s = Sequence(base.cam.hprInterval(10, (180, -40, 0), startHpr=(180, -30, 0)), base.cam.hprInterval(10, (180, -30, 0), startHpr=(180, -40, 0)))
             self.s.loop()
             self.set_text(26, messages=["fin_discours"])
-            self.acceptOnce("fin_discours", self.change_cine, extraArgs=[10])
+            self.acceptOnce("fin_discours", self.fade_out, extraArgs=["Map"])
             self.transition.fadeIn(2)
         elif cine == 11:
             self.transition.fadeOut(2)
-            taskMgr.doMethodLater(2, self.change_cine, "changement de cinématique", extraArgs=[9]) 
+            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[9]) 
         elif cine == 12:
+            self.boucle.finish()
+            del self.boucle
             self.transition.fadeOut(2)
-            taskMgr.doMethodLater(2, self.change_cine, "changement de cinématique", extraArgs=[10])           
+            self.model.removeNode()
+            del self.model              
+            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[10])           
         if task is not None:
             return task.done
                    
@@ -1662,7 +1710,10 @@ class SetLevel(FSM):
           self.s.finish()
         elif self.chapitre == 6:
             self.music.stop()
+            self.s.finish()
+            del self.s
             self.chapitre = 7
+            self.hack = True
             self.golem.removeNode()
             self.pyramide.removeNode()
             del self.golem, self.pyramide  
@@ -1955,9 +2006,6 @@ class SetLevel(FSM):
         light_np = render.attachNewNode(light)
         self.actuals_light.append(light_np)
         render.setLight(light_np)
-        if self.sun is not None:
-          self.sun.removeNode()
-          self.sun = None
         if self.current_map == "Arduny.bam":
             light = DirectionalLight("dlight")
             light.color = (9, 9, 7, 1)
@@ -2222,27 +2270,35 @@ class SetLevel(FSM):
         task -> task
         return -> None
         """
-        if self.current_point == "save_heros":#Maison du joueur.
-            self.current_map = "village_pecheurs_maison_heros.bam"
-            self.player.setPos(0, 30, 6)
-        elif self.current_point == "save_village": #Dans le village des pecheurs
-            self.current_map = "village_pecheurs.bam"
-            self.player.setPos(-380, 220, 250)
-        elif self.current_point == "save_pyramide": #Dans la pyramide
+        if self.hack:
+            self.hack = False
             self.current_map = "pyramide.bam"
-            self.player.setPos(150, -50, 0)
-        elif self.current_point == "save_maison_chasseurs":
-            self.current_map = "Manoir.bam"
-            self.player.setPos(0, -20, 0)
-        elif self.current_point == "save_ignirift":
-            self.current_map = "Ignirift.bam"
-            self.player.setPos(10, 10, 25)
-        elif self.current_point == "save_desert":
-            self.current_map = "Arduny.bam"
-            self.player.setPos(2125, -2000, 0)
-        else:#Le joueur se retrouve chez lui par défaut
-            self.current_map = "village_pecheurs_maison_heros.bam"
-            self.player.setPos(0, 30, 6)
+            self.player.setPos((1722, -3200, 20))
+        else:
+          if self.current_point == "save_heros":#Maison du joueur.
+              self.current_map = "village_pecheurs_maison_heros.bam"
+              self.player.setPos(0, 30, 6)
+          elif self.current_point == "save_village": #Dans le village des pecheurs
+              self.current_map = "village_pecheurs.bam"
+              self.player.setPos(-380, 220, 250)
+          elif self.current_point == "save_pyramide": #Dans la pyramide
+              self.current_map = "pyramide.bam"
+              self.player.setPos(150, -50, 0)
+          elif self.current_point == "save_maison_chasseurs":
+              self.current_map = "Manoir.bam"
+              self.player.setPos(0, -20, 0)
+          elif self.current_point == "save_ignirift":
+              self.current_map = "Ignirift.bam"
+              self.player.setPos(10, 10, 25)
+          elif self.current_point == "save_desert":
+              self.current_map = "Arduny.bam"
+              self.player.setPos(2125, -2000, 0)
+          elif self.current_point == "save_crest":
+              self.current_map = "Crest.bam"
+              self.player.setPos((3500, 0, 500))    
+          else:#Le joueur se retrouve chez lui par défaut
+              self.current_map = "village_pecheurs_maison_heros.bam"
+              self.player.setPos(0, 30, 6)
         if task != None:
             return task.done
 
@@ -2279,9 +2335,6 @@ class SetLevel(FSM):
         if hasattr(self, "eau"):
             self.eau.removeNode()
             del self.eau
-        if self.sun is not None:
-          self.sun.removeNode()
-          self.sun = None
         for p in self.particles_effects:
           p.removeNode()
         self.particles_effects = []
@@ -2296,6 +2349,7 @@ class SetLevel(FSM):
         self.player.left = False
         self.player.right = False
         self.player.reverse = False
+        self.current_pnj = None
         self.player.walk = False
         taskMgr.remove("update")
         del self.music_name
