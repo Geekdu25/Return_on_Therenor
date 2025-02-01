@@ -268,6 +268,9 @@ class SetLevel(FSM):
                     elif self.current_pnj == "etudiant":
                         self.set_text(self.pnjs[self.current_pnj].texts, messages=["boutons"])
                         self.acceptOnce("boutons", self.show_etudiant_options)
+                    elif self.current_pnj == "golem_pnj" and self.chapitre == 5:
+                        self.chapitre = 6
+                        self.fade_out("Cinematique")
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.acceptOnce("reupdate", self.reupdate)
@@ -1358,6 +1361,33 @@ class SetLevel(FSM):
           self.accept("texte_ok", self.fade_out, extraArgs=["Map"])
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
+        elif self.chapitre == 6:
+          taskMgr.remove("update")
+          a_light = AmbientLight("aa")
+          a_light_np = render.attachNewNode(a_light)
+          self.actuals_light.append(a_light_np)
+          render.setLight(a_light_np)
+          point_light = PointLight("point_light")
+          point_light.setColor((7, 7, 0.5, 1))
+          point_light_np = self.player.attachNewNode(point_light)
+          point_light_np.setPos((1722, -3300, 0))
+          self.actuals_light.append(point_light_np)
+          render.setLight(point_light_np)
+          self.inventaire_mgr.cacher()
+          self.player_interface.cacher()
+          self.ignore_touches()
+          self.pyramide = loader.loadModel("pyramide.bam")
+          self.pyramide.reparentTo(render)
+          self.pyramide.setScale(9)
+          self.player.show()
+          self.golem = Golem_pnj()
+          self.golem.reparentTo(render)
+          self.player.setPos((1722, -3275, -4))
+          self.player.setHpr((0, 0, 0))
+          base.cam.setPos((1722, -3200, 200))
+          base.cam.setHpr((0, -30, 0))
+          self.set_text([self.story["24"][0]+self.player.nom+"."]+self.story["24"][1:], messages=["fin_discours"])
+          self.transition.fadeIn(2)
         elif self.chapitre == 949:
             taskMgr.remove("update")
             a_light = AmbientLight("aa")
@@ -1365,7 +1395,7 @@ class SetLevel(FSM):
             self.actuals_light.append(a_light_np)
             render.setLight(a_light_np)
             point_light = PointLight("point_light")
-            point_light.setColor((7, 6, 5, 0.5))
+            point_light.setColor((7, 7, 7, 1))
             point_light_np = self.player.attachNewNode(point_light)
             point_light_np.setPos(0, 0, 20)
             self.actuals_light.append(point_light_np)
@@ -1578,6 +1608,10 @@ class SetLevel(FSM):
           self.player.inventaire["Amulette"] = 1
         elif self.chapitre == 5:
           self.s.finish()
+        elif self.chapitre == 6:
+            self.golem.removeNode()
+            self.pyramide.removeNode()
+            del self.golem, self.pyramide  
         elif self.chapitre == 949:
             self.tsar_bomba.removeNode()
 
