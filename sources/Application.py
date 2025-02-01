@@ -1362,6 +1362,10 @@ class SetLevel(FSM):
           self.accept("space", self.check_interact)
           self.transition.fadeIn(2)
         elif self.chapitre == 6:
+          self.music.stop()
+          self.music = base.loader.loadSfx("Pyramide.ogg")
+          self.music.setLoop(True)
+          self.music.play()  
           taskMgr.remove("update")
           a_light = AmbientLight("aa")
           a_light_np = render.attachNewNode(a_light)
@@ -1376,17 +1380,22 @@ class SetLevel(FSM):
           self.inventaire_mgr.cacher()
           self.player_interface.cacher()
           self.ignore_touches()
+          self.accept(self.keys_data["Interagir"], self.check_interact)
           self.pyramide = loader.loadModel("pyramide.bam")
           self.pyramide.reparentTo(render)
           self.pyramide.setScale(9)
           self.player.show()
           self.golem = Golem_pnj()
           self.golem.reparentTo(render)
+          self.golem.setPos((1722, -3350, 0))
           self.player.setPos((1722, -3275, -4))
-          self.player.setHpr((0, 0, 0))
-          base.cam.setPos((1722, -3200, 200))
-          base.cam.setHpr((0, -30, 0))
+          self.player.setHpr((270, 0, 0))
+          base.cam.setPos((1722, -3000, 400))
+          base.cam.setHpr((180, -30, 0))
+          self.s = Sequence(base.cam.hprInterval(10, (180, -40, 0), startHpr=(180, -30, 0)), base.cam.hprInterval(10, (180, -30, 0), startHpr=(180, -40, 0)))
+          self.s.loop()
           self.set_text([self.story["24"][0]+self.player.nom+"."]+self.story["24"][1:], messages=["fin_discours"])
+          self.acceptOnce("fin_discours", self.change_cine, extraArgs=[9])
           self.transition.fadeIn(2)
         elif self.chapitre == 949:
             taskMgr.remove("update")
@@ -1532,8 +1541,51 @@ class SetLevel(FSM):
             self.travel = 0
             self.s.finish()
             self.set_text(19, ["texte_ok"])
+        elif cine == 9:
+            self.s.finish()
+            self.transition.fadeOut(0.5)
+            self.music.stop()
+            self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+            self.music.setLoop(True)
+            self.music.play()  
+            self.pyramide.hide()
+            self.golem.hide()
+            self.player.hide()
+            self.model = loader.loadModel("salle_du_sacrifice.bam")
+            self.model.reparentTo(render)
+            self.model.setPos((500, 500, 0))
+            self.model.setHpr((270, 0, 0))
+            base.cam.setPos((0, 0, 0))
+            base.cam.setHpr((0, 0, 0))
+            self.set_text(["Il y a 50 ans...", "Alors que l'île de Therenor était encore un royaume prospère.", "Une abomination vit le jour.", "Une hydre maléfique : Zmeyevick.", "Cette hydre est apparue subitement avec pour seul objectif la souffrance du peuple de Therenor.", "Régulièrement, elle terrorisait les villages et tuait des dizaines de personnes.", "Mais un jour, un courageux héros provenant d'un petit village de Verdantia...", "parcouru Therenor dans le but d'être suffisament \nfort et affronta l'hydre dans un combat sanglant.", "L'hydre fut scéllée dans la fortresse de la reine de Crest,\n lieu où s'est déroulé le combat.",
+            "Son corps fut entérré en-dessous d'une salle commémorative se situant au milieu de la forteresse.", "Cet homme, celui qui a battu l'hydre, c'était ton grand-père.", "Il devint populaire, mais il était persuadé que des êtres mal intentionnés pourraient tenter de ressuciter l'hydre.", "Il chargea alors un conseil de trois magiciens dont\n je fais parti de veiller à ce que l'hydre ne se réveille jamais.", 
+            "Mais il y a quelques jours, le pire se produisit." "Un de mes deux confrères trouva dans une antique bibliothèque un moyen de ressuciter l'hydre.", "Il apprit qu'il fallait sacrifier l'être qui avait tué l'hydre pour la ramener à la vie.", "Pour une raison inconnue, de viles pensées s'emparèrent alors de lui.", "Il profita du vieil âge de ton grand-père pour l'enlever et le sacrifier à Crest.", "Maintenant, ce n'est plus q'ne question de temps avant que l'hydre ne se réveille."], messages=["fin_discours"])
+            self.acceptOnce("fin_discours", self.change_cine, extraArgs=[10])
+            taskMgr.doMethodLater(2, self.f_in, "fade in", extraArgs=[2])
+        elif cine == 10:
+            self.music.stop()
+            self.music = base.loader.loadSfx("Thème_de_Therenor.ogg")
+            self.music.setLoop(True)
+            self.music.play()  
+            self.transition.fadeOut(0.5)
+            self.model.removeNode()
+            del self.model  
+            self.player.show()
+            self.golem.show()
+            self.pyramide.show()
+            base.cam.setPos((1722, -3000, 400))
+            base.cam.setHpr((180, -30, 0))
+            self.s = Sequence(base.cam.hprInterval(10, (180, -40, 0), startHpr=(180, -30, 0)), base.cam.hprInterval(10, (180, -30, 0), startHpr=(180, -40, 0)))
+            self.s.loop()
+            self.set_text(["Tu ne peux plus sauver ton grand-père...\nj'en suis navré.", "Mais tu peux encore sauver cette île de la destruction en allant tuer Zmeyevick une bonne fois pour toutes à Crest, montagne centrale de Therenor.", "Mais tu ne pourras y arriver seul, tu auras besoin de mes pouvoirs.", "Je vais pouvoir te téléporter en-dehors de la pyramide ou à Crest comme tu le souhaites.", "Va ! Sauve Therenor et le monde entier de l'avènement de Zmeyevick !"], messages=["fin_discours"])
+            self.acceptOnce("fin_discours", self.change_cine, extraArgs=[10])
+            taskMgr.doMethodLater(2, self.f_in, "fade in", extraArgs=[2])  
         if task is not None:
             return task.done
+            
+    def f_in(self, duration, task):
+        self.transition.fadeIn(duration)
+        return task.done        
 
     def update_cinematique(self, task):
         """
@@ -1609,6 +1661,8 @@ class SetLevel(FSM):
         elif self.chapitre == 5:
           self.s.finish()
         elif self.chapitre == 6:
+            self.music.stop()
+            self.chapitre = 7
             self.golem.removeNode()
             self.pyramide.removeNode()
             del self.golem, self.pyramide  
