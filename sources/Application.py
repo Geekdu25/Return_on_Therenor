@@ -275,7 +275,7 @@ class SetLevel(FSM):
                     self.music.setVolume(0.3)
                     self.set_text(self.pnjs[self.current_pnj].texts_vente, messages=["vente"])
                     self.accept("vente", self.vente, extraArgs=[self.pnjs[self.current_pnj].articles])
-        if self.current_porte is not None:
+        elif self.current_porte is not None:
             self.transition.fadeOut(0.5)
             taskMgr.remove("update")
             self.player.walk = False
@@ -293,7 +293,7 @@ class SetLevel(FSM):
               taskMgr.doMethodLater(0.5, self.load_map, "loadmap", extraArgs=[self.current_porte, self.portails[self.current_porte][1].newpos])
               if self.portails[self.current_porte][1].orientation is not None:
                 taskMgr.doMethodLater(0.5, self.player.setH, "change orientation joueur", extraArgs=self.portails[self.current_porte][1].orientation)
-        if self.actual_statue is not None:
+        elif self.actual_statue is not None:
             taskMgr.remove("update")
             properties = WindowProperties()
             properties.setCursorHidden(False)
@@ -301,7 +301,7 @@ class SetLevel(FSM):
             self.ignore("escape")
             self.current_point = self.actual_statue
             self.saveDlg = YesNoDialog(text = self.story["gui"][0], command = self.will_save) #Voulez-vous sauvegarder ?
-        if self.actual_trigger is not None:
+        elif self.actual_trigger is not None:
             taskMgr.remove("update")
             properties = WindowProperties()
             properties.setCursorHidden(False)
@@ -309,7 +309,7 @@ class SetLevel(FSM):
             self.ignore("escape")
             self.triggerDlg = YesNoDialog(text = self.story["trigger"][self.actual_trigger], command = self.accept_trigger)
             self.ignore("out")
-        if self.current_panneau is not None:
+        elif self.current_panneau is not None:
             for objet in self.objects:
                 if "panneau" in objet.nom and str(objet.numero) == str(self.current_panneau):
                     if not self.reading and not reussi:
@@ -321,7 +321,7 @@ class SetLevel(FSM):
                       self.ignore("h")
                       self.set_text([objet.text], messages=["reupdate"])
                       self.acceptOnce("reupdate", self.reupdate)
-        if self.actual_coffre is not None:
+        elif self.actual_coffre is not None:
             a = False
             for objet in self.objects:
                 if objet.nom == "coffre" and str(objet.id) == self.actual_coffre:
@@ -1827,7 +1827,7 @@ class SetLevel(FSM):
         numero -> int
         return -> bool
         """
-        if map == "Pyramide.bam" and numero == 0:
+        if map == "pyramide.bam" and numero == 0:
             return bool(self.player.coffres[1])
         else:
             return bool(self.player.coffres[0])
@@ -2204,6 +2204,7 @@ class SetLevel(FSM):
         self.pnjs = {}
         self.portails = {}
         self.map = None
+        self.current_panneau = None
         self.player.left = False
         self.player.right = False
         self.player.reverse = False
@@ -2282,7 +2283,7 @@ class SetLevel(FSM):
                 self.actual_trigger = None
             elif "coffre" in b:
                 self.actual_coffre = None
-            elif "panneau" in b:
+            elif "panneau" in b or self.current_panneau is not None:
                 self.current_panneau = None
 
 
@@ -2895,6 +2896,7 @@ class SetLevel(FSM):
         if hasattr(self, "myOkDialog"):
             if self.myOkDialog is not None:
                 self.myOkDialog.cleanup()
+                del self.myOkDialog
         self.accept("escape", self.confirm_quit)
         taskMgr.add(self.update, "update")
 
