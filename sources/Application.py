@@ -1316,6 +1316,8 @@ class SetLevel(FSM):
             self.chapitre_step = 0
             cm = CardMaker("plan")
             cm.setFrame(-1, 1, -1, 1)
+            self.text_erreur = OnscreenText(text='*"Et on ne le revit jamais." (Toutes nos excuses pour les \npersonnes qui sont passionnées par la conjugaison)', pos=(0, -0.6), scale=(0.1, 0.1), fg=(1, 1, 1, 1))
+            self.text_erreur.hide()
             self.plane = render2d.attachNewNode(cm.generate())
             self.texture = loader.loadTexture("test.mp4")
             self.son = loader.loadSfx("test.mp4")
@@ -1776,8 +1778,14 @@ class SetLevel(FSM):
         """
         dt = globalClock.getDt()
         if self.chapitre == 1:
-            if self.texture.getTime() > 64 and self.chapitre_step == 0:
+            if self.texture.getTime() > 51 and self.texture.getTime() < 55 and self.chapitre_step == 0:
+                self.text_erreur.show()
+            elif self.texture.getTime() > 55 and self.texture.getTime() < 63:
+                self.text_erreur.hide()    
+            elif self.texture.getTime() > 64 and self.chapitre_step == 0:
                 self.chapitre_step = 1
+                self.text_erreur.removeNode()
+                del self.text_erreur
                 self.transition.fadeOut(2)
                 self.ignore(self.keys_data["Interagir"])
                 self.accept(self.keys_data["Interagir"], self.check_interact)
