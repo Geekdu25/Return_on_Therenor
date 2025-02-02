@@ -1719,29 +1719,35 @@ class SetLevel(FSM):
             self.actuals_light.append(l_np)
             fummee = Fog("neige")
             fummee.setColor(1, 1, 1)
-            fummee.setExpDensity(0.0001)
+            fummee.setExpDensity(0.0004)
             render.setFog(fummee)
             self.player.hide()
             self.magicien.hide()
+            self.skybox = loader.loadModel("skybox.bam")
+            self.skybox.setScale(10000)
+            self.skybox.setBin('background', 1)
+            self.skybox.setDepthWrite(0)
+            self.skybox.setLightOff()
+            self.skybox.reparentTo(render)
             self.crest = loader.loadModel("Crest.bam")
+            self.crest.reparentTo(render)
             self.crest.setScale(750)
             self.forteresse = loader.loadModel("Forteresse.bam")
             self.forteresse.setScale(100)
+            self.forteresse.reparentTo(render)
             self.forteresse.setPos((0, 100, 0))
+            self.map.setHpr((0, 0, 0))
             self.map.setPos((-1000, 400, 270))
-            base.cam.setPos((-500, 1500, 500))
-            base.cam.lookAt(self.map)
-            self.s1 = self.map.posInterval(6, Vec3(-1000, 400, -100), startPos=Vec3(-1000, 400, 270))
+            base.cam.setPos((1000, 150, 300))
+            base.cam.setHpr((90, 0, 0))
+            self.s1 = self.map.posInterval(7, Vec3(-1000, 400, -100), startPos=Vec3(-1000, 400, 270))
             self.s1.start()
-            self.s2 = Sequence(base.cam.posInterval(0.25, Vec3(-510, 1500, 600), startPos=Vec3(-500, 1500, 500)), base.cam.posInterval(0.125, Vec3(-500, 1500, 500), startPos=Vec3(-510, 1500, 600)))
-            self.s2.loop()
             taskMgr.doMethodLater(8, self.change_cine, "changement de cinématique", extraArgs=[15])
             self.transition.fadeIn(2)    
         elif cine == 15:
             self.s1.finish()
-            self.s2.finish()
             self.transition.fadeOut(1)
-            del self.s1, self.s2
+            del self.s1
             taskMgr.doMethodLater(2, self.change_cine, "changement", extraArgs=[16])
         elif cine == 16:
             for light in self.actuals_light:
@@ -1749,7 +1755,7 @@ class SetLevel(FSM):
               light.removeNode()
             self.actuals_light = []  
             l = AmbientLight("ambiante")
-            l.color = (0.3, 1.2, 0.3, 1)
+            l.color = (0.4, 1.2, 0.4, 1)
             l_np = render.attachNewNode(l)
             render.setLight(l_np)
             self.actuals_light.append(l_np)
@@ -1757,14 +1763,27 @@ class SetLevel(FSM):
             render.clearFog()
             self.map.removeNode()
             self.crest.removeNode()
-            del self.map, self.crest, self.forteresse
+            self.skybox.removeNode()
+            del self.map, self.crest, self.forteresse, self.skybox
             self.arene = loader.loadModel("arene.bam")
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            base.cam.setPos(self.player.getPos(), (0, -20, 10))
+            self.player.setPos((0, 0, 30))
+            self.magicien.setPos((0, -30, 60))
+            base.cam.setPos(self.player, Vec3(0, -10, 16))  
+            base.cam.setHpr((0, 0, 0))          
             self.arene.setScale(10)
-            self.transition.fadeIn(2)        
+            self.music.stop()
+            self.music = base.loader.loadSfx("Zmeyevick,_l'antique_terreur_phase_1.ogg")
+            self.music.setLoop(True)
+            self.music.play()
+            self.transition.fadeIn(2)
+            self.set_text(["Le processus de résurection \nde l'hydre est presque terminé !", "Tu seras la première victime de\n la folie meurtrière de Zmeyevick.", "Profite-bien !\n Hahahahaha !"], messages=["fini"])
+            self.acceptOnce("fini", self.change_cine, extraArgs=[17])
+        elif cine == 17:
+            #LerpFunc(self.magicien.setTransparency, fromData = 1, toData = 0, duration = 2).start()
+            taskMgr.doMethodLater(2.1, self.magicien.removeNode, "suppresion du magicien", extraArgs=[])            
         if task is not None:
             return task.done
                    
@@ -1821,7 +1840,7 @@ class SetLevel(FSM):
               self.move_camera = 1
               base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
             if base.cam.getY() > -100:
-              base.cam.setY(base.cam, dt*25)              
+              base.cam.setY(base.cam, dt*25)      
         return task.cont
 
 
@@ -1858,6 +1877,7 @@ class SetLevel(FSM):
           self.player.inventaire["Amulette"] = 1
         elif self.chapitre == 5:
           self.s.finish()
+          taskMgr.doMethodLater(1.1, self.music.setVolume, "volume", extraArgs=[1])
         elif self.chapitre == 6:
             self.music.stop()
             self.s.finish()
