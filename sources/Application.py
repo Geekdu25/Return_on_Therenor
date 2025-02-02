@@ -1442,6 +1442,7 @@ class SetLevel(FSM):
           self.acceptOnce("fin_discours", self.change_cine, extraArgs=[11])
           self.transition.fadeIn(2)
         elif self.chapitre == 8:  
+            self.chapitre_step = 0
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
             self.ignore_touches()
@@ -1483,6 +1484,7 @@ class SetLevel(FSM):
             self.music.play()
             self.music.setVolume(0.3)
             self.set_text(1, messages=["Fini"])
+            self.acceptOnce("Fini", self.change_cine, extraArgs=[13])
             self.transition.fadeIn(2)
         elif self.chapitre == 949:
             taskMgr.remove("update")
@@ -1699,7 +1701,68 @@ class SetLevel(FSM):
             self.transition.fadeOut(2)
             self.model.removeNode()
             del self.model              
-            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[10])           
+            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[10])         
+        elif cine == 13:
+            self.transition.fadeOut(2)    
+            self.chapitre_step = 1  
+            taskMgr.doMethodLater(2, self.change_cine, "changement de cinématique", extraArgs=[14])
+        elif cine == 14:
+            for light in self.actuals_light:
+              render.clearLight(light)
+              light.removeNode()
+            self.actuals_light = []  
+            l = AmbientLight("ambiante")
+            l_np = render.attachNewNode(l)
+            render.setLight(l_np)
+            self.actuals_light.append(l_np)
+            fummee = Fog("neige")
+            fummee.setColor(1, 1, 1)
+            fummee.setExpDensity(0.0001)
+            render.setFog(fummee)
+            self.player.hide()
+            self.magicien.hide()
+            self.crest = loader.loadModel("Crest.bam")
+            self.crest.setScale(750)
+            self.forteresse = loader.loadModel("Forteresse.bam")
+            self.forteresse.setScale(100)
+            self.forteresse.setPos((0, 100, 0))
+            self.map.setPos((-1000, 400, 270))
+            base.cam.setPos((-500, 1500, 500))
+            base.cam.lookAt(self.map)
+            self.s1 = self.map.posInterval(6, Vec3(-1000, 400, -100), startPos=Vec3(-1000, 400, 270))
+            self.s1.start()
+            self.s2 = Sequence(base.cam.posInterval(0.25, Vec3(-510, 1500, 600), startPos=Vec3(-500, 1500, 500)), base.cam.posInterval(0.125, Vec3(-500, 1500, 500), startPos=Vec3(-510, 1500, 600)))
+            self.s2.loop()
+            taskMgr.doMethodLater(8, self.change_cine, "changement de cinématique", extraArgs=[15])
+            self.transition.fadeIn(2)    
+        elif cine == 15:
+            self.s1.finish()
+            self.s2.finish()
+            self.transition.fadeOut(1)
+            del self.s1, self.s2
+            taskMgr.doMethodLater(2, self.change_cine, "changement", extraArgs=[16])
+        elif cine == 16:
+            for light in self.actuals_light:
+              render.clearLight(light)
+              light.removeNode()
+            self.actuals_light = []  
+            l = AmbientLight("ambiante")
+            l.color = (0.3, 1.2, 0.3, 1)
+            l_np = render.attachNewNode(l)
+            render.setLight(l_np)
+            self.actuals_light.append(l_np)
+            self.forteresse.removeNode()
+            render.clearFog()
+            self.map.removeNode()
+            self.crest.removeNode()
+            del self.map, self.crest, self.forteresse
+            self.arene = loader.loadModel("arene.bam")
+            self.arene.reparentTo(render)
+            self.player.show()
+            self.magicien.show()
+            base.cam.setPos(self.player.getPos(), (0, -20, 10))
+            self.arene.setScale(10)
+            self.transition.fadeIn(2)        
         if task is not None:
             return task.done
                    
@@ -1741,7 +1804,7 @@ class SetLevel(FSM):
                     self.s.finish()
                     self.s = base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350))
                     self.s.start()
-        elif self.chapitre == 8:
+        elif self.chapitre == 8 and self.chapitre_step == 0:
           if self.text_index  <= 4:
             if base.cam.getY() < 200:
               base.cam.setY(base.cam, dt*60)
