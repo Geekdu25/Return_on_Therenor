@@ -368,9 +368,9 @@ class SetLevel(FSM):
         properties = WindowProperties()
         properties.setCursorHidden(False)
         base.win.requestProperties(properties)
-        self.bouton1 = DirectButton(text=(self.story["trigger"][4]), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
-        self.bouton2 = DirectButton(text=(self.story["trigger"][3]), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
-        self.bouton3 = DirectButton(text=(self.story["trigger"][2]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
+        self.bouton1 = DirectButton(text=(self.story["trigger"][5]), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_etudiant, extraArgs=[1])
+        self.bouton2 = DirectButton(text=(self.story["trigger"][4]), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_etudiant, extraArgs=[2])
+        self.bouton3 = DirectButton(text=(self.story["trigger"][3]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_etudiant, extraArgs=[3])
 
     def active_etudiant(self, info=1):
         """
@@ -401,12 +401,13 @@ class SetLevel(FSM):
         -------------------------------------------------------------------
         return -> None
         """
+        self.ignore(self.keys_data["Interagir"])
         properties = WindowProperties()
         properties.setCursorHidden(False)
         base.win.requestProperties(properties)
-        self.bouton1 = DirectButton(text=("Laisse-moi sortir !"), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_golem, extraArgs=[1])
-        self.bouton2 = DirectButton(text=("Direction Crest !"), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_golem, extraArgs=[2])
-        self.bouton3 = DirectButton(text=(self.story["trigger"][2]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_golem, extraArgs=[3])
+        self.bouton1 = DirectButton(text=(self.story["trigger"][7]), pos=Vec3(0.5, 0, 0), scale=0.1, command=self.active_golem, extraArgs=[1])
+        self.bouton2 = DirectButton(text=(self.story["trigger"][6]), scale=0.1, pos=Vec3(-0.5, 0, 0), command=self.active_golem, extraArgs=[2])
+        self.bouton3 = DirectButton(text=(self.story["trigger"][3]), pos=Vec3(0, 0, -0.5), scale=0.1, command=self.active_golem, extraArgs=[3])
 
     def active_golem(self, info=1):
         """
@@ -452,6 +453,10 @@ class SetLevel(FSM):
                 self.transition.fadeOut(1)
                 taskMgr.doMethodLater(1, self.player.setPos, "new_player_pos", extraArgs=[(0, -1075, 250)])
                 taskMgr.doMethodLater(0.95, self.load_map, "loadmap", extraArgs=["village_pecheurs.bam"])
+        elif self.actual_trigger == 2: #Tuez Zmeyevick ?
+            if clickedYes:
+                self.chapitre = 8
+                self.fade_out("Cinematique")
         self.accept("escape", self.confirm_quit)
         taskMgr.add(self.update, "update")
 
@@ -918,7 +923,7 @@ class SetLevel(FSM):
         elif self.chapitre == 1:
             self.request("Cinematique")
         #-----------------On charge la map-----------------------------------
-        elif self.chapitre >= 2 and self.chapitre <= 5:
+        elif self.chapitre >= 2 and self.chapitre <= 7:
             Sequence(LerpFunc(self.music.setVolume, fromData = 1, toData = 0, duration = 2)).start()
             self.fade_out("Map")
         #------------Générique---------------------------
@@ -1436,6 +1441,49 @@ class SetLevel(FSM):
           self.set_text([self.story["24"][0]+self.player.nom+"."]+self.story["24"][1:], messages=["fin_discours"])
           self.acceptOnce("fin_discours", self.change_cine, extraArgs=[11])
           self.transition.fadeIn(2)
+        elif self.chapitre == 8:  
+            self.inventaire_mgr.cacher()
+            self.player_interface.cacher()
+            self.ignore_touches()
+            self.actual_trigger = None
+            self.accept(self.keys_data["Interagir"], self.check_interact)
+            taskMgr.remove("update")
+            if hasattr(self.player, "followcam"):
+                self.player.followcam.set_active(False)
+            self.player.show()
+            self.player.pose("Marche.001(real)", 1)
+            self.player.setPos(200, -400, 0)
+            self.player.setH(90)
+            self.player.setScale(10)
+            if hasattr(self, "map"):
+                if self.map is not None:
+                    self.map.removeNode()
+            self.move_camera = 0
+            point_light = PointLight("point_light")
+            point_light.setColor((0.85, 0.8, 0.5, 1))
+            point_light_np = render.attachNewNode(point_light)
+            point_light_np.setPos(200, 0, 50)
+            self.actuals_light.append(point_light_np)
+            render.setLight(point_light_np)
+            self.map = loader.loadModel("salle_du_sacrifice.bam")
+            self.map.reparentTo(render)
+            self.map.setPos(500, 500, 0)
+            self.map.setHpr(270, 0, 0)
+            self.magicien = Magicien()
+            self.magicien.setScale(60)
+            self.magicien.setPos(200, 200, 0)
+            self.magicien.loop("Immobile")
+            self.magicien.reparentTo(render)
+            base.cam.setPos(200, -550, 250)
+            base.cam.setHpr((0, 0, 0))
+            self.music.stop()
+            self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+            self.music.setTime(7.6)
+            self.music.setLoop(True)
+            self.music.play()
+            self.music.setVolume(0.3)
+            self.set_text(1, messages=["Fini"])
+            self.transition.fadeIn(2)
         elif self.chapitre == 949:
             taskMgr.remove("update")
             a_light = AmbientLight("aa")
@@ -1693,6 +1741,16 @@ class SetLevel(FSM):
                     self.s.finish()
                     self.s = base.cam.posInterval(3, Vec3(0, -250, 350), startPos=Vec3(0, -50, 350))
                     self.s.start()
+        elif self.chapitre == 8:
+          if self.text_index  <= 4:
+            if base.cam.getY() < 200:
+              base.cam.setY(base.cam, dt*60)
+          elif self.text_index <= 6:
+            if self.move_camera == 0:
+              self.move_camera = 1
+              base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
+            if base.cam.getY() > -100:
+              base.cam.setY(base.cam, dt*25)              
         return task.cont
 
 
@@ -1841,7 +1899,9 @@ class SetLevel(FSM):
                     objet = Panneau(text=self.get_text_panneau(numero_panneau), numero=numero_panneau)
                     numero_panneau += 1
                 elif cle[0] == "Salle":
-                    objet = Salle()    
+                    objet = Salle()  
+                elif cle[0] == "collier":
+                    objet = Collier()      
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -2200,6 +2260,10 @@ class SetLevel(FSM):
             trigger = CollisionNode("1")
             trigger.addSolid(CollisionBox((-1000, 730, 0), 100, 100, 200))
             temp.append(trigger)
+        elif map == "Crest.bam":
+            trigger = CollisionNode("2")
+            trigger.addSolid(CollisionBox((135, 70, 150), 200, 200, 400))
+            temp.append(trigger)    
         for trigger in temp:
             trigger.setFromCollideMask(BitMask32.allOff())
             trigger.setIntoCollideMask(BitMask32.bit(0))
@@ -2324,7 +2388,7 @@ class SetLevel(FSM):
               self.player.setPos(10, 10, 25)
           elif self.current_point == "save_desert":
               self.current_map = "Arduny.bam"
-              self.player.setPos(2125, -2000, 0)
+              self.player.setPos(2125, -2000, 20)
           elif self.current_point == "save_crest":
               self.current_map = "Crest.bam"
               self.player.setPos((3500, 0, 500))    
@@ -2349,6 +2413,8 @@ class SetLevel(FSM):
         self.map.removeNode()
         self.skybox.removeNode()
         self.player.hide()
+        for t in self.triggers:
+            t.removeNode()
         for porte in self.portails:
             self.portails[porte][0].removeNode()
         for pnj in self.pnjs:
@@ -2426,7 +2492,7 @@ class SetLevel(FSM):
                     self.current_porte = b
             elif b.isdigit(): #Trigger
                 b = int(b)
-                if b == 0 or b == 1:
+                if b >= 0 or b <= 2:
                     self.actual_trigger = b
             elif b in self.save_statues: #Statue de sauvegarde
                 self.actual_statue = b

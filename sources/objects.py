@@ -218,5 +218,25 @@ class Salle:
         """
         self.nom = "Salle commémorative"
         self.object = loader.loadModel("salle_du_sacrifice.bam")
-        self.object.setScale(10)
+        self.object.setScale(1)
         self.object.setCollideMask(BitMask32.bit(0))
+
+class Collier:
+    """
+    Le collier de Phollan
+    """        
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ---------------------
+        return -> Collier
+        """
+        self.nom = "collier"
+        self.object = loader.loadModel("collier.bam")
+        self.object.setScale(10)
+        self.col = CollisionNode(self.nom)
+        self.col.addSolid(CollisionBox((0, 0, 0), 0.1, 0.1, 0.1))
+        self.col.setFromCollideMask(BitMask32.allOff())
+        self.col.setIntoCollideMask(BitMask32.bit(0))
+        self.col_np = self.object.attachNewNode(self.col)
+            
