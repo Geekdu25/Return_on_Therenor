@@ -205,3 +205,18 @@ class Panneau:
         self.col.setFromCollideMask(BitMask32.allOff())
         self.col.setIntoCollideMask(BitMask32.bit(0))
         self.col_np = self.object.attachNewNode(self.col)
+        
+class Salle:
+    """
+    La salle commémorative se situant au centre de Crest
+    """        
+    def __init__(self):
+        """
+        Méthode constructeur.
+        ---------------------
+        return -> Salle
+        """
+        self.nom = "Salle commémorative"
+        self.object = loader.loadModel("salle_du_sacrifice.bam")
+        self.object.setScale(10)
+        self.object.setCollideMask(BitMask32.bit(0))

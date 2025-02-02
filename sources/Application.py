@@ -1427,7 +1427,7 @@ class SetLevel(FSM):
           self.golem = Golem_pnj()
           self.golem.reparentTo(render)
           self.golem.setPos((1722, -3350, 0))
-          self.player.setPos((1722, -3275, 25))
+          self.player.setPos((1722, -3275, 40))
           self.player.setHpr((270, 0, 0))
           base.cam.setPos((1722, -2900, 340))
           base.cam.setHpr((180, -20, 0))
@@ -1583,7 +1583,9 @@ class SetLevel(FSM):
         elif cine == 9:
             self.s.finish()
             self.music.stop()
+            base.cam.node().getLens().setFov(70)
             self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
+            self.music.setTime(7.6)
             self.music.setLoop(True)
             self.music.play()  
             self.pyramide.hide()
@@ -1595,10 +1597,12 @@ class SetLevel(FSM):
             self.model.setHpr((270, 0, 0))
             base.cam.setPos((0, 0, 100))
             base.cam.setHpr((0, 0, 0))
+            render.clearLight()
             light = PointLight("Lumière d'un point")
             light.setColor((4, 4.5, 0.5, 1))
             light_np = render.attachNewNode(light)
             render.setLight(light_np)
+            self.actuals_light.append(light_np)
             #-----------------------On définit notre séquence-----------------------------
             self.boucle = Sequence(base.cam.posInterval(10, Vec3(200, -200, 250), startPos=Vec3(200, -500, 250)), base.cam.posInterval(5, Vec3(300, -50, 275), startPos=Vec3(325, -50, 275)),
              base.cam.posInterval(5, Vec3(-125, -50, 200), startPos=Vec3(-150, -50, 200)))
@@ -1607,8 +1611,13 @@ class SetLevel(FSM):
             self.acceptOnce("fin_discours", self.change_cine, extraArgs=[12])
             self.transition.fadeIn(2)
         elif cine == 10:
+            for light in self.actuals_light:
+              render.clearLight(light)
+              light.removeNode()
+            self.actuals_light = []  
             self.music.stop()
-            self.music = base.loader.loadSfx("Thème_de_Therenor.ogg")
+            base.cam.node().getLens().setFov(100)
+            self.music = base.loader.loadSfx("menu.ogg")
             self.music.setLoop(True)
             self.music.play()  
             self.player.show()
@@ -1620,6 +1629,18 @@ class SetLevel(FSM):
             self.s.loop()
             self.set_text(26, messages=["fin_discours"])
             self.acceptOnce("fin_discours", self.fade_out, extraArgs=["Map"])
+            light = PointLight("lanterne")
+            light.color = (2, 2, 0.25, 1)
+            light_np = self.player.attachNewNode(light)
+            light_np.setPos((0, 1, 1))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+            light = PointLight("lanterne")
+            light.color = (0.25, 3, 0.25, 1)
+            light_np = self.golem.attachNewNode(light)
+            light_np.setPos((0, 1, 1))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
             self.transition.fadeIn(2)
         elif cine == 11:
             self.transition.fadeOut(2)
@@ -1746,7 +1767,7 @@ class SetLevel(FSM):
             self.portails[porte][0].removeNode()
         for statue in self.save_statues:
             self.save_statues[statue][0].removeNode()
-            self.save_statues[statue][1].removeNode()
+            self.save_statues[statue][1].removeNode()  
         self.objects = []
         self.murs = []
         self.monstres = {}
@@ -1819,6 +1840,8 @@ class SetLevel(FSM):
                 elif cle[0] == "panneau":
                     objet = Panneau(text=self.get_text_panneau(numero_panneau), numero=numero_panneau)
                     numero_panneau += 1
+                elif cle[0] == "Salle":
+                    objet = Salle()    
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -1958,6 +1981,15 @@ class SetLevel(FSM):
         if task is not None:
             return task.done
 
+    def quit_crest(self):
+        """
+        Méthode permettant de sortir de Crest.
+        --------------------------------------
+        return -> None
+        """
+        self.current_point = "save_desert"
+        self.fade_out("Map")
+                
     def get_ouvert(self, map="village_pecheurs.bam", numero=0):
         """
         Méthode permettant de retourner l'état d'un coffre.
@@ -2310,7 +2342,7 @@ class SetLevel(FSM):
         """
         for light in self.actuals_light:
             render.clearLight(light)
-            light.removeNode()
+            light.removeNode()  
         self.actuals_light = []
         render.clearFog()
         self.music.stop()
