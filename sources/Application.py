@@ -274,7 +274,7 @@ class SetLevel(FSM):
                         self.fade_out("Cinematique")
                     elif self.current_pnj == "golem_pnj" and self.chapitre > 6:
                         self.set_text(["Où désires-tu aller ?"], messages=["boutons"])
-                        self.acceptOnce("boutons", self.show_golem_options)    
+                        self.acceptOnce("boutons", self.show_golem_options)
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
                     self.acceptOnce("reupdate", self.reupdate)
@@ -394,7 +394,7 @@ class SetLevel(FSM):
           self.set_text(n, messages=["reupdate"])
         else:
           self.reupdate()
-          
+
     def show_golem_options(self):
         """
         Méthode permettant à l'étudiant de présenter des options au joueur.
@@ -423,13 +423,13 @@ class SetLevel(FSM):
         self.bouton3.destroy()
         del self.bouton1, self.bouton2, self.bouton3
         if info == 1 or info == 2:
-          if info == 1:  
+          if info == 1:
             self.current_point = "save_desert"
           else:
-            self.current_point = "save_crest"    
+            self.current_point = "save_crest"
           self.fade_out("Map")
         else:
-          self.reupdate()      
+          self.reupdate()
 
     def accept_trigger(self, clickedYes):
         """
@@ -1411,7 +1411,7 @@ class SetLevel(FSM):
           self.music.stop()
           self.music = base.loader.loadSfx("Pyramide.ogg")
           self.music.setLoop(True)
-          self.music.play()  
+          self.music.play()
           taskMgr.remove("update")
           a_light = AmbientLight("aa")
           a_light_np = render.attachNewNode(a_light)
@@ -1443,7 +1443,7 @@ class SetLevel(FSM):
           self.set_text([self.story["24"][0]+self.player.nom+"."]+self.story["24"][1:], messages=["fin_discours"])
           self.acceptOnce("fin_discours", self.change_cine, extraArgs=[11])
           self.transition.fadeIn(2)
-        elif self.chapitre == 8:  
+        elif self.chapitre == 8:
             self.chapitre_step = 0
             self.inventaire_mgr.cacher()
             self.player_interface.cacher()
@@ -1639,7 +1639,7 @@ class SetLevel(FSM):
             self.music = base.loader.loadSfx("Le_magicien_démoniaque.ogg")
             self.music.setTime(7.6)
             self.music.setLoop(True)
-            self.music.play()  
+            self.music.play()
             self.pyramide.hide()
             self.golem.hide()
             self.player.hide()
@@ -1666,12 +1666,12 @@ class SetLevel(FSM):
             for light in self.actuals_light:
               render.clearLight(light)
               light.removeNode()
-            self.actuals_light = []  
+            self.actuals_light = []
             self.music.stop()
             base.cam.node().getLens().setFov(100)
             self.music = base.loader.loadSfx("menu.ogg")
             self.music.setLoop(True)
-            self.music.play()  
+            self.music.play()
             self.player.show()
             self.golem.show()
             self.pyramide.show()
@@ -1696,23 +1696,23 @@ class SetLevel(FSM):
             self.transition.fadeIn(2)
         elif cine == 11:
             self.transition.fadeOut(2)
-            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[9]) 
+            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[9])
         elif cine == 12:
             self.boucle.finish()
             del self.boucle
             self.transition.fadeOut(2)
             self.model.removeNode()
-            del self.model              
-            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[10])         
+            del self.model
+            taskMgr.doMethodLater(2.5, self.change_cine, "changement de cinématique", extraArgs=[10])
         elif cine == 13:
-            self.transition.fadeOut(2)    
-            self.chapitre_step = 1  
+            self.transition.fadeOut(2)
+            self.chapitre_step = 1
             taskMgr.doMethodLater(2, self.change_cine, "changement de cinématique", extraArgs=[14])
         elif cine == 14:
             for light in self.actuals_light:
               render.clearLight(light)
               light.removeNode()
-            self.actuals_light = []  
+            self.actuals_light = []
             l = AmbientLight("ambiante")
             l_np = render.attachNewNode(l)
             render.setLight(l_np)
@@ -1743,7 +1743,7 @@ class SetLevel(FSM):
             self.s1 = self.map.posInterval(7, Vec3(-1000, 400, -100), startPos=Vec3(-1000, 400, 270))
             self.s1.start()
             taskMgr.doMethodLater(8, self.change_cine, "changement de cinématique", extraArgs=[15])
-            self.transition.fadeIn(2)    
+            self.transition.fadeIn(2)
         elif cine == 15:
             self.s1.finish()
             self.transition.fadeOut(1)
@@ -1753,7 +1753,7 @@ class SetLevel(FSM):
             for light in self.actuals_light:
               render.clearLight(light)
               light.removeNode()
-            self.actuals_light = []  
+            self.actuals_light = []
             l = AmbientLight("ambiante")
             l.color = (0.4, 1.2, 0.4, 1)
             l_np = render.attachNewNode(l)
@@ -1769,10 +1769,10 @@ class SetLevel(FSM):
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            self.player.setPos((0, 0, 30))
+            self.player.setPos((0, 0, 55))
             self.magicien.setPos((0, -30, 60))
-            base.cam.setPos(self.player, Vec3(0, -10, 16))  
-            base.cam.setHpr((0, 0, 0))          
+            base.cam.setPos(self.player, Vec3(20, 0, 30))
+            base.cam.setHpr((180, -45, 0))
             self.arene.setScale(10)
             self.music.stop()
             self.music = base.loader.loadSfx("Zmeyevick,_l'antique_terreur_phase_1.ogg")
@@ -1782,11 +1782,18 @@ class SetLevel(FSM):
             self.set_text(["Le processus de résurection \nde l'hydre est presque terminé !", "Tu seras la première victime de\n la folie meurtrière de Zmeyevick.", "Profite-bien !\n Hahahahaha !"], messages=["fini"])
             self.acceptOnce("fini", self.change_cine, extraArgs=[17])
         elif cine == 17:
-            #LerpFunc(self.magicien.setTransparency, fromData = 1, toData = 0, duration = 2).start()
-            taskMgr.doMethodLater(2.1, self.magicien.removeNode, "suppresion du magicien", extraArgs=[])            
+            self.magicien.cleanup()
+            self.magicien.removeNode()
+            del self.magicien
+            self.chapitre_step = 2
+            self.hydre = Actor("Zmeyevick_fin.bam")
+            self.hydre.reparentTo(render)
+            self.hydre.loop("Armature.002Action")
+            self.hydre.setPos(Vec3(0, 0, -100))
+            self.hydre.posInterval(10, Vec3(0, 0, -100), startPos=Vec3(0, 0, 0)).start()
         if task is not None:
             return task.done
-                   
+
 
     def update_cinematique(self, task):
         """
@@ -1800,7 +1807,7 @@ class SetLevel(FSM):
             if self.texture.getTime() > 51 and self.texture.getTime() < 55 and self.chapitre_step == 0:
                 self.text_erreur.show()
             elif self.texture.getTime() > 55 and self.texture.getTime() < 63:
-                self.text_erreur.hide()    
+                self.text_erreur.hide()
             elif self.texture.getTime() > 64 and self.chapitre_step == 0:
                 self.chapitre_step = 1
                 self.text_erreur.removeNode()
@@ -1840,7 +1847,17 @@ class SetLevel(FSM):
               self.move_camera = 1
               base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
             if base.cam.getY() > -100:
-              base.cam.setY(base.cam, dt*25)      
+              base.cam.setY(base.cam, dt*25)
+        elif self.chapitre == 8 and self.chapitre_step == 2:
+            """if self.magicien.getTransparency() > 0.1:
+                t = self.magicien.getTransparency()
+                t -= dt*0.01
+                self.magicien.setTransparency(t)
+            else:
+                if hasattr(self, "magicien"):
+                    self.magicien.removeNode()
+                    del self.magicien"""
+            pass
         return task.cont
 
 
@@ -1886,7 +1903,7 @@ class SetLevel(FSM):
             self.hack = True
             self.golem.removeNode()
             self.pyramide.removeNode()
-            del self.golem, self.pyramide  
+            del self.golem, self.pyramide
         elif self.chapitre == 949:
             self.tsar_bomba.removeNode()
 
@@ -1916,7 +1933,7 @@ class SetLevel(FSM):
             self.portails[porte][0].removeNode()
         for statue in self.save_statues:
             self.save_statues[statue][0].removeNode()
-            self.save_statues[statue][1].removeNode()  
+            self.save_statues[statue][1].removeNode()
         self.objects = []
         self.murs = []
         self.monstres = {}
@@ -1990,9 +2007,9 @@ class SetLevel(FSM):
                     objet = Panneau(text=self.get_text_panneau(numero_panneau), numero=numero_panneau)
                     numero_panneau += 1
                 elif cle[0] == "Salle":
-                    objet = Salle()  
+                    objet = Salle()
                 elif cle[0] == "collier":
-                    objet = Collier()      
+                    objet = Collier()
                 else:
                     objet = Objet(cle[0])
                 objet.object.reparentTo(render)
@@ -2140,7 +2157,7 @@ class SetLevel(FSM):
         """
         self.current_point = "save_desert"
         self.fade_out("Map")
-                
+
     def get_ouvert(self, map="village_pecheurs.bam", numero=0):
         """
         Méthode permettant de retourner l'état d'un coffre.
@@ -2354,7 +2371,7 @@ class SetLevel(FSM):
         elif map == "Crest.bam":
             trigger = CollisionNode("2")
             trigger.addSolid(CollisionBox((135, 70, 150), 200, 200, 400))
-            temp.append(trigger)    
+            temp.append(trigger)
         for trigger in temp:
             trigger.setFromCollideMask(BitMask32.allOff())
             trigger.setIntoCollideMask(BitMask32.bit(0))
@@ -2482,7 +2499,7 @@ class SetLevel(FSM):
               self.player.setPos(2125, -2000, 20)
           elif self.current_point == "save_crest":
               self.current_map = "Crest.bam"
-              self.player.setPos((3500, 0, 500))    
+              self.player.setPos((3500, 0, 500))
           else:#Le joueur se retrouve chez lui par défaut
               self.current_map = "village_pecheurs_maison_heros.bam"
               self.player.setPos(0, 30, 6)
@@ -2497,7 +2514,7 @@ class SetLevel(FSM):
         """
         for light in self.actuals_light:
             render.clearLight(light)
-            light.removeNode()  
+            light.removeNode()
         self.actuals_light = []
         render.clearFog()
         self.music.stop()
