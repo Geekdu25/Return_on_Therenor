@@ -2314,6 +2314,7 @@ class SetLevel(FSM):
         elif self.current_map == "pyramide.bam":
             render.clearLight()
             light_np.removeNode()
+            self.actuals_light = []
             light = PointLight("lanterne")
             light.color = (2, 2, 0.25, 1)
             light_np = self.player.attachNewNode(light)
