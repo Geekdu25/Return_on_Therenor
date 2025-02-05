@@ -1764,11 +1764,14 @@ class SetLevel(FSM):
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            self.player.setPos((0, 0, 55))
-            self.magicien.setPos((0, -30, 60))
-            base.cam.setPos(self.player, Vec3(20, 0, 30))
-            base.cam.setHpr((180, -45, 0))
-            self.arene.setScale(10)
+            self.player.setPos((0, 750, 70))
+            self.player.setHpr((180, 0, 0))
+            self.magicien.setPos((0, 0, 60))
+            base.cam.setPos(Vec3(0, 800, 150))
+            #base.cam.lookAt(self.magicien)
+            base.cam.setHpr((180, 0, 0))
+            self.arene.setScale(100)
+            self.arene.setPos(self.arene, Vec3(0, 0, -500))
             self.music.stop()
             self.music = base.loader.loadSfx("Zmeyevick,_l'antique_terreur_phase_1.ogg")
             self.music.setLoop(True)
@@ -1777,18 +1780,36 @@ class SetLevel(FSM):
             self.set_text(["Le processus de résurection \nde l'hydre est presque terminé !", "Tu seras la première victime de\n la folie meurtrière de Zmeyevick.", "Profite-bien !\n Hahahahaha !"], messages=["fini"])
             self.acceptOnce("fini", self.change_cine, extraArgs=[17])
         elif cine == 17:
+            LerpFunc(self.magicien.setAlphaScale, fromData=1, toData=0, duration=3).start()
+            taskMgr.doMethodLater(3.1, self.change_cine, "changement de cinématique", extraArgs=[18])
+            self.chapitre_step = 2
+        elif cine == 18:
             self.magicien.cleanup()
             self.magicien.removeNode()
             del self.magicien
-            self.chapitre_step = 2
+            self.texte_zmeyevick = OnscreenText(text="Zmeyevick", pos=(0, -0.6), scale=(0.2, 0.2), fg=(1, 1, 1, 1), shadowOffset=(0.2, 0.25))
+            self.texte_zmeyevick.hide()
             self.hydre = Actor("Zmeyevick_fin.bam")
             self.hydre.reparentTo(render)
+            self.hydre.setScale(50)
             self.hydre.loop("Armature.002Action")
-            self.hydre.setPos(Vec3(0, 0, -100))
-            self.hydre.posInterval(10, Vec3(0, 0, -100), startPos=Vec3(0, 0, 0)).start()
+            self.hydre.setPos(Vec3(-20, 0, -100))
+            self.hydre.setHpr((90, 0, 0))
+            self.hydre.posInterval(10, Vec3(0, 0, 50), startPos=Vec3(0, 0, -400)).start()
+            taskMgr.doMethodLater(12, self.montre_texte, "montre texte")
+            if task is not None:
+              return task.done
+
+    def montre_texte(self, task=None):
+        """
+        Méthode pour montrer le texte de Zmeyevick.
+        -------------------------------------------
+        task -> None
+        """
+        self.texte_zmeyevick.show()
+        LerpFunc(self.texte_zmeyevick.setAlphaScale, fromData=0, toData=1, duration=5).start()
         if task is not None:
             return task.done
-
 
     def update_cinematique(self, task):
         """
