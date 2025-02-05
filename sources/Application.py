@@ -1798,7 +1798,7 @@ class SetLevel(FSM):
             self.hydre.posInterval(15, Vec3(0, 0, 25), startPos=Vec3(0, 0, -750)).start()
             base.cam.posInterval(15, Vec3(0, 2000, 225), startPos=Vec3(0, 1500, 200)).start()
             base.cam.hprInterval(15, Vec3(180, 15, 0), startHpr=Vec3(180, 5, 0)).start()
-            self.chapitre = 9
+            self.chapitre = 8
             self.current_point = "save_arene"
             taskMgr.doMethodLater(12, self.montre_texte, "montre texte")
             taskMgr.doMethodLater(20, self.fade_out, "on change", extraArgs=["Map"])
@@ -1925,6 +1925,12 @@ class SetLevel(FSM):
             self.golem.removeNode()
             self.pyramide.removeNode()
             del self.golem, self.pyramide
+        elif self.chapitre == 8:
+          self.hydre.cleanup()
+          self.hydre.removeNode()
+          self.texte_zmeyevick.removeNode()
+          self.arene.removeNode()
+          del self.hydre, self.texte_zmeyevick, self.arene
         elif self.chapitre == 949:
             self.tsar_bomba.removeNode()
 
@@ -2273,10 +2279,22 @@ class SetLevel(FSM):
             render.setLight(light_np)
             self.actuals_light.append(light_np)
         elif self.current_map == "pyramide.bam":
+            render.clearLight()
+            light_np.removeNode()
             light = PointLight("lanterne")
             light.color = (2, 2, 0.25, 1)
             light_np = self.player.attachNewNode(light)
             light_np.setPos((0, 1, 1))
+            render.setLight(light_np)
+            self.actuals_light.append(light_np)
+        elif self.current_map == "arene.bam":
+            render.clearLight()
+            light_np.removeNode()
+            self.actuals_light = []
+            light = PointLight("lanterne")
+            light.color = (0.25, 3, 0.25, 1)
+            light_np = self.player.attachNewNode(light)
+            light_np.setPos((0, 0, 200))
             render.setLight(light_np)
             self.actuals_light.append(light_np)
 
@@ -2328,6 +2346,11 @@ class SetLevel(FSM):
             fummee = Fog("Cendres")
             fummee.setColor(0.7, 0.2, 0.2)
             fummee.setExpDensity(random.randint(0, 150)/10000)
+            render.setFog(fummee)
+        elif self.current_map == "arene.bam":
+            fummee = Fog("Poison")
+            fummee.setColor(0.01, 1, 0.01)
+            fummee.setExpDensity(0.0005)
             render.setFog(fummee)
         else:
             pass
