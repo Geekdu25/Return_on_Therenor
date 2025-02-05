@@ -22,5 +22,5 @@
 	"Verdantia.bam":["portail", [0, 40, 0], 50, 5, 5, [-6500, 4000, 80], 90]}, {"save_ignirift":[0, -2, 0]}, 100, "Faux", [[[0, -38.5, 0], [150, 1.5, 1.5]], [[0, 38.5, 0], [150, 1.5, 1.5]], [[-18, 0, 0], [1.5, 150, 1.5]], [[25, 0, 0], [1.5, 150, 1.5]]], {}],
 "Manoir.bam":["Verdantia.ogg", {"inventeur" : [200, 0, 0]}, {"Verdantia.bam":["porte", [0, -50, 0], 10, 15, 20, [1000, 2300, 0]]}, {"save_maison_chasseurs":[0, 0, 0, "droite"]}, 10, "Faux", [[[0, 25, 20], [200, 12, 20]]], {}],
 "Crest.bam":["Crest.ogg", {}, {}, {}, 750, "Faux", [[[0, 10, 0], [5000, 2, 5000]], [[10, 0, 0], [2, 5000, 5000]], [[0, -10, 0], [5000, 2, 5000]], [[-10, 0, 0], [2, 5000, 5000]]], {"bonhomme_de_neige":[2000, 50, 255]}],
-"arene.bam":["Zmeyevick,_l'antique_terreur_phase_2.ogg", {}, {}, {}, 50, "Faux", [], {"Zmeyevick":[0, 0, 25]}]
+"arene.bam":["Zmeyevick,_l'antique_terreur_phase_2.ogg", {}, {}, {}, 50, "Faux", [], {"Zmeyevick":[0, 0, 100]}]
 }
