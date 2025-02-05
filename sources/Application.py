@@ -1970,7 +1970,8 @@ class SetLevel(FSM):
         if self.skybox is not None:
             self.skybox.removeNode()
         self.skybox = loader.loadModel("skybox.bam")
-        self.skybox.setScale(10000)
+        self.skybox.setPos(self.skybox, (0, 0, -50000))
+        self.skybox.setScale(5000)
         self.skybox.setBin('background', 1)
         self.skybox.setDepthWrite(0)
         self.skybox.setLightOff()
