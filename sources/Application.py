@@ -1488,6 +1488,35 @@ class SetLevel(FSM):
             self.set_text(1, messages=["Fini"])
             self.acceptOnce("Fini", self.change_cine, extraArgs=[13])
             self.transition.fadeIn(2)
+        elif self.chapitre == 10:
+             self.inventaire_mgr.cacher()
+             l = AmbientLight("ambiante")
+             l.color = (0.4, 1.2, 0.4, 1)
+             l_np = render.attachNewNode(l)
+             render.setLight(l_np)
+             self.actuals_light.append(l_np)
+             self.player_interface.cacher()
+             self.ignore_touches()
+             self.actual_trigger = None
+             self.accept(self.keys_data["Interagir"], self.check_interact)
+             taskMgr.remove("update")
+             self.arene = loader.loadModel("arene.bam")
+             self.arene.reparentTo(render)
+             self.arene.setScale(50)
+             self.player.show()
+             base.cam.setPos(Vec3(0, 850, 775))
+             base.cam.setHpr((180, 5, 0))
+             self.hydre = Actor("Zmeyevick_fin.bam")
+             self.hydre.reparentTo(render)
+             self.hydre.setScale(50)
+             self.hydre.loop("Armature.002Action")
+             self.hydre.setPos(Vec3(0, 0, -25))
+             self.hydre.setHpr((90, 0, 0))
+             texts = self.story["28"]
+             texts[1] = texts[1] + self.player.nom + " !"
+             self.set_text(texts, messages=["Fini"])
+             self.acceptOnce("Fini", self.request, extraArgs=["Generique"])
+             self.transition.fadeIn(2)   
         elif self.chapitre == 949:
             taskMgr.remove("update")
             a_light = AmbientLight("aa")
@@ -1669,7 +1698,7 @@ class SetLevel(FSM):
             self.actuals_light = []
             self.music.stop()
             base.cam.node().getLens().setFov(100)
-            self.music = base.loader.loadSfx("menu.ogg")
+            self.music = base.loader.loadSfx("Tristesse.ogg")
             self.music.setLoop(True)
             self.music.play()
             self.player.show()
@@ -1764,11 +1793,10 @@ class SetLevel(FSM):
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            self.player.setPos((0, 1000, 100))
+            self.player.setPos((0, 1000, 60))
             self.player.setHpr((90, 0, 0))
             self.magicien.setPos((0, 0, 60))
             base.cam.setPos(Vec3(0, 1500, 200))
-            #base.cam.lookAt(self.magicien)
             base.cam.setHpr((180, 5, 0))
             self.arene.setScale(50)
             self.arene.setPos(self.arene, Vec3(0, 0, -5))
@@ -1777,7 +1805,7 @@ class SetLevel(FSM):
             self.music.setLoop(True)
             self.music.play()
             self.transition.fadeIn(2)
-            self.set_text(["Le processus de résurection \nde l'hydre est presque terminé !", "Tu seras la première victime de\n la folie meurtrière de Zmeyevick.", "Profite-bien !\n Hahahahaha !"], messages=["fini"])
+            self.set_text(27, messages=["fini"])
             self.acceptOnce("fini", self.change_cine, extraArgs=[17])
         elif cine == 17:
             LerpFunc(self.magicien.setAlphaScale, fromData=1, toData=0, duration=3).start()
@@ -1793,12 +1821,12 @@ class SetLevel(FSM):
             self.hydre.reparentTo(render)
             self.hydre.setScale(50)
             self.hydre.loop("Armature.002Action")
-            self.hydre.setPos(Vec3(-20, 0, -500))
+            self.hydre.setPos(Vec3(-20, 0, -1000))
             self.hydre.setHpr((90, 0, 0))
-            self.hydre.posInterval(15, Vec3(0, 0, 25), startPos=Vec3(0, 0, -750)).start()
+            self.hydre.posInterval(15, Vec3(0, 0, 25), startPos=Vec3(0, 0, -1000)).start()
             base.cam.posInterval(15, Vec3(0, 2000, 225), startPos=Vec3(0, 1500, 200)).start()
             base.cam.hprInterval(15, Vec3(180, 15, 0), startHpr=Vec3(180, 5, 0)).start()
-            self.chapitre = 8
+            self.chapitre = 9
             self.current_point = "save_arene"
             taskMgr.doMethodLater(12, self.montre_texte, "montre texte")
             taskMgr.doMethodLater(20, self.fade_out, "on change", extraArgs=["Map"])
@@ -1869,16 +1897,6 @@ class SetLevel(FSM):
               base.cam.setPosHpr(200, 200, 200, 180, 0, 0)
             if base.cam.getY() > -100:
               base.cam.setY(base.cam, dt*25)
-        elif self.chapitre == 8 and self.chapitre_step == 2:
-            """if self.magicien.getTransparency() > 0.1:
-                t = self.magicien.getTransparency()
-                t -= dt*0.01
-                self.magicien.setTransparency(t)
-            else:
-                if hasattr(self, "magicien"):
-                    self.magicien.removeNode()
-                    del self.magicien"""
-            pass
         return task.cont
 
 
@@ -1925,12 +1943,18 @@ class SetLevel(FSM):
             self.golem.removeNode()
             self.pyramide.removeNode()
             del self.golem, self.pyramide
-        elif self.chapitre == 8:
+        elif self.chapitre == 9:
           self.hydre.cleanup()
           self.hydre.removeNode()
           self.texte_zmeyevick.removeNode()
           self.arene.removeNode()
           del self.hydre, self.texte_zmeyevick, self.arene
+        elif self.chapitre == 10:
+          self.hydre.cleanup()
+          self.hydre.removeNode()
+          self.player.hide()
+          self.arene.removeNode()
+          del self.hydre, self.arene    
         elif self.chapitre == 949:
             self.tsar_bomba.removeNode()
 
@@ -2095,6 +2119,7 @@ class SetLevel(FSM):
             self.monstres[pnj] = a
         for pnj in self.monstres:
             self.monstres[pnj].reparentTo(render)
+        self.accept("y", self.enlever_vies_zmeyevick)    
         #-------------Les points de sauvegardes------------------------
         for save in data[self.current_map][3]:
             noeud = CollisionNode(save)
@@ -2185,6 +2210,14 @@ class SetLevel(FSM):
         self.skybox.setDepthWrite(0)
         self.skybox.setLightOff()
         self.skybox.reparentTo(render)
+
+    def enlever_vies_zmeyevick(self):
+        """
+        Méthode temporaire permettant d'enlever des vies à Zmeyevick.
+        -------------------------------------------------------------
+        return -> None
+        """
+        self.monstres["Zmeyevick"].vies -= 1
 
     def quit_crest(self):
         """
@@ -2291,8 +2324,8 @@ class SetLevel(FSM):
             render.clearLight()
             light_np.removeNode()
             self.actuals_light = []
-            light = PointLight("lanterne")
-            light.color = (0.25, 3, 0.25, 1)
+            light = PointLight("aura de Zmeyevick")
+            light.color = (1.2, 2.3, 1.2, 1.5)
             light_np = self.player.attachNewNode(light)
             light_np.setPos((0, 0, 200))
             render.setLight(light_np)
@@ -2350,7 +2383,7 @@ class SetLevel(FSM):
         elif self.current_map == "arene.bam":
             fummee = Fog("Poison")
             fummee.setColor(0.01, 1, 0.01)
-            fummee.setExpDensity(0.0005)
+            fummee.setExpDensity(0.005)
             render.setFog(fummee)
         else:
             pass
@@ -2451,6 +2484,26 @@ class SetLevel(FSM):
         base.win.requestProperties(properties)
         self.load_save()
         self.load_map(self.current_map)
+        if self.chapitre == 9:
+            self.texte_zmeyevick = OnscreenText("Zmeyevick", pos=(0, -0.75), scale=(0.1, 0.1), fg=(1, 1, 1, 1))
+            barre_root = NodePath("BarrePVRoot")
+            barre_root.reparentTo(aspect2d)
+            cm = CardMaker("barre de vie zmeyevick background")
+            cm.setFrame(0,1,-0.5,0.5)
+            barre = NodePath(cm.generate())
+            barre.setScale((1.75, 0, 0.02))
+            barre.setPos((-0.8, 0, -0.9))
+            barre.setColor((0.2, 0.2, 0.2, 1))
+            barre.reparentTo(barre_root)
+            self.barre_zmeyevick_bg = barre
+            cm = CardMaker("barre de vie zmeyevick")
+            cm.setFrame(0,1,-0.5,0.5)
+            barre = NodePath(cm.generate())
+            barre.setScale((1.75, 0, 0.02))
+            barre.setPos((-0.8, 0, -0.9))
+            barre.setColor((0.8, 0, 0, 1))
+            barre.reparentTo(barre_root)
+            self.barre_zmeyevick = barre           
         if self.first_time:
             self.help()
 
@@ -2569,6 +2622,16 @@ class SetLevel(FSM):
         ----------------------------------------
         return -> None
         """
+        if self.chapitre == 10 or self.chapitre == 9:
+            if hasattr(self, "barre_zmeyevick"):
+                self.barre_zmeyevick.removeNode()
+                del self.barre_zmeyevick
+            if hasattr(self, "barre_zmeyevick_bg"):
+                self.barre_zmeyevick_bg.removeNode()
+                del self.barre_zmeyevick_bg
+            if hasattr(self, "texte_zmeyevick"):
+                self.texte_zmeyevick.removeNode()
+                del self.texte_zmeyevick   
         for light in self.actuals_light:
             render.clearLight(light)
             light.removeNode()
@@ -2742,6 +2805,12 @@ class SetLevel(FSM):
         task -> task
         return -> task.cont
         """
+        if self.chapitre == 9:
+          if self.monstres["Zmeyevick"].vies <= 0:
+              self.chapitre = 10
+              self.fade_out("Cinematique")
+          else:
+              self.barre_zmeyevick.setScale(((self.monstres["Zmeyevick"].vies/20)*1.75, 0, 0.02))  
         dt = globalClock.getDt() #L'horloge, le chronomètre...appelez ça comme
         #vous voulez c'est ce qui permet de mesurer le temps écoulé entre chaque frame.
         #---------------Section éléments 2D-------------------------------------------
