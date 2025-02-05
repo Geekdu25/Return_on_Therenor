@@ -1764,14 +1764,14 @@ class SetLevel(FSM):
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            self.player.setPos((0, 750, 70))
-            self.player.setHpr((180, 0, 0))
+            self.player.setPos((0, 1000, 70))
+            self.player.setHpr((90, 0, 0))
             self.magicien.setPos((0, 0, 60))
-            base.cam.setPos(Vec3(0, 800, 150))
+            base.cam.setPos(Vec3(0, 1500, 200))
             #base.cam.lookAt(self.magicien)
-            base.cam.setHpr((180, 0, 0))
-            self.arene.setScale(100)
-            self.arene.setPos(self.arene, Vec3(0, 0, -500))
+            base.cam.setHpr((180, 5, 0))
+            self.arene.setScale(50)
+            self.arene.setPos(self.arene, Vec3(0, 0, -5))
             self.music.stop()
             self.music = base.loader.loadSfx("Zmeyevick,_l'antique_terreur_phase_1.ogg")
             self.music.setLoop(True)
@@ -1793,10 +1793,15 @@ class SetLevel(FSM):
             self.hydre.reparentTo(render)
             self.hydre.setScale(50)
             self.hydre.loop("Armature.002Action")
-            self.hydre.setPos(Vec3(-20, 0, -100))
+            self.hydre.setPos(Vec3(-20, 0, -500))
             self.hydre.setHpr((90, 0, 0))
-            self.hydre.posInterval(10, Vec3(0, 0, 50), startPos=Vec3(0, 0, -400)).start()
+            self.hydre.posInterval(15, Vec3(0, 0, 25), startPos=Vec3(0, 0, -750)).start()
+            base.cam.posInterval(15, Vec3(0, 2000, 225), startPos=Vec3(0, 1500, 200)).start()
+            base.cam.hprInterval(15, Vec3(180, 15, 0), startHpr=Vec3(180, 5, 0)).start()
+            self.chapitre = 9
+            self.current_point = "save_arene"
             taskMgr.doMethodLater(12, self.montre_texte, "montre texte")
+            taskMgr.doMethodLater(20, self.fade_out, "on change", extraArgs=["Map"])
             if task is not None:
               return task.done
 
@@ -2164,8 +2169,9 @@ class SetLevel(FSM):
         ----------------------------------------
         return -> None
         """
-        if self.skybox is not None:
-            self.skybox.removeNode()
+        if hasattr(self, "skybox"):
+          if self.skybox is not None:
+              self.skybox.removeNode()
         self.skybox = loader.loadModel("skybox.bam")
         self.skybox.setPos(self.skybox, (0, 0, -50000))
         self.skybox.setScale(5000)
@@ -2525,6 +2531,9 @@ class SetLevel(FSM):
           elif self.current_point == "save_crest":
               self.current_map = "Crest.bam"
               self.player.setPos((3500, 0, 500))
+          elif self.current_point == "save_arene":
+            self.current_map = "arene.bam"
+            self.player.setPos((0, 1000, 70))
           else:#Le joueur se retrouve chez lui par défaut
               self.current_map = "village_pecheurs_maison_heros.bam"
               self.player.setPos(0, 30, 6)
