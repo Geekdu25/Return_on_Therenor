@@ -1764,7 +1764,7 @@ class SetLevel(FSM):
             self.arene.reparentTo(render)
             self.player.show()
             self.magicien.show()
-            self.player.setPos((0, 1000, 70))
+            self.player.setPos((0, 1000, 100))
             self.player.setHpr((90, 0, 0))
             self.magicien.setPos((0, 0, 60))
             base.cam.setPos(Vec3(0, 1500, 200))
@@ -2556,7 +2556,7 @@ class SetLevel(FSM):
               self.player.setPos((3500, 0, 500))
           elif self.current_point == "save_arene":
             self.current_map = "arene.bam"
-            self.player.setPos((0, 1000, 70))
+            self.player.setPos((0, 1000, 400))
           else:#Le joueur se retrouve chez lui par défaut
               self.current_map = "village_pecheurs_maison_heros.bam"
               self.player.setPos(0, 30, 6)
