@@ -1723,12 +1723,7 @@ class SetLevel(FSM):
             render.setFog(fummee)
             self.player.hide()
             self.magicien.hide()
-            self.skybox = loader.loadModel("skybox.bam")
-            self.skybox.setScale(10000)
-            self.skybox.setBin('background', 1)
-            self.skybox.setDepthWrite(0)
-            self.skybox.setLightOff()
-            self.skybox.reparentTo(render)
+            self.load_skybox()
             self.crest = loader.loadModel("Crest.bam")
             self.crest.reparentTo(render)
             self.crest.setScale(750)
@@ -1967,15 +1962,7 @@ class SetLevel(FSM):
         #-----------------------Fumée---------------------
         self.load_fog()
         #--------------La skybox----------------------------
-        if self.skybox is not None:
-            self.skybox.removeNode()
-        self.skybox = loader.loadModel("skybox.bam")
-        self.skybox.setPos(self.skybox, (0, 0, -50000))
-        self.skybox.setScale(5000)
-        self.skybox.setBin('background', 1)
-        self.skybox.setDepthWrite(0)
-        self.skybox.setLightOff()
-        self.skybox.reparentTo(render)
+        self.load_skybox()
         #--------------------Chargement du premier fichier json (objets)---------------
         objects_file = open("../data/json/objects.json")
         data = json.load(objects_file)
@@ -2149,6 +2136,22 @@ class SetLevel(FSM):
         self.accept_touches()
         if task is not None:
             return task.done
+
+    def load_skybox(self):
+        """
+        Méthode permettant de charger la skybox.
+        ----------------------------------------
+        return -> None
+        """
+        if self.skybox is not None:
+            self.skybox.removeNode()
+        self.skybox = loader.loadModel("skybox.bam")
+        self.skybox.setPos(self.skybox, (0, 0, -50000))
+        self.skybox.setScale(5000)
+        self.skybox.setBin('background', 1)
+        self.skybox.setDepthWrite(0)
+        self.skybox.setLightOff()
+        self.skybox.reparentTo(render)
 
     def quit_crest(self):
         """
