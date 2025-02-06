@@ -60,7 +60,7 @@ class Player(Actor):
         """
         if map == "village_pecheurs.bam" and numero == 0:
             self.coffres[0] = 1
-        elif map == "Pyramide.bam" and numero == 0:
+        elif map == "pyramide.bam" and numero == 0:
             self.coffres[1] = 1
 
     def ajoute_item(self, item="Vodka"):
@@ -247,7 +247,7 @@ class Marchand(PNJ):
         self.col.addSolid(CollisionSphere((0, 0, -1.5), 1.25))
         self.col.setIntoCollideMask(BitMask32.bit(0))
         #self.loop(self.getAnimNames()[0])
-        
+
 class Golem_pnj(PNJ):
   def __init__(self):
     PNJ.__init__(self, name="golem")
@@ -261,7 +261,7 @@ class Golem_pnj(PNJ):
     self.col = CollisionNode("golem_pnj")
     self.col.addSolid(CollisionSphere((0, 0, 4.5), 6))
     self.col.setIntoCollideMask(BitMask32.bit(0))
-    self.col_np = self.attachNewNode(self.col)        
+    self.col_np = self.attachNewNode(self.col)
 #-----------------------------------------PNJ de test--------------------------------------
 
 class Magicien(PNJ):

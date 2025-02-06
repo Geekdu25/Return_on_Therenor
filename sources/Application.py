@@ -1516,7 +1516,7 @@ class SetLevel(FSM):
              texts[1] = texts[1] + self.player.nom + " !"
              self.set_text(texts, messages=["Fini"])
              self.acceptOnce("Fini", self.request, extraArgs=["Generique"])
-             self.transition.fadeIn(2)   
+             self.transition.fadeIn(2)
         elif self.chapitre == 949:
             taskMgr.remove("update")
             a_light = AmbientLight("aa")
@@ -1954,7 +1954,7 @@ class SetLevel(FSM):
           self.hydre.removeNode()
           self.player.hide()
           self.arene.removeNode()
-          del self.hydre, self.arene    
+          del self.hydre, self.arene
         elif self.chapitre == 949:
             self.tsar_bomba.removeNode()
 
@@ -2119,7 +2119,7 @@ class SetLevel(FSM):
             self.monstres[pnj] = a
         for pnj in self.monstres:
             self.monstres[pnj].reparentTo(render)
-        self.accept("y", self.enlever_vies_zmeyevick)    
+        self.accept("y", self.enlever_vies_zmeyevick)
         #-------------Les points de sauvegardes------------------------
         for save in data[self.current_map][3]:
             noeud = CollisionNode(save)
@@ -2504,7 +2504,7 @@ class SetLevel(FSM):
             barre.setPos((-0.8, 0, -0.9))
             barre.setColor((0.8, 0, 0, 1))
             barre.reparentTo(barre_root)
-            self.barre_zmeyevick = barre           
+            self.barre_zmeyevick = barre
         if self.first_time:
             self.help()
 
@@ -2632,7 +2632,7 @@ class SetLevel(FSM):
                 del self.barre_zmeyevick_bg
             if hasattr(self, "texte_zmeyevick"):
                 self.texte_zmeyevick.removeNode()
-                del self.texte_zmeyevick   
+                del self.texte_zmeyevick
         for light in self.actuals_light:
             render.clearLight(light)
             light.removeNode()
@@ -2811,7 +2811,7 @@ class SetLevel(FSM):
               self.chapitre = 10
               self.fade_out("Cinematique")
           else:
-              self.barre_zmeyevick.setScale(((self.monstres["Zmeyevick"].vies/20)*1.75, 0, 0.02))  
+              self.barre_zmeyevick.setScale(((self.monstres["Zmeyevick"].vies/20)*1.75, 0, 0.02))
         dt = globalClock.getDt() #L'horloge, le chronomètre...appelez ça comme
         #vous voulez c'est ce qui permet de mesurer le temps écoulé entre chaque frame.
         #---------------Section éléments 2D-------------------------------------------
@@ -3325,6 +3325,7 @@ class SetLevel(FSM):
         fichier.close()
         string = "["
         i = 0
+        print(self.player.coffres)
         for item in self.player.armes:
             i += 1
             string += f'"{item}"'
