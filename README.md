@@ -15,10 +15,14 @@ Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifi
 Le descendant du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
 
 # 2- Installation (Sous linux avec une distribution de type Debian)
-1. Commencez par installer python si ce n'est pas déjà fait : <code>sudo apt install python3</code>
-2. Vous pouvez désormais cloner le repository sur votre ordinateur, ou simplement le télécharger et le dézipper. Une fois cela fait, déplacez vous dans le répertoire du jeu : <code>cd Return_on_Therenor-main</code>
-3. Ensuite, installez les bibliothèques nécessaires au fonctionnement du jeu avec le fichier requirements.txt : <code>python3 -m pip install -r requirements.txt</code>
-4. Ceci fait, il ne vous reste plus qu'à vous déplacer dans le répoertoire du code source du jeu et à lancer le jeu : <code>python3 main.py</code>
+1. Commencez par installer python si ce n'est pas déjà fait :
+<code>sudo apt install python3</code>
+2. Vous pouvez désormais cloner le repository sur votre ordinateur, ou simplement le télécharger et le dézipper. Une fois cela fait, déplacez vous dans le répertoire du jeu :
+<code>cd Return_on_Therenor-main</code>
+3. Ensuite, installez les bibliothèques nécessaires au fonctionnement du jeu avec le fichier requirements.txt :
+<code>python3 -m pip install -r requirements.txt</code>
+4. Ceci fait, il ne vous reste plus qu'à vous déplacer dans le répoertoire du code source du jeu et à lancer le jeu :
+<code>cd sources && python3 main.py</code>
 
 # 3- Jouabilité
 Return on Therenor est un jeu d'action-aventure où le joueur va passer la plupart de son temps à explorer l'île de Therenor.
