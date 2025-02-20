@@ -2678,6 +2678,7 @@ class SetLevel(FSM):
         self.player.reverse = False
         self.current_pnj = None
         self.player.walk = False
+        self.player.active_collisions_epee(active=False)
         taskMgr.remove("update")
         del self.music_name
         self.ignoreAll()
@@ -3043,10 +3044,12 @@ class SetLevel(FSM):
           if self.player.current_arme == vieille_arme:
               if self.player.current_arme == "Epée":
                 self.player.epee.hide()
+                self.player.active_collisions_epee(active=False)
               self.player.current_arme = None
           else:
             if self.player.current_arme == "Epée":
               self.player.epee.show()
+              self.player.active_collisions_epee(active=True)
 
 
     def inutile(self, inutile=None):
@@ -3325,7 +3328,6 @@ class SetLevel(FSM):
         fichier.close()
         string = "["
         i = 0
-        print(self.player.coffres)
         for item in self.player.armes:
             i += 1
             string += f'"{item}"'

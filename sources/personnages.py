@@ -49,8 +49,22 @@ class Player(Actor):
         self.epee.setPos((0, 0, 0.575))
         self.epee.setHpr((-55, 270, 0))
         self.epee.hide()
+        self.col_np_epee = None
         self.setPlayRate(5.0, 'Attaque')
         self.setPlayRate(3.0, 'Marche.001(real)')
+
+    def active_collisions_epee(self, active=True):
+        if active:
+            self.col_epee = CollisionNode('epee_collision')
+            self.col_epee.addSolid(CollisionSphere((0, 0, 7.5), 7))
+            self.col_epee.setFromCollideMask(BitMask32.bit(0))
+            self.col_epee.setIntoCollideMask(BitMask32.allOff())
+            self.col_np_epee = self.attachNewNode(self.col_epee)
+            self.col_np_epee.show()
+        else:
+          if self.col_np_epee is not None:
+            self.col_np_epee.removeNode()
+            self.col_np_epee = None
 
     def change_etat_coffres(self, map="village_pecheurs.bam", numero=0):
         """
