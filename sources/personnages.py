@@ -131,17 +131,6 @@ class PNJ(Actor):
     def __str__(self):
         return self.nom+" est un PNJ."
 
-    """def optention(self):
-        if "collier" in self.inventaire:
-            self.texts = "Tu as retrouver mon collier merci","Mais maintenant j'en ai plus besoin, garde le. Et prend un peu d'argent pour te rembourser le trajet"
-        elif "amulette" in inventaire:
-            self.texts= "Prend ceci est fout le camp d'ici"
-        elif "poisson" in self.inventaire:
-            self.texts = "Merci je peux enfin finir mon antidote pour le cholera","Prend ca, mais ne dit rien à mon papa"
-        else:
-            self.texts="Tu n'as pas l'object adéquat repasse plus tard"
-        return self.texts"""
-
 class Assassin_repenti(PNJ):
     def __init__(self):
         PNJ.__init__(self, name="pnjs/assassin")
@@ -192,11 +181,6 @@ class Enfant_prodige(PNJ):
         self.col.setName("enfant_prodige")
         self.col.addSolid(CollisionSphere((0, 0, 1.5), 1.25))
         self.col.setIntoCollideMask(BitMask32.bit(0))
-
-    """def poisson(self):
-        self.ajoute_item(item="poisson") -=1
-        self.ajoute_item(item="Vodka") +=1
-        return self.optention"""
 
 class Archer(PNJ):
     def __init__(self):

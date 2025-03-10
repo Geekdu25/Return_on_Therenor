@@ -1794,7 +1794,7 @@ class SetLevel(FSM):
             self.player.show()
             self.magicien.show()
             self.player.setPos((0, 1000, 60))
-            self.player.setHpr((90, 0, 0))
+            self.player.setHpr((270, 0, 0))
             self.magicien.setPos((0, 0, 60))
             base.cam.setPos(Vec3(0, 1500, 200))
             base.cam.setHpr((180, 5, 0))
@@ -2560,6 +2560,8 @@ class SetLevel(FSM):
           self.player.play("Attaque")
           self.player.epee.setHpr((-90, 270, 0))
           taskMgr.doMethodLater(1, self.apres_attaque, "apres attaque")
+          if self.chapitre == 9:
+            self.enlever_vies_zmeyevick()
 
     def apres_attaque(self, task):
         """
@@ -3041,6 +3043,7 @@ class SetLevel(FSM):
               self.player_interface.ajouter_hp(5)
             elif article == "Tsar Bomba":
                 a_dire = self.story["items"][5]
+                taskMgr.remove("tuer_joueur")
                 self.solution_finale = True
             self.OkDialog = OkDialog(text=a_dire, command=self.inutile)
         elif self.index_invent == 1 and len(self.player.armes) > 0:
@@ -3053,8 +3056,6 @@ class SetLevel(FSM):
           else:
             if self.player.current_arme == "Epée":
               self.player.epee.show()
-              if self.chapitre == 9:
-                self.accept(self.keys_data["Attaquer"], self.enlever_vies_zmeyevick)
 
     def inutile(self, inutile=None):
         """
