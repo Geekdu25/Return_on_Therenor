@@ -34,13 +34,15 @@ Le descendant du légendaire héros va devoir prendre la route pour retourner su
 <pre>
 Return on Therenor est un jeu d'action-aventure où le joueur va passer la plupart de son temps à explorer l'île de Therenor.
 Voici une capture d'écran du jeu :
+
 <img src="data/pictures/readme/image_de_jeu.PNG" alt="Capture d'écran de jeu" title="Capture d'écran du jeu" />
 <h2>Commandes :</h2>
 Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
 
-<b>Attention !</b> Pour interagir avec des objets, vous devez avancer vers l'objet avec lequel vous souhaitez interagir et lorsque vous touchez l'objet, vous pouvez appuyer sur la touche d'interaction sans relacher la touche pour avancer.
+<b>Attention !</b> Pour interagir avec des objets, vous devez avancer vers l'objet avec lequel vous souhaitez
+interagir et lorsque vous touchez l'objet, vous pouvez appuyer sur la touche d'interaction sans relacher la touche pour avancer.
 </pre>
 
 # 4- Bibliothèques et logiciels utilisés
