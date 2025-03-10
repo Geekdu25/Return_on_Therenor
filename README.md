@@ -14,15 +14,20 @@ Après avoir triomphé de Zmeyevick, le protagoniste de <b>The legend of Thereno
 Mais un être mal intentionné souhaite dominer le monde et est prêt à sacrifier le héros désormais bien faible pour ressusciter l'hydre.
 Le descendant du légendaire héros va devoir prendre la route pour retourner sur l'île de ses ancêtres et sauver son grand-père.
 
-# 2- Installation (Sous linux avec une distribution de type Debian)
+# 2- Lancement du jeu (Sous linux avec une distribution de type Debian)
+
 1. Commencez par installer python si ce n'est pas déjà fait :
 <code>sudo apt install python3</code>
+
 2. Vous pouvez désormais cloner le repository sur votre ordinateur, ou simplement le télécharger et le dézipper. Une fois cela fait, déplacez vous dans le répertoire du jeu :
 <code>cd Return_on_Therenor-main</code>
+
 3. Ensuite, installez les bibliothèques nécessaires au fonctionnement du jeu avec le fichier requirements.txt :
 <code>python3 -m pip install -r requirements.txt</code>
+
 4. Ceci fait, il ne vous reste plus qu'à vous déplacer dans le répoertoire du code source du jeu et à lancer le jeu :
 <code>cd sources && python3 main.py</code>
+
 
 # 3- Jouabilité
 Return on Therenor est un jeu d'action-aventure où le joueur va passer la plupart de son temps à explorer l'île de Therenor.
@@ -32,6 +37,7 @@ Voici une capture d'écran du jeu :
 Le jeu peut se jouer à l'aide du clavier ou d'une manette.
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
+<b>Attention !</b> Pour interagir avec des objets, vous devez avancer vers l'objet avec lequel vous souhaitez interagir et lorsque vous touchez l'objet, vous pouvez appuyer sur la touche d'interaction sans relacher la touche pour avancer.
 
 # 4- Bibliothèques et logiciels utilisés
 <h2>Panda3D</h2>
