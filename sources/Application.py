@@ -347,7 +347,7 @@ class SetLevel(FSM):
                 if self.current_map == "pyramide.bam" and self.actual_coffre == "0":
                     item = "Vodka"
                 elif self.current_map == "village_pecheurs.bam" and self.actual_coffre == "0":
-                    money = 100
+                    money = 300
                 if item != "":
                   self.player.ajoute_item(item)
                   self.dialog = OkDialog(text=self.story["items"][6]+item, command=self.cleanup_dialog_tresor)
@@ -2119,7 +2119,6 @@ class SetLevel(FSM):
             self.monstres[pnj] = a
         for pnj in self.monstres:
             self.monstres[pnj].reparentTo(render)
-        self.accept("y", self.enlever_vies_zmeyevick)
         #-------------Les points de sauvegardes------------------------
         for save in data[self.current_map][3]:
             noeud = CollisionNode(save)
@@ -2478,7 +2477,6 @@ class SetLevel(FSM):
         self.player.show()
         self.player.pose("Marche.001(real)", 1)
         self.player.setScale(8)
-        self.accept("t", self.player_interface.enlever_hp, extraArgs=[5])
         #On cache le curseur de la souris.
         properties = WindowProperties()
         properties.setCursorHidden(True)
@@ -3042,15 +3040,14 @@ class SetLevel(FSM):
           vieille_arme = self.player.current_arme
           self.player.current_arme = self.inventaire_mgr.get_arme()
           if self.player.current_arme == vieille_arme:
-              if self.player.current_arme == "Epée":
+              if self.player.current_arme == "Epée" and self.chapitre < 9:
                 self.player.epee.hide()
-                self.player.active_collisions_epee(active=False)
               self.player.current_arme = None
           else:
             if self.player.current_arme == "Epée":
               self.player.epee.show()
-              self.player.active_collisions_epee(active=True)
-
+              if self.chapitre == 9:
+                self.accept(self.keys_data["Attaquer"], self.enlever_vies_zmeyevick)
 
     def inutile(self, inutile=None):
         """
