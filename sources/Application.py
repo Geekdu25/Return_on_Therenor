@@ -2958,12 +2958,16 @@ class SetLevel(FSM):
         self.title = OnscreenText("Aide :", scale=0.15, pos=(-0.85, 0.46), align=TextNode.ALeft)
         liste_textes = [self.story["gui"][20]+self.keys_data["Avancer"].capitalize(), self.story["gui"][21]+self.keys_data["Changer le point de vue"].capitalize(),
                             self.story["gui"][22]+self.keys_data["Courir"].capitalize(), self.story["gui"][23]+self.keys_data["Inventaire"].capitalize(), self.story["gui"][24]+self.keys_data["Interagir"].capitalize(),
-                            self.story["gui"][25], self.story["gui"][26], self.story["gui"][30]]
+                            self.story["gui"][25], self.story["gui"][26], self.story["gui"][30], self.story["gui"][31]+self.keys_data["Attaquer"].capitalize()]
         z = 0.35
         self.real_liste = []
+        i = 0
         for element in liste_textes:
             self.real_liste.append(OnscreenText(element, scale=0.1, pos=(-0.85, z), align=TextNode.ALeft))
+            if i == 6:
+              z -= 0.1
             z -= 0.1
+            i += 1
         del liste_textes
         self.ignore("h")
         self.accept("h", self.exit_help)
@@ -3193,7 +3197,7 @@ class SetLevel(FSM):
         self.music.setLoop(True)
         self.music.play()
         self.texts_gen_1 = [("PNJ Design :", True), ("Alexandrine Charette", False), ("Player and GUI Design :", True), ("Rémy Martinot", False),
-        ("Enemy program : ", True), ("Noé Mora", False), ("Map and dungeon creation :", True), ("Etienne Pacault", False), ("Website and movies :", True), ("Tyméo Bonvicini-Renaud", False),
+        ("Enemy program : ", True), ("Noé Mora", False), ("Map, music and dungeon creation :", True), ("Etienne Pacault", False), ("Website and movies :", True), ("Tyméo Bonvicini-Renaud", False),
         ("Special thanks to :", True), ("Aimeline Cara", False), ("The Carnegie Mellon University", False), ("Disney Online", False), ("The blender foundation", False), ("Emmanuel Puybaret (Sweet Home 3D)", False), ("And you !", False)]
         colors = [(1, 0, 0, 1), (0.65, 0.4, 0, 1), (1, 1, 0, 1), (0, 1, 0.2, 1), (0, 0.5, 0, 1), (0, 0.8, 1, 1), (0, 0, 0.9, 1), (1, 0, 1, 1)]
         i_color = 0
