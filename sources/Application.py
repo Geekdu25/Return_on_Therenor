@@ -1949,6 +1949,7 @@ class SetLevel(FSM):
           self.texte_zmeyevick.removeNode()
           self.arene.removeNode()
           del self.hydre, self.texte_zmeyevick, self.arene
+          taskMgr.doMethodLater(7, self.tuer_joueur, "tuer_joueur")
         elif self.chapitre == 10:
           self.hydre.cleanup()
           self.hydre.removeNode()
@@ -2797,6 +2798,11 @@ class SetLevel(FSM):
         elif message == "arrow_right-up":
             self.player.right = False
 
+
+    def tuer_joueur(self, task):
+        self.player.vies -= 3
+        return task.again
+
     #-------------------Méthode de mise à jour----------------------------------
     def update(self, task):
         """
@@ -2808,6 +2814,7 @@ class SetLevel(FSM):
         if self.chapitre == 9:
           if self.monstres["Zmeyevick"].vies <= 0:
               self.chapitre = 10
+              taskMgr.remove("tuer_joueur")
               self.fade_out("Cinematique")
           else:
               self.barre_zmeyevick.setScale(((self.monstres["Zmeyevick"].vies/20)*1.75, 0, 0.02))
