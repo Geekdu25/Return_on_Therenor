@@ -42,7 +42,7 @@ Vous avez la possibilité de changer les touches utilisées pour différentes ac
 En mode clavier, utilisez la souris pour tourner.
 
 <b>Attention !</b> Pour interagir avec des objets, vous devez avancer vers l'objet avec lequel vous souhaitez
-interagir et lorsque vous touchez l'objet, vous pouvez appuyer sur la touche d'interaction sans relacher la touche pour avancer.
+interagir et lorsque vous touchez l'objet, vous devez appuyer sur la touche d'interaction sans relacher la touche pour avancer.
 </pre>
 
 # 4- Bibliothèques et logiciels utilisés
