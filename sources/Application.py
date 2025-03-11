@@ -273,7 +273,7 @@ class SetLevel(FSM):
                         self.chapitre = 6
                         self.fade_out("Cinematique")
                     elif self.current_pnj == "golem_pnj" and self.chapitre > 6:
-                        self.set_text(["Où désires-tu aller ?"], messages=["boutons"])
+                        self.set_text(self.story["gui"][32], messages=["boutons"])
                         self.acceptOnce("boutons", self.show_golem_options)
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
@@ -680,7 +680,7 @@ class SetLevel(FSM):
                 del self.dialog_box
             else:
                 self.ok = True
-            self.dialog_box = OnscreenImage("dialog_box.png", scale=Vec3(1.2, 0, 0.15), pos=Vec3(0, 0, -0.75))
+            self.dialog_box = OnscreenImage("dialog_box.png", scale=Vec3(1.45, 0, 0.15), pos=Vec3(0, 0, -0.75))
             self.dialog_box.setTransparency(TransparencyAttrib.MAlpha)
             self.textObject = OnscreenText(text=self.texts[self.text_index][0:self.letter_index], pos=(0, -0.75), scale=0.07)
             if self.letter_index < len(self.texts[self.text_index]):
@@ -2673,6 +2673,7 @@ class SetLevel(FSM):
         self.pnjs = {}
         self.portails = {}
         self.map = None
+        self.actual_statue = None 
         self.current_panneau = None
         self.player.left = False
         self.player.right = False
