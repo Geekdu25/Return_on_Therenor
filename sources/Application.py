@@ -273,7 +273,7 @@ class SetLevel(FSM):
                         self.chapitre = 6
                         self.fade_out("Cinematique")
                     elif self.current_pnj == "golem_pnj" and self.chapitre > 6:
-                        self.set_text(self.story["gui"][32], messages=["boutons"])
+                        self.set_text([self.story["gui"][32]], messages=["boutons"])
                         self.acceptOnce("boutons", self.show_golem_options)
                     else:
                       self.set_text(self.pnjs[self.current_pnj].texts, messages=["reupdate"])
