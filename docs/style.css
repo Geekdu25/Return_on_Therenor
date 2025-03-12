@@ -101,8 +101,15 @@ header
   height: 50%;
 }
 
+.code {
+background-color: #1122cc;
+color: #ffffff;
+font-family: courrier, Arial;
+}
+
 .texte-de-pres {
 	width: 50%;
 	text-align: center;
 	margin : auto;
+        color: #ffffff; 
 }
