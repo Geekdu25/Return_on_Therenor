@@ -32,15 +32,25 @@
     <br /> 
     <div class="code">
     <h2>Application.py</h2>
+    <p>Ce fichier est le fichier central du jeu. Toutes les métohdes les plus importantes, tous les scripts du jeu y sont présents. Il serait difficile d'énumérer tout ce que fait ce fichier tant la liste est longue. Néanmoins, voici quelque exemples des méthodes qui y sont codées : l'emplacement des fichiers de sauvegarde du jeu, la méthode pour charger les cartes, la méthode de mise à jour de chaque "frame" ou encore la méthode gérant les collisions entre le joueur et une porte. Si vous souhaitez que le joueur perdes des vies chaque fois qu'il touche quelque chose, que les données de sauvegarde du jeu soient dans votre dossier Documents ou encore qu'il y ait un soleil sur chaque map, c'est ce fichier que vous devez modifier.</p>
     <h2>config.prc</h2>
-    <h2>FollowCam.py</h2> 
+    <p>Ce fichier est un peu spécial vu qu'il ne s'agi pas d'un fichier python. Il s'agit en effet d'un fichier de configuration utilisé par le jeu pour obtenir différentes informations, comme par exemple la taille de la fenêtre, son titre ou son icône. Si vous désirez jouer en mode plein écran, c'est ce fichier que vous devez modifier.</p>
+    <h2>FollowCam.py</h2>
+    <p>Dans ce fichier, vous retrouverez les métohdes gérant la caméra censée suivre le joueur. Le fait que la caméra puisse être à la première personne, qu'elle puisse tourner autour de vous sans vous quitter, tout cela est codé dans ce fichier. Si vous désirez voir en-dessous de votre joueur, c'est ce fichier que vous devez modifier.</p>
     <h2>Interface_joueur.py</h2>
-    <h2>Inventaire.py</h2>  
+    <p>Dans ce fichier, vous retrouverez les méthodes indiquant au jeu la manière dont l'interface graphique d jeu doit être créee. La vie, la magie, l'argent sont des éléments qui sont codés dans ce fichier. Si vous préférez que votre vie s'affiche comme dans un Zelda classique sous forme de coeurs plutôt que comme dans The adventure of Link sous forme de barre de vie, cest ce fichier que vous devrez modifier.</p>
+    <h2>Inventaire.py</h2>
+    <p>Dans ce fichier, on retrouve tout le code nécessaire pour que l'inventaire puisse être affiché à l'écran, c'est là par exemple que l'on retrouve la manière dont est affiché l'écran des armes. Si vous préféreriez un inventaire rouge, c'est dans ce fichier que vous devriez modifier le code.</p>  
     <h2>main.py</h2>
+    <p>Ce fichier est le fichier qu'il faut lancer pour que le jeu démarre. Il ne contient que très peu de lignes de code ; 2. L'une permet d'importer la classe du jeu située dans Application.py, et l'autre permet de lancer le jeu en créant une instance de Application et en lançant le jeu en appelant la méthode run() de cette instance. Vous n'avez pas grand chose à modifier dans ce fichier, alors vous n'avez pas besoin d'y toucher.</p>
     <h2>mappingGUI.py</h2>
+    <p>Le code présent dans ce fichier est inspiré d'un exemple fourni avec le SDK de Panda3D. Le code présent dans ce fichier est conçu pour fonctionner avec une partie du code présent dans Application.py pour permettre au joueur de choisir les touches qu'il souhaite utiliser pour rendre l'expérience de jeu encore plus agréable. Si vous souhaitez modifier l'interface graphique du mennu pour changer les touches, c'est ce fichier que vous devrez commencer à modifier.</p>
     <h2>monsters.py</h2> 
+    <p>On retrouve dans ce fichier différentes classes pour les différents monstres du jeu : Le bonhomme de neige et Zmeyevick, et leur super classe Monster. La classe du slime n'a malheureusement pas pu être utilisée. Si vous souhaitez ajouter Tiamat la déesse des dragons chromatiques comme nouveau monstre dans le jeu, commencez par modifier ce fichier.</p>
     <h2>objects.py</h2> 
+    <p>On retrouve comme dans monsters.py difféentes classes dans ce fichier. Ces classes correspondent toutes à des "objets" présents dans le jeu. Si vous êtes en mesure de voir des palmiers à Arduny, des sapins à Verdantia ou l'ancienne forteresse de la reine à Crest, c'est grâce à ce fichier. Si vous souaitez créer des rochers comme nouvel objet pour "meubler" Crest, c'est d'abord ce fichier que vous devrez modifier.</p>
     <h2>personnages.py</h2>  
+    <p>On pourrait dire que ce fichier est semblable à objects.py et à monsters.py dans sa structure car il contient une super classe dont héritent d'autres classes, et cette famille de classes est la famille des PNJS. Cependant c'est oublier que ce fichier contient une autre classe extrêmement importante, celle du joueur qui est un élément central du jeu. Si vous désirez créer un nouveau PNJ ou changer la taille de la sphère de collision du joueur, c'est ce fichier qu'il faut modifier.</p>
     </div>
     </body>
 </html>
