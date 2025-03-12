@@ -94,7 +94,7 @@ header
 .presentation-groupe {
     position: relative;
     text-align: center;
-    color: rgb(255, 255, 255);
+    color: rgb(200, 50, 55);
 }
 
 .image {
@@ -102,7 +102,6 @@ header
 }
 
 .texte-de-pres {
-	height: 90%;
 	width: 50%;
 	text-align: center;
 	margin : auto;
