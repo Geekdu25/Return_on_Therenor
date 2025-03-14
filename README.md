@@ -37,7 +37,7 @@ Voici une capture d'écran du jeu :
 
 <img src="data/pictures/readme/image_de_jeu.PNG" alt="Capture d'écran de jeu" title="Capture d'écran du jeu" />
 <h2>Commandes :</h2>
-Le jeu peut se jouer à l'aide du clavier ou d'une manette.
+Le jeu peut se jouer à l'aide du clavier ou d'une manette (l'utilisation d'une manette peut faire bugger le jeu).
 Vous avez la possibilité de changer les touches utilisées pour différentes actions !
 En mode clavier, utilisez la souris pour tourner.
 
